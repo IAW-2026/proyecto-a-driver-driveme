@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Conductor {
+  id_conductor  String    @id // Este será el clerk_user_id
+  nombre        String
+  apellido      String
+  licencia      String    @unique
+  fecha_alta    DateTime  @default(now())
+  fecha_baja    DateTime? // Borrado lógico (Soft delete)
+
+  // Relaciones
+  vehiculos     Vehiculo[]
+  viajes        Viaje[]
+}
+
+model Vehiculo {
+  id_vehiculo   String    @id @default(uuid())
+  patente       String    @unique
+  marca         String
+  modelo        String
+  anio          Int
+  id_conductor  String
+  fecha_baja    DateTime? // Borrado lógico
+
+  // Relaciones
+  conductor     Conductor @relation(fields: [id_conductor], references: [id_conductor])
+  viajes        Viaje[]
+}
+
+model Viaje {
+  id_viaje      String    @id @default(uuid())
+  estado        String    // ej: EN_CURSO, FINALIZADO, CANCELADO
+  precio        Float
+  id_conductor  String
+  id_vehiculo   String
+  creado_en     DateTime  @default(now())
+
+  // Relaciones
+  conductor     Conductor @relation(fields: [id_conductor], references: [id_conductor])
+  vehiculo      Vehiculo  @relation(fields: [id_vehiculo], references: [id_vehiculo])
+}
