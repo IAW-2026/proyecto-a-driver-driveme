@@ -49,65 +49,65 @@ export default async function RegistroPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <main className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8" style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="text-center text-3xl font-extrabold" style={{ color: "var(--foreground)" }}>
           Completá tu perfil
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm" style={{ color: "var(--muted)" }}>
           Necesitamos los datos de tu vehículo para habilitarte en la flota.
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="py-8 px-4 shadow sm:rounded-lg sm:px-10" style={{ backgroundColor: "var(--surface)", color: "var(--foreground)" }}>
           {/* El formulario ejecuta el Server Action directamente */}
           <form action={registrarConductor} className="space-y-6">
 
             {/* Datos Personales */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Datos del Conductor</h3>
+              <h3 className="text-lg font-medium mb-4 border-b pb-2" style={{ color: "var(--foreground)", borderColor: "var(--border)" }}>Datos del Conductor</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombre</label>
-                  <input required type="text" name="nombre" id="nombre" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm" />
+                  <label htmlFor="nombre" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Nombre</label>
+                  <input required type="text" name="nombre" id="nombre" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
                 </div>
                 <div>
-                  <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">Apellido</label>
-                  <input required type="text" name="apellido" id="apellido" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm" />
+                  <label htmlFor="apellido" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Apellido</label>
+                  <input required type="text" name="apellido" id="apellido" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
                 </div>
               </div>
               <div className="mt-4">
-                <label htmlFor="licencia" className="block text-sm font-medium text-gray-700">Número de Licencia</label>
-                <input required type="text" name="licencia" id="licencia" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm" />
+                <label htmlFor="licencia" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Número de Licencia</label>
+                <input required type="text" name="licencia" id="licencia" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
               </div>
             </div>
 
             {/* Datos del Vehículo */}
             <div className="pt-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Vehículo Activo</h3>
+              <h3 className="text-lg font-medium mb-4 border-b pb-2" style={{ color: "var(--foreground)", borderColor: "var(--border)" }}>Vehículo Activo</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="patente" className="block text-sm font-medium text-gray-700">Patente</label>
-                  <input required type="text" name="patente" id="patente" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm uppercase" />
+                  <label htmlFor="patente" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Patente</label>
+                  <input required type="text" name="patente" id="patente" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm uppercase transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
                 </div>
                 <div>
-                  <label htmlFor="anio" className="block text-sm font-medium text-gray-700">Año</label>
-                  <input required type="number" name="anio" id="anio" min="1990" max="2026" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm" />
+                  <label htmlFor="anio" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Año</label>
+                  <input required type="number" name="anio" id="anio" min="1990" max="2026" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
                 </div>
                 <div>
-                  <label htmlFor="marca" className="block text-sm font-medium text-gray-700">Marca</label>
-                  <input required type="text" name="marca" id="marca" placeholder="Ej: Toyota" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm" />
+                  <label htmlFor="marca" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Marca</label>
+                  <input required type="text" name="marca" id="marca" placeholder="Ej: Toyota" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
                 </div>
                 <div>
-                  <label htmlFor="modelo" className="block text-sm font-medium text-gray-700">Modelo</label>
-                  <input required type="text" name="modelo" id="modelo" placeholder="Ej: Corolla" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm" />
+                  <label htmlFor="modelo" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Modelo</label>
+                  <input required type="text" name="modelo" id="modelo" placeholder="Ej: Corolla" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
                 </div>
               </div>
             </div>
 
             <div className="pt-4">
-              <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
+              <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 transition-all focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/30" style={{ background: "var(--gradient-primary)", color: "var(--text-inverted)" }}>
                 Registrar y Comenzar a Manejar
               </button>
             </div>

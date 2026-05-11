@@ -1,38 +1,41 @@
-"use client";
-
+﻿"use client";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
-const preferDarkQuery = "(prefers-color-scheme: dark)";
-
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [mounted, setMounted] = useState(false);
+  const { theme, resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem("theme");
-    const preferredTheme = window.matchMedia(preferDarkQuery).matches ? "dark" : "light";
-    const initialTheme = storedTheme === "dark" || storedTheme === "light" ? storedTheme : preferredTheme;
-
-    document.documentElement.classList.toggle("dark", initialTheme === "dark");
-    setTheme(initialTheme);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    window.localStorage.setItem("theme", theme);
-  }, [theme]);
+  const activeTheme = resolvedTheme || theme;
+
+  if (!mounted) {
+    // El skeleton ahora coincide perfectamente con el tamaño del botón final
+    return <div className="w-14 h-7 rounded-full bg-gray-200 dark:bg-zinc-700" />;
+  }
 
   return (
-    <label className="relative inline-flex items-center cursor-pointer">
-      <input
-        type="checkbox"
-        className="sr-only peer"
-        checked={theme === "dark"}
-        onChange={() => setTheme(theme === "dark" ? "light" : "dark")}
-      />
-      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-      <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-        {theme === "dark" ? "🌙" : "☀️"}
+    <button
+      type="button"
+      aria-label="Toggle theme"
+      aria-pressed={activeTheme === "dark"}
+      onClick={() => setTheme(activeTheme === "dark" ? "light" : "dark")}
+      /* Agregamos h-7 y w-14 fijos, y p-1 uniforme */
+      className={`relative inline-flex h-7 w-14 items-center rounded-full p-1 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-teal-400 ${activeTheme === "dark" ? "bg-zinc-800" : "bg-sky-100"
+        }`}
+    >
+      <span className="sr-only">Switch theme</span>
+      <span
+        /* Cambiamos translate-x-6 por translate-x-7 para que recorra los 28px exactos */
+        className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-md transition-transform duration-300 ${activeTheme === "dark" ? "translate-x-7" : "translate-x-0"
+          }`}
+      >
+        {activeTheme === "dark" ? "🌙" : "☀️"}
       </span>
-    </label>
+    </button>
   );
 }

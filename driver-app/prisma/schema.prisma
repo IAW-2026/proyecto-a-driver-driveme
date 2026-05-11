@@ -19,7 +19,7 @@ model Conductor {
   licencia      String    @unique
   fecha_alta    DateTime  @default(now())
   fecha_baja    DateTime? // Borrado lógico (Soft delete)
-
+  disponible    Boolean    @default(false)
   // Relaciones
   vehiculos     Vehiculo[]
   viajes        Viaje[]

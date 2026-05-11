@@ -11,15 +11,18 @@ async function main() {
   await prisma.viaje.deleteMany()
   await prisma.vehiculo.deleteMany()
   await prisma.conductor.deleteMany()
+  // await prisma.administrador.deleteMany() // Descomentar si creaste esta tabla
 
   console.log('🌱 Sembrando el nuevo ecosistema de datos...')
 
+  // Caso A: Conductora Activa y Online
   const conductorLuciana = await prisma.conductor.create({
     data: {
       id_conductor: 'user_luciana_456',
       nombre: 'Luciana',
       apellido: 'González',
       licencia: 'LGO-789',
+      disponible: true, // <-- Nace conectada
       vehiculos: {
         create: {
           patente: 'AGL-001',
@@ -32,13 +35,14 @@ async function main() {
     include: { vehiculos: true }
   })
 
-  // Caso B: Conductora Nocturna - Múltiples autos, algunos viajes cancelados.
+  // Caso B: Conductora Nocturna y Online - Múltiples autos, algunos viajes cancelados.
   const conductorSofia = await prisma.conductor.create({
     data: {
       id_conductor: 'user_sofi_888',
       nombre: 'Sofía',
       apellido: 'Gómez',
       licencia: 'SGO-555',
+      disponible: true, // <-- Nace conectada (tiene un viaje en curso)
       vehiculos: {
         create: [
           { patente: 'PKR-777', marca: 'Volkswagen', modelo: 'Golf', anio: 2021 },
@@ -49,14 +53,14 @@ async function main() {
     include: { vehiculos: true }
   })
 
-  // Caso C: El Novato - Recién registrado, tiene auto pero 0 viajes.
-  // (Ideal para probar qué muestra tu pantalla cuando el array de viajes está vacío).
+  // Caso C: El Novato y Offline - Recién registrado, tiene auto pero 0 viajes.
   const conductorLeo = await prisma.conductor.create({
     data: {
       id_conductor: 'user_leo_321',
       nombre: 'Leonardo',
       apellido: 'Paz',
       licencia: 'LPA-101',
+      disponible: false, // <-- Nace desconectado
       vehiculos: {
         create: {
           patente: 'NEW-999',
@@ -70,13 +74,13 @@ async function main() {
   })
 
   // Caso D: Conductor Inactivo - Borrado lógico (fecha_baja).
-  // (Tu interfaz no debería mostrar a este conductor en las listas activas).
   const conductorLucas = await prisma.conductor.create({
     data: {
       id_conductor: 'user_lucas_404',
       nombre: 'Lucas',
       apellido: 'Testing',
       licencia: 'QAE-404',
+      disponible: false, // <-- Desconectado y dado de baja
       fecha_baja: new Date(),
       vehiculos: {
         create: {
@@ -90,6 +94,21 @@ async function main() {
     },
     include: { vehiculos: true }
   })
+
+  /* ==========================================
+     MOCK DE ADMINISTRADOR (Opcional)
+     ==========================================
+     Si modificaste tu schema.prisma para tener una tabla de Admins, 
+     descomentá este bloque y ajustá los campos a tu modelo.
+  */
+  // await prisma.administrador.create({
+  //   data: {
+  //     id_admin: 'admin_master_001',
+  //     email: 'tu.email.real@gmail.com',
+  //     nombre: 'Admin',
+  //     rol: 'SUPERADMIN'
+  //   }
+  // })
 
   console.log('🚗 Generando historial de viajes complejo...')
 
@@ -108,11 +127,8 @@ async function main() {
   // Viajes de Sofía (Usa sus dos autos, tiene cancelaciones y un viaje en curso)
   await prisma.viaje.createMany({
     data: [
-      // Viaje viejo con el auto 1 (Golf)
       { estado: 'FINALIZADO', precio: 12000.00, id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[0].id_vehiculo, creado_en: new Date(ahora - unDia * 10) },
-      // Viaje cancelado con el auto 2 (Kangoo)
       { estado: 'CANCELADO', precio: 0, id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[1].id_vehiculo, creado_en: new Date(ahora - 3600000) },
-      // Viaje actual con el auto 1 (Golf)
       { estado: 'EN_CURSO', precio: 5600.00, id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[0].id_vehiculo, creado_en: new Date() },
     ]
   })

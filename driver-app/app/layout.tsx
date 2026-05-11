@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs'
+import { ThemeProvider } from "@/app/components/ThemeProvider";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -23,12 +24,21 @@ export default function RootLayout({
       <html
         lang="en"
         className={`${spaceGrotesk.variable} h-full antialiased`}
+        suppressHydrationWarning /* Vital para evitar el flash blanco y errores de Next.js */
       >
         <body
-          className="min-h-full flex flex-col"
-          style={{ backgroundColor: "var(--background)", color: "var(--foreground)", fontFamily: "var(--font-space-grotesk)" }}
+          className="min-h-full flex flex-col transition-colors duration-300"
+          style={{
+            backgroundColor: "var(--background)",
+            color: "var(--foreground)",
+            fontFamily: "var(--font-space-grotesk)"
+          }}
+          suppressHydrationWarning /* Doble escudo de hidratación */
         >
-          {children}
+          {/* Envolvemos a los hijos en el proveedor de temas */}
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {children}
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
