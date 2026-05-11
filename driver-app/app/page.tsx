@@ -1,35 +1,50 @@
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
-import Nav from "./components/Nav";
+import Link from "next/link";
 
 export default async function Home() {
-  // Traemos los conductores desde tu base de datos en la nube (Neon)
-  const conductores = await prisma.conductor.findMany({
-    include: {
-      vehiculos: true, // Traemos también los autos relacionados
-    }
+  const { userId } = await auth();
+  const user = await currentUser();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  // 1. Lógica de Administrador: Definimos qué emails son los "Jefes"
+  // En producción esto iría en una variable de entorno, pero lo dejamos acá para que lo veas claro.
+  const adminEmails = ["tu.email.real@gmail.com"]; // ¡Cambiá esto por tu email de verdad!
+  const userEmail = user?.emailAddresses[0].emailAddress;
+
+  if (userEmail && adminEmails.includes(userEmail)) {
+    // Si es administrador, lo mandamos a su panel exclusivo
+    redirect("/admin/dashboard");
+  }
+
+  // 2. Lógica de Conductor: Buscamos si este usuario ya completó sus datos en nuestra BD
+  const conductorExistente = await prisma.conductor.findUnique({
+    where: { id_conductor: userId },
+    include: { vehiculos: true }
   });
 
+  // Si no existe en la base de datos, lo mandamos a que complete su patente y licencia
+  if (!conductorExistente) {
+    redirect("/registro");
+  }
+
+  // 3. Si existe, mostramos su Dashboard de Conductor
   return (
     <main className="p-8">
-      <Nav />
+      <h1 className="text-2xl font-bold">Bienvenido, {conductorExistente.nombre}</h1>
+      <p className="mt-2 text-gray-600">
+        Vehículo activo: {conductorExistente.vehiculos[0]?.marca} ({conductorExistente.vehiculos[0]?.patente})
+      </p>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Conductores Registrados (Seed):</h2>
-        <div className="grid gap-4">
-          {conductores.map((conductor) => (
-            <div key={conductor.id_conductor} className="p-4 border rounded shadow-sm">
-              <p><strong>Nombre:</strong> {conductor.nombre} {conductor.apellido}</p>
-              <p><strong>Licencia:</strong> {conductor.licencia}</p>
-              {/* Verificamos que tenga al menos un vehículo antes de mostrarlo */}
-              {conductor.vehiculos.length > 0 ? (
-                <p><strong>Vehículo asignado:</strong> {conductor.vehiculos[0].marca} {conductor.vehiculos[0].modelo} ({conductor.vehiculos[0].patente})</p>
-              ) : (
-                <p><strong>Vehículo asignado:</strong> Ninguno</p>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+      <div className="mt-8">
+        <Link href="/historial" className="text-blue-600 hover:underline">
+          Ver mis viajes
+        </Link>
+      </div>
     </main>
   );
 }
