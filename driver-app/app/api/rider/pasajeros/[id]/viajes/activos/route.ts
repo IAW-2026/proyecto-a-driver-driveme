@@ -4,10 +4,11 @@ import { ViajeActivoPasajeroResponse } from '@/app/types/api';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const mockResponse: ViajeActivoPasajeroResponse = {
-    id_pasajero: params.id,
+    id_pasajero: id,
     viaje_activo: {
       id_viaje: "uuid-12345",
       id_solicitud: "sol_abc123",

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     // Validación M2M idealmente va aquí
 
     const conductor = await prisma.conductor.findUnique({
-      where: { id: parsed.id_conductor }
+      where: { id_conductor: parsed.id_conductor }
     });
 
     if (!conductor) {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     }
 
     const updated = await prisma.conductor.update({
-      where: { id: parsed.id_conductor },
+      where: { id_conductor: parsed.id_conductor },
       data: { calificacion_promedio: parsed.puntaje }
     });
 

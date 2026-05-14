@@ -46,7 +46,7 @@ AfterAll(async () => {
   }
   if (testData.id_conductor) {
     await prisma.vehiculo.deleteMany({ where: { id_conductor: testData.id_conductor } });
-    await prisma.conductor.deleteMany({ where: { id: testData.id_conductor } });
+    await prisma.conductor.deleteMany({ where: { id_conductor: testData.id_conductor } });
   }
   await prisma.$disconnect();
   await apiContext.dispose();
@@ -57,12 +57,13 @@ Given('un conductor autenticado con ID {string}', async (id_conductor: string) =
   
   // 1. Asegurarnos de que el conductor existe (para la clave foránea)
   await prisma.conductor.upsert({
-    where: { id: id_conductor },
+    where: { id_conductor },
     update: {},
     create: {
-      id: id_conductor,
+      id_conductor,
       nombre: 'Test',
       apellido: 'Driver',
+      licencia: 'LIC-TEST',
       estado: 'ONLINE'
     }
   });
@@ -72,7 +73,7 @@ Given('un conductor autenticado con ID {string}', async (id_conductor: string) =
     where: { patente: 'TEST-000' },
     update: {},
     create: {
-      id: testData.id_vehiculo,
+      id_vehiculo: testData.id_vehiculo,
       id_conductor: id_conductor,
       patente: 'TEST-000',
       marca: 'Test',
@@ -98,9 +99,9 @@ Given('una solicitud de viaje con ID {string} que ya ha sido aceptada previament
   const competidorId = 'cond_competencia_999';
   
   await prisma.conductor.upsert({
-    where: { id: competidorId },
+    where: { id_conductor: competidorId },
     update: {},
-    create: { id: competidorId, nombre: 'Rival', apellido: 'Driver', estado: 'ONLINE' }
+    create: { id_conductor: competidorId, nombre: 'Rival', apellido: 'Driver', licencia: 'LIC-RIVAL', estado: 'ONLINE' }
   });
 
   await prisma.viaje.upsert({
@@ -113,6 +114,7 @@ Given('una solicitud de viaje con ID {string} que ya ha sido aceptada previament
       id_vehiculo: testData.id_vehiculo,
       estado_actual: 'ACEPTADO',
       metodo_pago: 'EFECTIVO',
+      precio: 4500,
       precio_final: 4500
     }
   });

@@ -11,9 +11,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id_v
     // Aquí idealmente validaríamos un token M2M o API Key para Feedback App
     // Por simplicidad en este ejemplo, consultamos directamente
     const viaje = await prisma.viaje.findUnique({
-      where: { id: id_viaje },
+      where: { id_viaje },
       select: {
-        id: true,
+        id_viaje: true,
         estado_actual: true,
         id_conductor: true,
         id_pasajero: true,
@@ -52,7 +52,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const body = await request.json();
     const parsed = patchSchema.parse(body);
 
-    const viajeActual = await prisma.viaje.findUnique({ where: { id: id_viaje } });
+    const viajeActual = await prisma.viaje.findUnique({ where: { id_viaje } });
     if (!viajeActual) {
       return NextResponse.json({ error: "Viaje no encontrado" }, { status: 404 });
     }
@@ -70,13 +70,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const viajeUpdated = await prisma.$transaction(async (tx: TransactionClient) => {
       const v = await tx.viaje.update({
-        where: { id: id_viaje },
+        where: { id_viaje },
         data: dataToUpdate
       });
 
       if (parsed.estado_actual === 'FINALIZADO') {
         await tx.conductor.update({
-          where: { id: userId },
+          where: { id_conductor: userId },
           data: { estado: 'ONLINE' }
         });
       }

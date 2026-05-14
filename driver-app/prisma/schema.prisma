@@ -7,6 +7,10 @@ datasource db {
   provider = "postgresql"
 }
 
+// ── Enums ────────────────────────────────────────────────────────────────────
+// Nota: la BD actual usa TEXT para "estado" en Viaje (no un enum de Postgres).
+// Se definen aquí para validación en el cliente de Prisma.
+
 enum EstadoConductor {
   OFFLINE
   ONLINE
@@ -25,50 +29,67 @@ enum MetodoPago {
   TARJETA
 }
 
+// ── Modelos ───────────────────────────────────────────────────────────────────
+// IMPORTANTE: los nombres de campo coinciden con la BD real (migration.sql).
+// La PK del Conductor es `id_conductor` (= clerk_user_id).
+
 model Conductor {
-  id                    String          @id // clerk_user_id
-  nombre                String
-  apellido              String
+  id_conductor   String   @id             // PK = clerk_user_id
+  nombre         String
+  apellido       String
+  licencia       String   @unique
+  fecha_alta     DateTime @default(now())
+  fecha_baja     DateTime?
+
+  // Campos extendidos (agregados vía migración adicional si no existen en la BD)
   estado                EstadoConductor @default(OFFLINE)
   latitud_actual        Float?
   longitud_actual       Float?
   calificacion_promedio Float           @default(5.0)
   isActive              Boolean         @default(true)
-  
+
   // Relaciones
-  vehiculos             Vehiculo[]
-  viajes                Viaje[]
+  vehiculos  Vehiculo[]
+  viajes     Viaje[]
 }
 
 model Vehiculo {
-  id           String    @id @default(uuid())
-  id_conductor String
+  id_vehiculo  String    @id @default(uuid())
   patente      String    @unique
   marca        String
   modelo       String
   anio         Int
-  color        String
-  isActive     Boolean   @default(true)
+  id_conductor String
+  fecha_baja   DateTime?
+
+  // Campos extendidos
+  color    String   @default("No especificado")
+  isActive Boolean  @default(true)
 
   // Relaciones
-  conductor    Conductor @relation(fields: [id_conductor], references: [id])
-  viajes       Viaje[]
+  conductor Conductor @relation(fields: [id_conductor], references: [id_conductor])
+  viajes    Viaje[]
 }
 
 model Viaje {
-  id                String      @id @default(uuid()) // id_viaje
-  id_solicitud      String      @unique
-  id_pasajero       String      
-  id_conductor      String
-  id_vehiculo       String
+  id_viaje     String   @id @default(uuid())
+  estado       String   @default("ACEPTADO")   // TEXT en la BD (no enum)
+  precio       Float
+  id_conductor String
+  id_vehiculo  String
+  creado_en    DateTime @default(now())
+
+  // Campos extendidos
+  id_solicitud      String?  @unique
+  id_pasajero       String?
   estado_actual     EstadoViaje @default(ACEPTADO)
   tiempo_aceptado   DateTime    @default(now())
   tiempo_comienzo   DateTime?
   tiempo_completado DateTime?
-  metodo_pago       MetodoPago
-  precio_final      Float
+  metodo_pago       MetodoPago  @default(EFECTIVO)
+  precio_final      Float       @default(0)
 
   // Relaciones
-  conductor         Conductor   @relation(fields: [id_conductor], references: [id])
-  vehiculo          Vehiculo    @relation(fields: [id_vehiculo], references: [id])
+  conductor Conductor @relation(fields: [id_conductor], references: [id_conductor])
+  vehiculo  Vehiculo  @relation(fields: [id_vehiculo], references: [id_vehiculo])
 }

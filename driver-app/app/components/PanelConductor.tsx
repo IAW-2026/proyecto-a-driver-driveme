@@ -1,181 +1,356 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
-import { toggleConductorStatus, aceptarSolicitud } from "@/app/actions/conductor";
+/**
+ * app/components/PanelConductor.tsx
+ * -----------------------------------------------------------------------
+ * Client Component — Panel principal del conductor activo.
+ *
+ * Cambios UX respecto a la versión anterior:
+ * - Botón Online/Offline: CTA de pantalla completa (min 72px) en vez de toggle pequeño
+ * - Tarjeta de solicitud: precio en texto 5xl, timer de 30s con barra de progreso
+ * - Botones ACEPTAR/RECHAZAR: ancho completo, 64px de alto, separados físicamente
+ * - Feedback háptico al cambiar estado (Navigator.vibrate)
+ * - Polling cada 5s cuando está online; se detiene con solicitud activa
+ * - Al aceptar: llama al API Route propio (/api/viajes) que sincroniza con Rider App
+ * -----------------------------------------------------------------------
+ */
+
+import { useState, useEffect, useTransition, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { toggleConductorStatus } from "@/app/actions/conductor";
 import { Prisma } from "@/app/generated/prisma/client";
 import { SolicitudViaje } from "@/app/types/viajes";
 
-// 1. Le decimos a Prisma que extraiga el tipo exacto incluyendo la relación de vehículos
 type ConductorConVehiculos = Prisma.ConductorGetPayload<{
   include: { vehiculos: true };
 }>;
 
-// 2. Tipamos fuertemente las props
 interface PanelConductorProps {
   conductorData: ConductorConVehiculos;
 }
 
-export default function PanelConductor({ conductorData }: PanelConductorProps) {
-  const [isPending, startTransition] = useTransition();
-  const [isOnline, setIsOnline] = useState(conductorData.disponible);
-  const [solicitudActual, setSolicitudActual] = useState<SolicitudViaje | null>(null);
+const TIMER_DURACION = 30; // segundos para aceptar la solicitud
 
-  // --- LÓGICA DEL BOTÓN ONLINE/OFFLINE ---
+// ── Toast simple ─────────────────────────────────────────────────────────────
+function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed top-6 right-6 z-50 px-5 py-3 rounded-xl shadow-xl font-bold text-sm animate-[fadeInDown_0.3s_ease]"
+      style={{
+        backgroundColor: tipo === "ok" ? "var(--accent)" : "#E53E3E",
+        color: tipo === "ok" ? "var(--text-inverted)" : "#fff",
+      }}
+    >
+      {mensaje}
+    </div>
+  );
+}
+
+export default function PanelConductor({ conductorData }: PanelConductorProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [isOnline, setIsOnline] = useState(conductorData.estado === "ONLINE");
+  const [solicitudActual, setSolicitudActual] = useState<SolicitudViaje | null>(null);
+  const [timerSegundos, setTimerSegundos] = useState(TIMER_DURACION);
+  const [aceptando, setAceptando] = useState(false);
+  const [toast, setToast] = useState<{ mensaje: string; tipo: "ok" | "error" } | null>(null);
+
+  const mostrarToast = useCallback((mensaje: string, tipo: "ok" | "error" = "ok") => {
+    setToast({ mensaje, tipo });
+    setTimeout(() => setToast(null), 2500);
+  }, []);
+
+  // ── Toggle Online/Offline ────────────────────────────────────────────────
   const handleToggle = () => {
-    const newState = !isOnline;
-    setIsOnline(newState);
-    if (!newState) setSolicitudActual(null);
+    const nuevoEstado = !isOnline;
+    setIsOnline(nuevoEstado);
+    if (!nuevoEstado) {
+      setSolicitudActual(null);
+      setTimerSegundos(TIMER_DURACION);
+    }
+    // Vibración háptica (solo mobile)
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(nuevoEstado ? [30, 20, 30] : [60]);
+    }
 
     startTransition(async () => {
-      try {
-        console.log("Intentando cambiar estado a:", newState);
-        const result = await toggleConductorStatus(conductorData.id_conductor, newState);
-
-        if (!result.success) {
-          // Si falla, ahora nos va a saltar una alerta en toda la cara
-          alert("❌ El servidor rechazó el cambio. Revisá la terminal de VS Code.");
-          setIsOnline(!newState); // Rollback
-        } else {
-          console.log("¡Cambio guardado en la BD!");
-        }
-      } catch (error) {
-        alert("❌ Error crítico conectando con el servidor Action.");
-        console.error(error);
-        setIsOnline(!newState);
+      const result = await toggleConductorStatus(conductorData.id_conductor, nuevoEstado);
+      if (!result.success) {
+        setIsOnline(!nuevoEstado); // rollback
+        mostrarToast("Error al cambiar estado. Intentá de nuevo.", "error");
+      } else {
+        mostrarToast(nuevoEstado ? "¡Estás online! Buscando viajes..." : "Modo offline activado.");
       }
     });
   };
 
-  // --- LÓGICA DE POLLING (SIMULADOR REST) ---
+  // ── Polling de solicitudes (REST) ────────────────────────────────────────
   useEffect(() => {
-    let intervalo: NodeJS.Timeout;
-
-    // Solo buscamos solicitudes si está online y NO tiene ya una solicitud en pantalla
-    if (isOnline && !solicitudActual) {
-      intervalo = setInterval(async () => {
-        try {
-          const res = await fetch('/api/solicitudes/mock');
-          const data = await res.json();
-          if (data.solicitud) {
-            setSolicitudActual(data.solicitud);
+    if (!isOnline || solicitudActual) return;
+    const intervalo = setInterval(async () => {
+      try {
+        const res = await fetch("/api/solicitudes/mock");
+        const data = await res.json();
+        if (data.solicitud) {
+          setSolicitudActual(data.solicitud);
+          setTimerSegundos(TIMER_DURACION);
+          if (typeof navigator !== "undefined" && navigator.vibrate) {
+            navigator.vibrate([100, 50, 100, 50, 200]);
           }
-        } catch (error) {
-          console.error("Error consultando API REST:", error);
         }
-      }, 5000); // Consulta la API cada 5 segundos
-    }
-
+      } catch {
+        // silencioso — pérdida temporal de red
+      }
+    }, 5000);
     return () => clearInterval(intervalo);
   }, [isOnline, solicitudActual]);
 
-  // --- LÓGICA DE ACEPTAR/RECHAZAR ---
-  const handleAceptar = async () => {
+  // ── Timer de cuenta regresiva ────────────────────────────────────────────
+  useEffect(() => {
     if (!solicitudActual) return;
+    if (timerSegundos <= 0) {
+      setSolicitudActual(null);
+      setTimerSegundos(TIMER_DURACION);
+      mostrarToast("Tiempo agotado. Solicitud descartada.", "error");
+      return;
+    }
+    const tick = setTimeout(() => setTimerSegundos((t) => t - 1), 1000);
+    return () => clearTimeout(tick);
+  }, [solicitudActual, timerSegundos, mostrarToast]);
 
-    // Por simplicidad, usamos el primer vehículo registrado del conductor
-    const vehiculoId = conductorData.vehiculos[0].id_vehiculo;
+  // ── Aceptar solicitud ────────────────────────────────────────────────────
+  const handleAceptar = async () => {
+    if (!solicitudActual || aceptando) return;
+    setAceptando(true);
 
-    await aceptarSolicitud(conductorData.id_conductor, vehiculoId, solicitudActual.precio_estimado);
-    alert("¡Viaje aceptado! Pasando a modo Navegación...");
-    setSolicitudActual(null); // Limpiamos la pantalla
+    const vehiculoId = conductorData.vehiculos[0]?.id_vehiculo;
+    if (!vehiculoId) {
+      mostrarToast("No tenés vehículo registrado.", "error");
+      setAceptando(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/viajes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id_solicitud: solicitudActual.id_solicitud,
+          id_conductor: conductorData.id_conductor,
+          id_pasajero: solicitudActual.pasajero.id_pasajero,
+          id_vehiculo: vehiculoId,
+          latitud_actual: solicitudActual.origen.latitud,
+          longitud_actual: solicitudActual.origen.longitud,
+          metodo_pago: "EFECTIVO",
+          precio_estimado: solicitudActual.precio_estimado,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 409) {
+        mostrarToast("Ese viaje ya fue tomado por otro conductor.", "error");
+        setSolicitudActual(null);
+        return;
+      }
+
+      if (!res.ok) {
+        mostrarToast("Error al aceptar el viaje. Intentá de nuevo.", "error");
+        return;
+      }
+
+      // Navegar a la pantalla de viaje en curso
+      router.push(`/viaje/${data.data.id_viaje}`);
+    } catch {
+      mostrarToast("Sin conexión. Intentá de nuevo.", "error");
+    } finally {
+      setAceptando(false);
+    }
   };
 
+  const handleRechazar = () => {
+    setSolicitudActual(null);
+    setTimerSegundos(TIMER_DURACION);
+    if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(40);
+  };
+
+  const porcentajeTimer = (timerSegundos / TIMER_DURACION) * 100;
+  const colorTimer = timerSegundos > 15 ? "var(--accent)" : timerSegundos > 8 ? "#ECC94B" : "#E53E3E";
+
   return (
-    <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
-      {/* Panel Izquierdo: Métricas y Botón */}
-      <div className="flex-1 space-y-4 md:space-y-6">
+    <div className="flex flex-col gap-4 md:gap-6 w-full">
+      {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} />}
 
-        <div
-          className="flex justify-between items-center rounded-xl p-3 md:p-5 border transition-colors duration-300"
-          style={{ backgroundColor: "var(--surface-muted)", borderColor: "var(--border)" }}
-        >
-          <span className="font-bold text-sm md:text-base pl-2" style={{ color: "var(--foreground)" }}>
-            {isOnline ? "ESTÁS CONECTADO" : "CONECTARSE"}
+      {/* ── 1. BOTÓN ONLINE/OFFLINE (CTA grande) ─────────────────────── */}
+      <button
+        onClick={handleToggle}
+        disabled={isPending}
+        aria-pressed={isOnline}
+        aria-label={isOnline ? "Desconectarte — dejar de recibir viajes" : "Conectarte — empezar a recibir viajes"}
+        className="w-full min-h-[72px] rounded-2xl font-extrabold text-xl tracking-wide transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 shadow-lg active:scale-[0.98] disabled:opacity-60"
+        style={
+          isOnline
+            ? { backgroundColor: "var(--accent)", color: "var(--text-inverted)" }
+            : { backgroundColor: "var(--surface-muted)", color: "var(--foreground)", border: "2px solid var(--border)" }
+        }
+      >
+        {isPending ? (
+          <span className="flex items-center justify-center gap-3">
+            <span className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "currentColor", borderTopColor: "transparent" }} />
+            Actualizando...
           </span>
-          <button
-            onClick={handleToggle} disabled={isPending}
-            className="w-14 h-7 rounded-full relative transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-teal-400"
-            style={isOnline ? { backgroundColor: "var(--accent)" } : { backgroundColor: "var(--muted)" }}
-          >
-            <div
-              className={`absolute top-1 w-5 h-5 rounded-full shadow transition-transform duration-300 ${isOnline ? "translate-x-8" : "translate-x-1"}`}
-              style={{ backgroundColor: "var(--surface)" }}
-            ></div>
-            <span
-              className={`absolute text-[10px] font-bold top-1.5 transition-all duration-300 ${isOnline ? "left-2" : "right-2"}`}
-              style={isOnline ? { color: "var(--text-inverted)" } : { color: "var(--surface)" }}
-            >
-              {isOnline ? "ON" : "OFF"}
-            </span>
-          </button>
-        </div>
+        ) : isOnline ? (
+          "● CONECTADO — Tocá para desconectarte"
+        ) : (
+          "CONECTARME AHORA"
+        )}
+      </button>
 
-        {/* Panel de Métricas */}
-        <div className="grid grid-cols-3 gap-2 md:gap-4">
-          <div className="p-3 md:p-5 rounded-xl border flex flex-col justify-between h-24 md:h-32 shadow-sm transition-colors" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-            <span className="text-[10px] md:text-xs font-bold leading-tight" style={{ color: "var(--muted)" }}>HORAS ONLINE</span>
-            <span className="text-xl md:text-3xl font-bold" style={{ color: "var(--foreground)" }}>---</span>
+      {/* ── 2. PANEL DE MÉTRICAS ─────────────────────────────────────── */}
+      <div className="grid grid-cols-3 gap-3" role="group" aria-label="Métricas del día">
+        {[
+          { label: "HORAS\nONLINE", emoji: "⏱️" },
+          { label: "GANANCIAS\nESTIMADAS", emoji: "💵" },
+          { label: "VIAJES\nHOY", emoji: "🚗" },
+        ].map(({ label, emoji }) => (
+          <div
+            key={label}
+            className="p-3 md:p-5 rounded-xl border flex flex-col justify-between min-h-[90px] shadow-sm"
+            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+          >
+            <span className="text-[10px] md:text-xs font-bold leading-tight whitespace-pre-line" style={{ color: "var(--muted)" }}>
+              {label}
+            </span>
+            <div className="flex justify-between items-end mt-2">
+              <span className="text-2xl md:text-3xl font-extrabold" style={{ color: "var(--foreground)" }}>
+                —
+              </span>
+              <span className="text-lg md:text-xl">{emoji}</span>
+            </div>
           </div>
-          <div className="p-3 md:p-5 rounded-xl border flex flex-col justify-between h-24 md:h-32 shadow-sm transition-colors" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-            <span className="text-[10px] md:text-xs font-bold leading-tight" style={{ color: "var(--muted)" }}>GANANCIAS</span>
-            <span className="text-xl md:text-3xl font-bold" style={{ color: "var(--foreground)" }}>---</span>
-          </div>
-          <div className="p-3 md:p-5 rounded-xl border flex flex-col justify-between h-24 md:h-32 shadow-sm transition-colors" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-            <span className="text-[10px] md:text-xs font-bold leading-tight" style={{ color: "var(--muted)" }}>VIAJES</span>
-            <span className="text-xl md:text-3xl font-bold" style={{ color: "var(--foreground)" }}>---</span>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Panel Derecho: Solicitud de Viaje Dinámica */}
-      <div className="lg:w-1/3">
-        <div className="rounded-xl border shadow-sm overflow-hidden h-full flex flex-col transition-colors duration-300" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-
-          <div className="px-4 py-2 border-b transition-colors duration-300" style={{ backgroundColor: "var(--offer-bg)", borderColor: "var(--border)" }}>
-            <h3 className="text-xs font-bold tracking-wider" style={{ color: "var(--offer-text)" }}>
-              {isOnline ? (solicitudActual ? "NUEVA SOLICITUD DE VIAJE" : "BUSCANDO VIAJES...") : "MODO OFFLINE"}
-            </h3>
+      {/* ── 3. TARJETA DE SOLICITUD ──────────────────────────────────── */}
+      {isOnline && (
+        <div
+          className="rounded-2xl border overflow-hidden shadow-md"
+          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+          aria-live="polite"
+          aria-label="Área de solicitudes de viaje"
+        >
+          {/* Cabecera */}
+          <div
+            className="px-4 py-2.5 border-b"
+            style={{ backgroundColor: "var(--offer-bg)", borderColor: "var(--border)" }}
+          >
+            <p className="text-xs font-extrabold tracking-widest uppercase" style={{ color: "var(--offer-text)" }}>
+              {solicitudActual ? "🔔 NUEVA SOLICITUD DE VIAJE" : "Rastreando zona..."}
+            </p>
           </div>
 
-          {!isOnline ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center" style={{ color: "var(--muted)" }}>
-              <span className="text-4xl mb-3 opacity-50">😴</span>
-              <p className="text-sm font-medium">Conectate para empezar a recibir viajes de pasajeros.</p>
-            </div>
-          ) : !solicitudActual ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-pulse" style={{ color: "var(--muted)" }}>
-              <div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }}></div>
-              <p className="text-sm font-medium">Rastreando zona...</p>
+          {!solicitudActual ? (
+            /* Estado: buscando */
+            <div className="flex flex-col items-center justify-center py-10 gap-3" style={{ color: "var(--muted)" }}>
+              <div
+                className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin"
+                style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }}
+                aria-hidden
+              />
+              <p className="text-sm font-semibold">Esperando solicitudes cercanas...</p>
             </div>
           ) : (
-            <>
-              {/* Solicitud Encontrada (Adaptada al nuevo JSON) */}
-              <div className="p-4 flex gap-4 flex-1">
-                <div className="w-16 h-16 border flex items-center justify-center shrink-0 rounded-lg transition-colors" style={{ backgroundColor: "var(--surface-muted)", borderColor: "var(--border)" }}>
-                  <span className="text-2xl opacity-70">🗺️</span>
+            /* Estado: solicitud recibida */
+            <div className="p-4 flex flex-col gap-4">
+              {/* Timer visual */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold" style={{ color: "var(--muted)" }}>Tiempo para decidir</span>
+                  <span className="text-lg font-extrabold tabular-nums" style={{ color: colorTimer }}>
+                    {timerSegundos}s
+                  </span>
                 </div>
-                <div className="flex-1 text-sm font-medium space-y-1" style={{ color: "var(--muted)" }}>
-                  <p className="font-bold text-base md:text-lg mb-2" style={{ color: "var(--foreground)" }}>
-                    TARIFA EST.: ${solicitudActual.precio_estimado.toLocaleString('es-AR')}
+                <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--surface-muted)" }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-1000 ease-linear"
+                    style={{ width: `${porcentajeTimer}%`, backgroundColor: colorTimer }}
+                    role="progressbar"
+                    aria-valuenow={timerSegundos}
+                    aria-valuemin={0}
+                    aria-valuemax={TIMER_DURACION}
+                    aria-label={`${timerSegundos} segundos para aceptar`}
+                  />
+                </div>
+              </div>
+
+              {/* Precio — el dato más importante */}
+              <div className="text-center py-2">
+                <p className="text-5xl font-extrabold tracking-tight" style={{ color: "var(--foreground)" }}>
+                  ${solicitudActual.precio_estimado.toLocaleString("es-AR")}
+                </p>
+                <p className="text-sm mt-1 font-medium" style={{ color: "var(--muted)" }}>
+                  estimado
+                </p>
+              </div>
+
+              {/* Datos del viaje */}
+              <div
+                className="rounded-xl p-3 space-y-2 text-sm"
+                style={{ backgroundColor: "var(--surface-muted)" }}
+              >
+                <p className="font-bold text-base" style={{ color: "var(--foreground)" }}>
+                  👤 {solicitudActual.pasajero.nombre}
+                </p>
+                <div className="space-y-1" style={{ color: "var(--muted)" }}>
+                  <p className="flex items-start gap-2">
+                    <span className="text-green-500 font-bold shrink-0">●</span>
+                    <span>{solicitudActual.origen.direccion}</span>
                   </p>
-                  <p className="text-xs font-bold" style={{ color: "var(--accent)" }}>👤 {solicitudActual.pasajero.nombre}</p>
-                  <p>🟢 {solicitudActual.origen.direccion}</p>
-                  <p>🔴 {solicitudActual.destino.direccion}</p>
-                  <p className="text-xs mt-2 opacity-80">ETA: {solicitudActual.eta_min} MIN • {solicitudActual.distancia_km} KM</p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold shrink-0">●</span>
+                    <span>{solicitudActual.destino.direccion}</span>
+                  </p>
                 </div>
+                <p className="text-xs pt-1" style={{ color: "var(--muted)" }}>
+                  {solicitudActual.eta_min} min · {solicitudActual.distancia_km} km al origen
+                </p>
               </div>
-              <div className="p-4 flex justify-between items-center gap-3">
-                <button onClick={handleAceptar} className="flex-1 font-bold py-3 rounded-full hover:opacity-90 transition-opacity text-xs md:text-sm tracking-wide shadow-sm" style={{ backgroundColor: "var(--accent)", color: "var(--text-inverted)" }}>
-                  ACEPTAR
+
+              {/* Botones de acción — tamaño táctil mínimo 64px */}
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleAceptar}
+                  disabled={aceptando}
+                  aria-label="Aceptar solicitud de viaje"
+                  className="w-full min-h-[64px] rounded-2xl font-extrabold text-xl transition-all active:scale-[0.98] focus:outline-none focus:ring-4 disabled:opacity-60 shadow-lg"
+                  style={{ backgroundColor: "var(--accent)", color: "var(--text-inverted)" }}
+                >
+                  {aceptando ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "currentColor", borderTopColor: "transparent" }} />
+                      Aceptando...
+                    </span>
+                  ) : (
+                    "✓ ACEPTAR"
+                  )}
                 </button>
-                <button onClick={() => setSolicitudActual(null)} className="px-6 py-3 border rounded-full font-bold hover:opacity-80 transition-opacity text-xs md:text-sm" style={{ borderColor: "var(--border)", color: "var(--muted)", backgroundColor: "transparent" }}>
-                  RECHAZAR
+
+                <button
+                  onClick={handleRechazar}
+                  disabled={aceptando}
+                  aria-label="Rechazar solicitud de viaje"
+                  className="w-full min-h-[52px] rounded-2xl font-bold text-base border-2 transition-all active:scale-[0.98] focus:outline-none focus:ring-4 hover:bg-[var(--surface-muted)]"
+                  style={{ borderColor: "var(--border)", color: "var(--muted)", backgroundColor: "transparent" }}
+                >
+                  Rechazar
                 </button>
               </div>
-            </>
+            </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

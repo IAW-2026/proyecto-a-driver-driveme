@@ -3,6 +3,8 @@ import { Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from "@/app/components/ThemeProvider";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
+
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],

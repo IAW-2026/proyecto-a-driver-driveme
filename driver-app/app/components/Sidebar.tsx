@@ -58,19 +58,16 @@ export default function Sidebar({ rol }: SidebarProps) {
                 className="flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 style={{ color: "var(--muted)" }}
               >
-                <span className="text-xl">💵</span>
+                <span className="text-xl">🗂️</span>
                 <span className="font-medium">Mis Viajes</span>
               </Link>
               <Link
-                href="/notificaciones"
-                className="flex justify-between items-center p-3 rounded-lg transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+                href="/perfil"
+                className="flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 style={{ color: "var(--muted)" }}
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">🔔</span>
-                  <span className="font-medium">Notificaciones</span>
-                </div>
-                <span className="bg-red-500 w-2 h-2 rounded-full"></span>
+                <span className="text-xl">⭐</span>
+                <span className="font-medium">Mi Perfil</span>
               </Link>
             </>
           )}
@@ -106,23 +103,17 @@ export default function Sidebar({ rol }: SidebarProps) {
               className="flex flex-col items-center justify-center w-full h-full transition-colors hover:text-[var(--foreground)]"
               style={{ color: "var(--muted)" }}
             >
-              <span className="text-xl mb-1">💵</span>
-              <span className="text-[10px] font-bold">Viajes</span>
+              <span className="text-2xl mb-1">🗂️</span>
+              <span className="text-xs font-bold">Viajes</span>
             </Link>
 
             <Link
-              href="/notificaciones"
+              href="/perfil"
               className="flex flex-col items-center justify-center w-full h-full transition-colors hover:text-[var(--foreground)]"
               style={{ color: "var(--muted)" }}
             >
-              <div className="relative">
-                <span className="text-xl mb-1">🔔</span>
-                <span
-                  className="absolute -top-0.5 -right-0.5 bg-red-500 w-2.5 h-2.5 rounded-full border-2 transition-colors duration-300"
-                  style={{ borderColor: "var(--surface)" }}
-                ></span>
-              </div>
-              <span className="text-[10px] font-bold mt-1">Alertas</span>
+              <span className="text-2xl mb-1">⭐</span>
+              <span className="text-xs font-bold">Perfil</span>
             </Link>
           </>
         )}

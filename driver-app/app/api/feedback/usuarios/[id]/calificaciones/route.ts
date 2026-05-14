@@ -4,10 +4,11 @@ import { HistorialCalificacionesResponse } from '@/app/types/api';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const mockResponse: HistorialCalificacionesResponse = {
-    id_usuario: params.id,
+    id_usuario: id,
     calificacion_promedio: 4.8,
     total_calificaciones: 124,
     detalles: [

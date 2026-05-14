@@ -12,39 +12,38 @@ export default async function RegistroPage() {
 
   // 2. Definimos el Server Action que se ejecutará al enviar el formulario
   async function registrarConductor(formData: FormData) {
-    "use server"; // Esta directiva convierte la función en un endpoint seguro
+    "use server";
 
     const { userId } = await auth();
-    if (!userId) {
-      redirect("/sign-in");
-    }
-    const nombre = formData.get("nombre") as string;
+    if (!userId) redirect("/sign-in");
+
+    const nombre   = formData.get("nombre")   as string;
     const apellido = formData.get("apellido") as string;
     const licencia = formData.get("licencia") as string;
-    const patente = formData.get("patente") as string;
-    const marca = formData.get("marca") as string;
-    const modelo = formData.get("modelo") as string;
-    const anio = parseInt(formData.get("anio") as string, 10);
+    const patente  = formData.get("patente")  as string;
+    const marca    = formData.get("marca")    as string;
+    const modelo   = formData.get("modelo")   as string;
+    const anio     = parseInt(formData.get("anio") as string, 10);
+    const color    = String(formData.get("color") ?? "No especificado");
 
-    // Acá ocurre la magia: Insertamos en Prisma usando el ID de Clerk
     await prisma.conductor.create({
       data: {
-        id_conductor: userId,
+        id_conductor: userId,  // PK real de la BD
         nombre,
         apellido,
         licencia,
         vehiculos: {
           create: {
-            patente,
+            patente: patente.toUpperCase(),
             marca,
             modelo,
             anio,
+            color,
           }
         }
       }
     });
 
-    // Una vez guardado, lo mandamos al inicio (Dashboard)
     redirect("/");
   }
 
@@ -78,8 +77,8 @@ export default async function RegistroPage() {
                 </div>
               </div>
               <div className="mt-4">
-                <label htmlFor="licencia" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Número de Licencia</label>
-                <input required type="text" name="licencia" id="licencia" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
+                <label htmlFor="licencia" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Número de Licencia de Conducir</label>
+                <input required type="text" name="licencia" id="licencia" placeholder="Ej: 12345678" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
               </div>
             </div>
 
@@ -102,6 +101,10 @@ export default async function RegistroPage() {
                 <div>
                   <label htmlFor="modelo" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Modelo</label>
                   <input required type="text" name="modelo" id="modelo" placeholder="Ej: Corolla" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
+                </div>
+                <div>
+                  <label htmlFor="color" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>Color</label>
+                  <input required type="text" name="color" id="color" placeholder="Ej: Blanco" className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[3px] focus:ring-[#4FD1C5]/20 sm:text-sm transition-shadow" style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "var(--surface-muted)" }} />
                 </div>
               </div>
             </div>

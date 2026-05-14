@@ -18,7 +18,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id_v
     }
 
     const viaje = await prisma.viaje.findUnique({
-      where: { id: id_viaje },
+      where: { id_viaje },
       include: { conductor: true }
     });
 
@@ -31,7 +31,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id_v
     }
 
     return NextResponse.json({
-      id_viaje: viaje.id,
+      id_viaje: viaje.id_viaje,
       coordenadas: {
         lat: viaje.conductor.latitud_actual,
         lng: viaje.conductor.longitud_actual

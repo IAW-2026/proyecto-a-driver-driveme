@@ -26,7 +26,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const body = await request.json();
     const parsed = cancelSchema.parse(body);
 
-    const viajeActual = await prisma.viaje.findUnique({ where: { id: id_viaje } });
+    const viajeActual = await prisma.viaje.findUnique({ where: { id_viaje } });
     if (!viajeActual) {
       return NextResponse.json({ error: "Viaje no encontrado" }, { status: 404 });
     }
@@ -41,12 +41,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const viajeUpdated = await prisma.$transaction(async (tx: TransactionClient) => {
       const v = await tx.viaje.update({
-        where: { id: id_viaje },
+        where: { id_viaje },
         data: { estado_actual: parsed.estado }
       });
 
       await tx.conductor.update({
-        where: { id: userId },
+        where: { id_conductor: userId },
         data: { estado: 'ONLINE' }
       });
 

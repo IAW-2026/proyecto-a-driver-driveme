@@ -50,12 +50,13 @@ export async function POST(request: Request) {
           id_vehiculo: parsed.id_vehiculo,
           estado_actual: 'ACEPTADO',
           metodo_pago: parsed.metodo_pago,
+          precio: parsed.precio_estimado,
           precio_final: parsed.precio_estimado
         }
       });
 
       await tx.conductor.update({
-        where: { id: parsed.id_conductor },
+        where: { id_conductor: parsed.id_conductor },
         data: {
           estado: 'OCUPADO',
           latitud_actual: parsed.latitud_actual,
