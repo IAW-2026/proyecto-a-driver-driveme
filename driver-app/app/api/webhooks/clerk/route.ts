@@ -6,17 +6,16 @@ const webhookSecret = process.env.CLERK_WEBHOOK_SECRET ?? "";
 const webhook = new Webhook(webhookSecret);
 
 export async function POST(request: NextRequest) {
-  const signature =
-    request.headers.get("Svix-Signature") || request.headers.get("svix-signature") || "";
   const payload = await request.text();
+  const headers = Object.fromEntries(request.headers.entries());
 
-  if (!webhookSecret || !signature) {
-    return NextResponse.json({ error: "Missing webhook signature or secret" }, { status: 401 });
+  if (!webhookSecret) {
+    return NextResponse.json({ error: "Missing webhook secret" }, { status: 401 });
   }
 
   let event: any;
   try {
-    event = webhook.verify(payload, signature);
+    event = webhook.verify(payload, headers);
   } catch (error) {
     console.error("Clerk webhook signature verification failed:", error);
     return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
