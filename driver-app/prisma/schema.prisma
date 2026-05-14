@@ -89,6 +89,15 @@ model Viaje {
   metodo_pago       MetodoPago  @default(EFECTIVO)
   precio_final      Float       @default(0)
 
+  // Coordenadas y direcciones persistidas
+  origen_direccion  String?
+  origen_latitud    Float?
+  origen_longitud   Float?
+  destino_direccion String?
+  destino_latitud   Float?
+  destino_longitud  Float?
+  pasajero_nombre   String?
+
   // Relaciones
   conductor Conductor @relation(fields: [id_conductor], references: [id_conductor])
   vehiculo  Vehiculo  @relation(fields: [id_vehiculo], references: [id_vehiculo])

@@ -68,6 +68,7 @@ export default function ViajeEnCursoClient({
   const [conductorLat, setConductorLat] = useState(latInicial);
   const [conductorLng, setConductorLng] = useState(lngInicial);
   const [procesando, setProcesando] = useState(false);
+  const [confirmarCancelacion, setConfirmarCancelacion] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Coordenadas de origen/destino (con fallback para Bahía Blanca)
@@ -116,6 +117,35 @@ export default function ViajeEnCursoClient({
     router.push(`/viaje/${viaje.id}/finalizar`);
   };
 
+  // ── Cancelar Viaje ───────────────────────────────────────────────────
+  const handleCancelar = async () => {
+    if (!confirmarCancelacion) {
+      setConfirmarCancelacion(true);
+      setTimeout(() => setConfirmarCancelacion(false), 3000); // Reset after 3s
+      return;
+    }
+    
+    setProcesando(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/viajes/${viaje.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ estado: "CANCELADO_POR_CONDUCTOR" }),
+      });
+      if (res.ok) {
+        router.push("/historial");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "Error al cancelar el viaje.");
+        setProcesando(false);
+      }
+    } catch {
+      setError("Error de red al intentar cancelar el viaje.");
+      setProcesando(false);
+    }
+  };
+
   const nombrePasajero = viaje.pasajero?.nombre ?? "Pasajero";
   const origenDir  = viaje.origen?.direccion  ?? "Punto de origen";
   const destinoDir = viaje.destino?.direccion ?? "Punto de destino";
@@ -134,10 +164,10 @@ export default function ViajeEnCursoClient({
       </div>
 
       {/* ── OVERLAY SUPERIOR: Estado del viaje ────────────────────── */}
-      <div className="absolute top-0 left-0 right-0 p-4 pt-safe z-10">
+      <div className="absolute top-0 left-0 right-0 p-4 pt-safe z-[1000]">
         <div
-          className="rounded-2xl shadow-xl p-3 md:p-4 backdrop-blur-md border"
-          style={{ backgroundColor: "rgba(var(--surface-rgb, 255,255,255), 0.92)", borderColor: "var(--border)" }}
+          className="rounded-2xl shadow-xl p-3 md:p-4 border"
+          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
         >
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -173,10 +203,10 @@ export default function ViajeEnCursoClient({
       </div>
 
       {/* ── OVERLAY INFERIOR: Datos + Botón de acción ─────────────── */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 pb-safe z-10">
+      <div className="absolute bottom-0 left-0 right-0 p-4 pb-safe z-[1000]">
         <div
-          className="rounded-2xl shadow-xl border overflow-hidden backdrop-blur-md"
-          style={{ backgroundColor: "rgba(var(--surface-rgb, 255,255,255), 0.95)", borderColor: "var(--border)" }}
+          className="rounded-2xl shadow-xl border overflow-hidden"
+          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
         >
           {/* Datos ruta */}
           <div className="px-4 pt-4 pb-3 space-y-2">
@@ -228,6 +258,18 @@ export default function ViajeEnCursoClient({
                 {procesando ? "Finalizando..." : "🏁 FINALIZAR VIAJE"}
               </button>
             )}
+
+            {/* Botón Cancelar */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={handleCancelar}
+                disabled={procesando}
+                className={`text-sm font-bold transition-all focus:outline-none disabled:opacity-50 px-4 py-2 rounded-lg ${confirmarCancelacion ? "bg-red-100" : "hover:opacity-80"}`}
+                style={{ color: "#E53E3E" }}
+              >
+                {confirmarCancelacion ? "⚠️ ¿Seguro? Tocá de nuevo para cancelar" : "✕ Cancelar viaje"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-﻿interface StatusBadgeProps {
+interface StatusBadgeProps {
   estado: string;
 }
 
@@ -19,6 +19,11 @@ export default function StatusBadge({ estado }: StatusBadgeProps) {
       background: "var(--accent)",
       text: "var(--text-inverted)",
       border: "var(--accent)",
+    },
+    CANCELADO_POR_CONDUCTOR: {
+      background: "#FF6B6B",
+      text: "#FFFFFF",
+      border: "#FF4C4C",
     },
     CANCELADO: {
       background: "#FF6B6B",
@@ -42,7 +47,7 @@ export default function StatusBadge({ estado }: StatusBadgeProps) {
         borderColor: badgeColors.border,
       }}
     >
-      {estado.replace('_', ' ')}
+      {estado.replace(/_/g, ' ')}
     </span>
   );
 }

@@ -12,7 +12,14 @@ const createViajeSchema = z.object({
   latitud_actual: z.number(),
   longitud_actual: z.number(),
   metodo_pago: z.enum(['EFECTIVO', 'TARJETA']),
-  precio_estimado: z.number()
+  precio_estimado: z.number(),
+  origen_latitud: z.number().optional(),
+  origen_longitud: z.number().optional(),
+  origen_direccion: z.string().optional(),
+  destino_latitud: z.number().optional(),
+  destino_longitud: z.number().optional(),
+  destino_direccion: z.string().optional(),
+  pasajero_nombre: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -30,15 +37,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (role !== 'driver') {
-      return NextResponse.json({ error: "Forbidden: Solo conductores pueden aceptar viajes" }, { status: 403 });
-    }
-
     const body = await request.json();
     const parsed = createViajeSchema.parse(body);
 
+    // Verificar que el conductor autenticado es quien acepta el viaje
     if (parsed.id_conductor !== userId) {
-      return NextResponse.json({ error: "Forbidden: No puedes aceptar viajes para otro conductor" }, { status: 403 });
+      return NextResponse.json({ error: "Forbidden: No podés aceptar viajes para otro conductor" }, { status: 403 });
+    }
+
+    // Verificar que existe como conductor en la BD (fuente de verdad de autorización)
+    const conductorExiste = await prisma.conductor.findUnique({
+      where: { id_conductor: userId },
+      select: { id_conductor: true, isActive: true }
+    });
+    if (!conductorExiste || !conductorExiste.isActive) {
+      return NextResponse.json({ error: "Forbidden: Solo conductores activos pueden aceptar viajes" }, { status: 403 });
     }
 
     const viaje = await prisma.$transaction(async (tx: TransactionClient) => {
@@ -51,7 +64,14 @@ export async function POST(request: Request) {
           estado_actual: 'ACEPTADO',
           metodo_pago: parsed.metodo_pago,
           precio: parsed.precio_estimado,
-          precio_final: parsed.precio_estimado
+          precio_final: parsed.precio_estimado,
+          origen_latitud: parsed.origen_latitud,
+          origen_longitud: parsed.origen_longitud,
+          origen_direccion: parsed.origen_direccion,
+          destino_latitud: parsed.destino_latitud,
+          destino_longitud: parsed.destino_longitud,
+          destino_direccion: parsed.destino_direccion,
+          pasajero_nombre: parsed.pasajero_nombre
         }
       });
 

@@ -141,10 +141,17 @@ export default function PanelConductor({ conductorData }: PanelConductorProps) {
           id_conductor: conductorData.id_conductor,
           id_pasajero: solicitudActual.pasajero.id_pasajero,
           id_vehiculo: vehiculoId,
-          latitud_actual: solicitudActual.origen.latitud,
-          longitud_actual: solicitudActual.origen.longitud,
+          latitud_actual: conductorData.latitud_actual ?? -38.7183,
+          longitud_actual: conductorData.longitud_actual ?? -62.2664,
           metodo_pago: "EFECTIVO",
           precio_estimado: solicitudActual.precio_estimado,
+          origen_latitud: solicitudActual.origen.latitud,
+          origen_longitud: solicitudActual.origen.longitud,
+          origen_direccion: solicitudActual.origen.direccion,
+          destino_latitud: solicitudActual.destino.latitud,
+          destino_longitud: solicitudActual.destino.longitud,
+          destino_direccion: solicitudActual.destino.direccion,
+          pasajero_nombre: solicitudActual.pasajero.nombre
         }),
       });
 

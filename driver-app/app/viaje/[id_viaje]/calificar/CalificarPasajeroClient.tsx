@@ -43,7 +43,7 @@ export default function CalificarPasajeroClient({
     setError(null);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_FEEDBACK_APP_URL ?? ""}/api/resenas`, {
+      const res = await fetch(`/api/resenas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

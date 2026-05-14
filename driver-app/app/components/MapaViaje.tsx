@@ -13,7 +13,7 @@
  * -----------------------------------------------------------------------
  */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 
@@ -69,8 +69,45 @@ export default function MapaViaje({
   conductorLat, conductorLng,
   estado,
 }: MapaViajeProps) {
-  const rutaOrigen: [number, number][] = [[conductorLat, conductorLng], [origenLat, origenLng]];
-  const rutaViaje: [number, number][]  = [[origenLat, origenLng], [destinoLat, destinoLng]];
+  const [rutaOrigen, setRutaOrigen] = useState<[number, number][]>([]);
+  const [rutaViaje, setRutaViaje] = useState<[number, number][]>([]);
+
+  // Fetch ruta: Conductor -> Origen
+  useEffect(() => {
+    if (estado !== "ACEPTADO") return;
+    
+    // Fallback inicial en línea recta mientras carga
+    setRutaOrigen([[conductorLat, conductorLng], [origenLat, origenLng]]);
+    
+    fetch(`https://router.project-osrm.org/route/v1/driving/${conductorLng},${conductorLat};${origenLng},${origenLat}?overview=full&geometries=geojson`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.routes && data.routes[0]) {
+          // OSRM devuelve [lng, lat], Leaflet necesita [lat, lng]
+          const coords = data.routes[0].geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
+          setRutaOrigen(coords);
+        }
+      })
+      .catch((err) => console.error("Error al obtener ruta OSRM:", err));
+  }, [conductorLat, conductorLng, origenLat, origenLng, estado]);
+
+  // Fetch ruta: Origen -> Destino
+  useEffect(() => {
+    if (estado !== "EN_CURSO") return;
+
+    // Fallback inicial en línea recta mientras carga
+    setRutaViaje([[origenLat, origenLng], [destinoLat, destinoLng]]);
+
+    fetch(`https://router.project-osrm.org/route/v1/driving/${origenLng},${origenLat};${destinoLng},${destinoLat}?overview=full&geometries=geojson`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.routes && data.routes[0]) {
+          const coords = data.routes[0].geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
+          setRutaViaje(coords);
+        }
+      })
+      .catch((err) => console.error("Error al obtener ruta OSRM:", err));
+  }, [origenLat, origenLng, destinoLat, destinoLng, estado]);
 
   return (
     <MapContainer

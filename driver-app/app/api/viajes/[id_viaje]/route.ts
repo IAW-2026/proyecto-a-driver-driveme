@@ -12,16 +12,12 @@ const cancelSchema = z.object({
 export async function PATCH(request: Request, { params }: { params: Promise<{ id_viaje: string }> }) {
   try {
     const { id_viaje } = await params;
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const role = (sessionClaims?.metadata as any)?.role || (sessionClaims as any)?.role;
-    if (role !== 'driver') {
-      return NextResponse.json({ error: "Forbidden: Solo conductores pueden cancelar el viaje" }, { status: 403 });
-    }
 
     const body = await request.json();
     const parsed = cancelSchema.parse(body);
