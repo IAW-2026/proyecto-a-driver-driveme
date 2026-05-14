@@ -1,5 +1,5 @@
 // app/viaje/[id_viaje]/finalizar/page.tsx
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import FinalizarViajeClient from "./FinalizarViajeClient";
@@ -17,7 +17,7 @@ export default async function FinalizarViajePage({ params }: PageProps) {
     where: { id_viaje },
   });
 
-  if (!viaje) notFound();
+  if (!viaje) redirect("/historial");
   if (viaje.id_conductor !== userId) redirect("/");
 
   if (viaje.estado_actual === "FINALIZADO") redirect(`/viaje/${id_viaje}/calificar`);

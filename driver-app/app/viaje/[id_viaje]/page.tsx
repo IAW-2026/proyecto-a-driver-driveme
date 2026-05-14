@@ -1,5 +1,5 @@
 // app/viaje/[id_viaje]/page.tsx
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import ViajeEnCursoClient from "./ViajeEnCursoClient";
@@ -18,7 +18,7 @@ export default async function ViajeEnCursoPage({ params }: PageProps) {
     include: { conductor: true },
   });
 
-  if (!viaje) notFound();
+  if (!viaje) redirect("/historial");
   if (viaje.id_conductor !== userId) redirect("/");
 
   if (viaje.estado_actual === "FINALIZADO" || viaje.estado_actual === "CANCELADO_POR_CONDUCTOR") {

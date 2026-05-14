@@ -1,5 +1,5 @@
 // app/viaje/[id_viaje]/calificar/page.tsx
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import CalificarPasajeroClient from "./CalificarPasajeroClient";
@@ -17,7 +17,7 @@ export default async function CalificarPasajeroPage({ params }: PageProps) {
     where: { id_viaje },
   });
 
-  if (!viaje) notFound();
+  if (!viaje) redirect("/historial");
   if (viaje.id_conductor !== userId) redirect("/");
 
   if (viaje.estado_actual !== "FINALIZADO") {
