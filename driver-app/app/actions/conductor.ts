@@ -45,7 +45,7 @@ export async function registrarConductor(formData: FormData) {
     }
   });
 
-  // 2. Actualizamos la metadata en Clerk para tener el rol guardado
+  // 3. Actualizamos la metadata en Clerk para tener el rol guardado
   const client = await clerkClient();
   await client.users.updateUserMetadata(userId, {
     publicMetadata: { role: "conductor" },
@@ -53,4 +53,25 @@ export async function registrarConductor(formData: FormData) {
 
   // 3. Recargamos la vista principal
   redirect("/");
+}
+
+// 4. Aceptar solicitud de viaje.
+// app/actions/conductor.ts
+export async function aceptarSolicitud(conductorId: string, vehiculoId: string, precio: number) {
+  try {
+    await prisma.viaje.create({
+      data: {
+        id_conductor: conductorId,
+        id_vehiculo: vehiculoId,
+        precio: precio,
+        estado: "ACEPTADO", // <-- Cambiado según el documento
+      }
+    });
+
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Error al crear el viaje:", error);
+    return { success: false };
+  }
 }
