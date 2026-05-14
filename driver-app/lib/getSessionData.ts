@@ -24,12 +24,6 @@ export interface SessionData {
 }
 
 /**
- * Lista de emails que tienen rol ADMIN.
- * En una arquitectura más robusta esto vendría de Clerk roles o de la BD.
- */
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim());
-
-/**
  * Obtiene la sesión del usuario actual y determina su rol.
  * Redirige automáticamente a /sign-in si no está autenticado.
  */
@@ -38,21 +32,23 @@ export async function getSessionData(): Promise<SessionData> {
   if (!userId) redirect("/sign-in");
 
   const user = await currentUser();
-  const userEmail = user?.emailAddresses[0]?.emailAddress ?? "";
+  const clerkRole = String(user?.publicMetadata?.role ?? "").toLowerCase();
 
-  // ── Determinar rol ───────────────────────────────────────────────────
-  if (ADMIN_EMAILS.includes(userEmail)) {
+  if (clerkRole === "admin") {
     return { userId, rol: "ADMIN", conductorData: null };
   }
 
-  // Buscar conductor en la BD (PK = id de Clerk)
   const conductorData = await prisma.conductor.findUnique({
     where: { id_conductor: userId },
     include: { vehiculos: true },
   });
 
-  if (conductorData) {
-    return { userId, rol: "CONDUCTOR_ACTIVO", conductorData };
+  if (clerkRole === "driver") {
+    if (conductorData) {
+      return { userId, rol: "CONDUCTOR_ACTIVO", conductorData };
+    }
+
+    return { userId, rol: "CONDUCTOR_NUEVO", conductorData: null };
   }
 
   return { userId, rol: "CONDUCTOR_NUEVO", conductorData: null };
