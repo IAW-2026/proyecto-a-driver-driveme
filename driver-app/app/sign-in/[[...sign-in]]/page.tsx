@@ -11,14 +11,11 @@ export default function Page() {
           <Image
             src="/images/logo.png"
             alt="DriveMe Logo"
-            width={60}
-            height={60}
+            width={110}
+            height={110}
             priority
           />
         </div>
-        <h1 className="text-3xl font-extrabold tracking-tighter uppercase text-zinc-950 dark:text-white">
-          DriveMe
-        </h1>
       </div>
 
       {/* Componente SignIn con Estética Personalizada */}
