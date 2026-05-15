@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs'
+import Nav from "@/app/components/Nav";
 import { ThemeProvider } from "@/app/components/ThemeProvider";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 
-
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
   variable: "--font-space-grotesk",
 });
 
@@ -22,27 +23,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html
-        lang="en"
-        className={`${spaceGrotesk.variable} h-full antialiased`}
-        suppressHydrationWarning /* Vital para evitar el flash blanco y errores de Next.js */
+    <html
+      lang="es" // Cambiado a español
+      className={`${spaceGrotesk.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <body
+        className="font-sans min-h-full flex flex-col transition-colors duration-300 bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white"
       >
-        <body
-          className="min-h-full flex flex-col transition-colors duration-300"
-          style={{
-            backgroundColor: "var(--background)",
-            color: "var(--foreground)",
-            fontFamily: "var(--font-space-grotesk)"
-          }}
-          suppressHydrationWarning /* Doble escudo de hidratación */
-        >
-          {/* Envolvemos a los hijos en el proveedor de temas */}
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ClerkProvider>
+          <ThemeProvider>
+            <Nav />
             {children}
           </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }

@@ -13,6 +13,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import NeonTextarea from "@/app/components/NeonTextarea";
 
 interface CalificarPasajeroClientProps {
   idViaje: string;
@@ -47,11 +48,11 @@ export default function CalificarPasajeroClient({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id_viaje:    idViaje,
-          id_emisor:   idConductor,
+          id_viaje: idViaje,
+          id_emisor: idConductor,
           id_receptor: idPasajero,
           puntaje,
-          comentario:  comentario.trim() || "Sin comentario.",
+          comentario: comentario.trim() || "Sin comentario.",
         }),
       });
 
@@ -142,15 +143,14 @@ export default function CalificarPasajeroClient({
             >
               Comentario <span style={{ color: "var(--muted)" }}>(opcional)</span>
             </label>
-            <textarea
+            <NeonTextarea
               id="comentario"
               value={comentario}
               onChange={(e) => setComentario(e.target.value)}
               rows={3}
               maxLength={280}
               placeholder="¿Querés agregar algo sobre este pasajero?"
-              className="w-full border rounded-xl p-3 text-sm resize-none bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-              style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+              className="resize-none"
             />
             <p className="text-xs text-right mt-1" style={{ color: "var(--muted)" }}>
               {comentario.length}/280
@@ -168,8 +168,7 @@ export default function CalificarPasajeroClient({
               onClick={handleEnviar}
               disabled={enviando || puntaje === 0}
               aria-label="Enviar calificación del pasajero"
-              className="w-full min-h-[60px] rounded-2xl font-extrabold text-lg transition-all active:scale-[0.98] focus:outline-none focus:ring-4 disabled:opacity-50 shadow-lg"
-              style={{ background: "var(--gradient-primary)", color: "white" }}
+              className="w-full min-h-[60px] rounded-2xl border-2 border-zinc-950 bg-brand text-zinc-950 font-extrabold text-lg transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-50"
             >
               {enviando ? (
                 <span className="flex items-center justify-center gap-2">
@@ -184,8 +183,7 @@ export default function CalificarPasajeroClient({
             <button
               onClick={handleOmitir}
               disabled={enviando}
-              className="w-full py-3 text-sm font-medium transition-colors focus:outline-none"
-              style={{ color: "var(--muted)" }}
+              className="w-full min-h-[60px] rounded-2xl border-2 border-zinc-950 bg-[rgba(207,255,4,0.08)] text-[var(--foreground)] font-bold transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:bg-zinc-950 dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-50"
               aria-label="Omitir calificación e ir al historial"
             >
               Omitir por ahora

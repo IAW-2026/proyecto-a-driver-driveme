@@ -17,18 +17,18 @@ export default function StatusBadge({ estado }: StatusBadgeProps) {
     },
     EN_CURSO: {
       background: "var(--accent)",
-      text: "var(--text-inverted)",
+      text: "#09090b",
       border: "var(--accent)",
     },
     CANCELADO_POR_CONDUCTOR: {
-      background: "#FF6B6B",
+      background: "#8B5CF6",
       text: "#FFFFFF",
-      border: "#FF4C4C",
+      border: "#7842f7",
     },
     CANCELADO: {
-      background: "#FF6B6B",
+      background: "#ff349a",
       text: "#FFFFFF",
-      border: "#FF4C4C",
+      border: "#FF007F",
     },
   };
 
@@ -38,9 +38,11 @@ export default function StatusBadge({ estado }: StatusBadgeProps) {
     border: "var(--border)",
   };
 
+  const isBrand = estado === "EN_CURSO";
+
   return (
     <span
-      className="px-3 py-1 text-xs font-semibold rounded-full border"
+      className={`inline-flex w-full md:w-auto items-center justify-center rounded-full border-2 px-4 py-2 text-xs ${isBrand ? "font-bold" : "font-semibold"} uppercase tracking-[0.22em] transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04]`}
       style={{
         backgroundColor: badgeColors.background,
         color: badgeColors.text,

@@ -1,54 +1,65 @@
 @import "tailwindcss";
 
+/* 1. Habilitar el Dark Mode por clase en Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 2. Colores Neobrutalistas inyectados nativamente en Tailwind v4 */
+@theme {
+  --color-brand: #CFFF04;
+  --color-brand-hover: #B5E600;
+  --color-alert: #FF007F;
+  --color-info: #8B5CF6;
+  --font-sans: var(--font-space-grotesk);
+}
+
+/* 3. Variables de la App (Modo Claro) - Neobrutalismo */
 :root {
-  --primary: #4FD1C5;
-  --secondary: #B794F4;
-  --background: #F7FAFC;
-  --foreground: #2D3748;
+  --primary: #CFFF04;
+  /* Verde Lima de tu logo (Acción Principal) */
+  --secondary: #FF007F;
+  /* Fucsia (Alertas/Peligro) */
+  --info: #8B5CF6;
+  /* ¡El Violeta! (Informativo) */
+  --background: #FAFAFA;
+  --foreground: #09090B;
   --surface: #FFFFFF;
-  --surface-muted: #E0FCFF;
-  --surface-strong: #D1F6F4;
-  --border: #4FD1C5;
-  --accent: #4FD1C5;
-  --muted: #718096;
+  --surface-muted: #F4F4F5;
+  --surface-strong: #E4E4E7;
+  --border: #09090B;
+  /* Bordes negros cómic */
+  --accent: #8B5CF6;
+  /* Usamos el violeta para resaltar detalles sin competir con el verde */
+  --muted: #71717A;
   --text-inverted: #FFFFFF;
-  --font-sans: var(--font-space-grotesk);
-  --gradient-primary: linear-gradient(135deg, #4FD1C5 0%, #B794F4 100%);
-  --offer-bg: #B794F4;
-  --offer-text: #581c87;
+
+  /* Detalles específicos */
+  --gradient-primary: #09090B;
+  --offer-bg: #8B5CF6;
+  /* Un banner de "novedad" en violeta resalta excelente */
+  --offer-text: #FFFFFF;
 }
 
+/* 4. Variables de la App (Modo Oscuro) - Dark Neobrutalismo */
 html.dark {
-  --primary: #4FD1C5;
-  --secondary: #B794F4;
-  --background: #0F1419;
-  --foreground: #E0FCFF;
-  --surface: #1A2332;
-  --surface-muted: #0D1820;
-  --surface-strong: #1F3546;
-  --border: #4FD1C5;
-  --accent: #4FD1C5;
-  --muted: #A0AEC0;
-  --text-inverted: #0F1419;
-  --gradient-primary: linear-gradient(135deg, #4FD1C5 0%, #B794F4 100%);
-  --offer-bg: #3b0764;
-  --offer-text: #e9d5ff;
-}
+  --primary: #CFFF04;
+  --secondary: #FF007F;
+  --info: #8B5CF6;
+  /* El violeta en modo oscuro se ve hiper futurista */
+  --background: #09090B;
+  --foreground: #FFFFFF;
+  --surface: #18181B;
+  --surface-muted: #27272A;
+  --surface-strong: #3F3F46;
+  --border: #CFFF04;
+  /* Bordes de las tarjetas principales en verde */
+  --accent: #8B5CF6;
+  /* Detalles secundarios en violeta */
+  --muted: #A1A1AA;
+  --text-inverted: #09090B;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-space-grotesk);
-  --font-mono: var(--font-geist-mono);
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-* {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  /* Detalles específicos */
+  --gradient-primary: #8B5CF6;
+  /* Un fondo secundario violeta le da el toque "Dopamine" */
+  --offer-bg: #8B5CF6;
+  --offer-text: #09090B;
 }

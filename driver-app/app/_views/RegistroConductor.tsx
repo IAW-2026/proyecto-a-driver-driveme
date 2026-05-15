@@ -7,10 +7,7 @@ import { registrarConductor } from "@/app/actions/conductor";
 
 export default function RegistroConductor() {
   return (
-    <section
-      className="max-w-2xl w-full p-8 rounded-xl shadow-sm border"
-      style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
-    >
+    <section className="max-w-2xl w-full p-8 rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff]">
       <div className="mb-6 pb-4 border-b" style={{ borderColor: "var(--border)" }}>
         <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
           Completá tu perfil para empezar a manejar
@@ -37,8 +34,8 @@ export default function RegistroConductor() {
                 type="text"
                 name="nombre"
                 autoComplete="given-name"
-                className="block w-full border rounded-lg p-3 bg-transparent focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
+                style={{ color: "var(--foreground)" }}
               />
             </div>
             <div>
@@ -51,8 +48,8 @@ export default function RegistroConductor() {
                 type="text"
                 name="apellido"
                 autoComplete="family-name"
-                className="block w-full border rounded-lg p-3 bg-transparent focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
+                style={{ color: "var(--foreground)" }}
               />
             </div>
           </div>
@@ -65,8 +62,8 @@ export default function RegistroConductor() {
               required
               type="text"
               name="licencia"
-              className="block w-full border rounded-lg p-3 bg-transparent focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-              style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+              className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
+              style={{ color: "var(--foreground)" }}
             />
           </div>
         </fieldset>
@@ -86,8 +83,8 @@ export default function RegistroConductor() {
                 required
                 type="text"
                 name="patente"
-                className="block w-full border rounded-lg p-3 uppercase tracking-widest bg-transparent focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 uppercase tracking-widest focus:outline-none focus:ring-0"
+                style={{ color: "var(--foreground)" }}
               />
             </div>
             <div>
@@ -101,8 +98,8 @@ export default function RegistroConductor() {
                 name="anio"
                 min="1990"
                 max={new Date().getFullYear() + 1}
-                className="block w-full border rounded-lg p-3 bg-transparent focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
+                style={{ color: "var(--foreground)" }}
               />
             </div>
             <div>
@@ -114,8 +111,8 @@ export default function RegistroConductor() {
                 required
                 type="text"
                 name="marca"
-                className="block w-full border rounded-lg p-3 bg-transparent focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
+                style={{ color: "var(--foreground)" }}
               />
             </div>
             <div>
@@ -127,8 +124,8 @@ export default function RegistroConductor() {
                 required
                 type="text"
                 name="modelo"
-                className="block w-full border rounded-lg p-3 bg-transparent focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
+                style={{ color: "var(--foreground)" }}
               />
             </div>
             <div className="sm:col-span-2">
@@ -140,8 +137,8 @@ export default function RegistroConductor() {
                 required
                 type="text"
                 name="color"
-                className="block w-full border rounded-lg p-3 bg-transparent focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
+                style={{ color: "var(--foreground)" }}
               />
             </div>
           </div>
@@ -149,8 +146,7 @@ export default function RegistroConductor() {
 
         <button
           type="submit"
-          className="w-full p-4 rounded-xl font-bold text-base hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent)]"
-          style={{ backgroundColor: "var(--accent)", color: "var(--text-inverted)" }}
+          className="w-full p-4 rounded-2xl border-2 border-zinc-950 bg-zinc-950 text-white font-bold text-base shadow-[6px_6px_0px_0px_#09090b] transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-brand/30"
           aria-label="Guardar datos y activar cuenta de conductor"
         >
           Activar mi cuenta de conductor

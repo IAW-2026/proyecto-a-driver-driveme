@@ -6,6 +6,7 @@ const webhookSecret = process.env.CLERK_WEBHOOK_SECRET ?? "";
 const webhook = new Webhook(webhookSecret);
 
 export async function POST(request: NextRequest) {
+
   const payload = await request.text();
   const headers = Object.fromEntries(request.headers.entries());
 

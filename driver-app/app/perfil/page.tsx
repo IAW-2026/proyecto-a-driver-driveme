@@ -29,7 +29,7 @@ function EstrellasSVG({ puntaje }: { puntaje: number }) {
   return (
     <div className="flex gap-0.5" aria-label={`${puntaje} de 5 estrellas`}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className="text-xl" style={{ color: n <= puntaje ? "#ECC94B" : "var(--border)" }}>
+        <span key={n} className="text-xl" style={{ color: n <= puntaje ? "#ffc800" : "var(--border)" }}>
           ★
         </span>
       ))}
@@ -46,10 +46,10 @@ export default async function PerfilPage() {
   const vehiculoPrincipal = conductorData?.vehiculos[0];
 
   return (
-    <div className="flex min-h-screen font-sans" style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}>
+    <div className="flex min-h-screen w-full bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
       <Sidebar rol={rol} />
 
-      <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8 overflow-y-auto">
+      <main className="flex-1 pt-20 pb-24 md:pb-8 md:pl-72 px-4 md:px-8 overflow-y-auto">
         <div className="max-w-3xl mx-auto space-y-6">
 
           {/* ── Header ───────────────────────────────────────────── */}
@@ -61,29 +61,22 @@ export default async function PerfilPage() {
           </div>
 
           {/* ── Tarjeta de Identidad ────────────────────────────── */}
-          <div
-            className="rounded-2xl border shadow-md overflow-hidden"
-            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
-          >
-            <div
-              className="px-6 py-5 flex items-center gap-4"
-              style={{ background: "var(--gradient-primary)" }}
-            >
+          <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] overflow-hidden">
+            <div className="px-6 py-5 flex items-center gap-4 bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
               {/* Avatar placeholder */}
               <div
-                className="w-16 h-16 rounded-full border-4 border-white/50 flex items-center justify-center text-3xl font-extrabold text-white shrink-0"
-                style={{ background: "rgba(255,255,255,0.2)" }}
+                className="w-16 h-16 rounded-xl border-4 border-zinc-950 bg-zinc-950 dark:border-white dark:bg-white flex items-center justify-center text-3xl font-extrabold text-white dark:text-zinc-950 shrink-0"
                 aria-hidden
               >
                 {conductorData?.nombre?.[0] ?? "C"}
               </div>
               <div>
-                <p className="text-xl font-extrabold text-white">
+                <p className="text-xl font-extrabold text-white dark:text-zinc-950">
                   {conductorData?.nombre} {conductorData?.apellido}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-yellow-300 text-lg">★</span>
-                  <span className="font-bold text-white text-lg">
+                  <span className="font-bold text-white text-lg dark:text-zinc-950">
                     {conductorData?.calificacion_promedio.toFixed(1)}
                   </span>
                   {calificaciones && (
@@ -121,10 +114,7 @@ export default async function PerfilPage() {
             </h2>
 
             {!calificaciones ? (
-              <div
-                className="rounded-2xl border p-6 text-center"
-                style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)", color: "var(--muted)" }}
-              >
+              <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 p-6 text-center text-zinc-600 dark:text-zinc-400">
                 <p className="text-4xl mb-2">⭐</p>
                 <p className="font-medium">No hay calificaciones disponibles todavía.</p>
                 <p className="text-xs mt-1">Las calificaciones de los pasajeros aparecerán acá.</p>
@@ -134,8 +124,7 @@ export default async function PerfilPage() {
                 {calificaciones.detalles.map((cal) => (
                   <div
                     key={cal.id_calificacion}
-                    className="rounded-2xl border p-4 space-y-2 shadow-sm"
-                    style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+                    className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] p-4 space-y-2"
                   >
                     <div className="flex justify-between items-start gap-3">
                       <EstrellasSVG puntaje={cal.puntaje} />

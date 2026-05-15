@@ -33,23 +33,16 @@ export default function ConnectButton({ conductorId, estadoInicial }: ConnectBut
 
   return (
     <div
-      className="flex justify-between items-center rounded-xl p-3 md:p-5 border transition-colors duration-300"
-      style={{ backgroundColor: "var(--surface-muted)", borderColor: "var(--border)" }}
+      className="w-full md:w-auto flex justify-between items-center rounded-3xl p-4 border-2 border-zinc-950 bg-[rgba(207,255,4,0.08)] shadow-[4px_4px_0px_0px_#09090b] transition-transform duration-200 hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:bg-zinc-950 dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04]"
     >
-      <span className="font-bold text-sm md:text-base pl-2" style={{ color: "var(--foreground)" }}>
+      <span className="font-extrabold text-sm md:text-base text-[var(--foreground)]">
         {isOnline ? "ESTÁS CONECTADO" : "CONECTARSE"}
       </span>
 
       <button
         onClick={handleToggle}
         disabled={isPending}
-        className={`w-14 h-7 rounded-full relative transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-teal-400 ${isOnline ? "cursor-pointer" : "cursor-pointer"
-          }`}
-        style={
-          isOnline
-            ? { backgroundColor: "var(--accent)" } // Verde/Color principal si está ON
-            : { backgroundColor: "var(--muted)" }  // Gris si está OFF
-        }
+        className={`relative flex items-center justify-between w-full md:w-auto min-h-[56px] rounded-full border-2 px-4 py-3 transition-transform duration-200 focus:outline-none focus:ring-4 focus:ring-brand/30 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] ${isOnline ? "bg-brand text-zinc-950" : "bg-[rgba(207,255,4,0.08)] text-[var(--foreground)] dark:bg-zinc-950"}`}
       >
         <div
           className={`absolute top-1 w-5 h-5 rounded-full shadow transition-transform duration-300 ${isOnline ? "translate-x-8" : "translate-x-1"

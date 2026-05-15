@@ -15,7 +15,7 @@
  * -----------------------------------------------------------------------
  */
 
-import { useState, useEffect, useTransition, useCallback, useRef } from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toggleConductorStatus } from "@/app/actions/conductor";
 import { Prisma } from "@/app/generated/prisma/client";
@@ -110,12 +110,16 @@ export default function PanelConductor({ conductorData }: PanelConductorProps) {
   // ── Timer de cuenta regresiva ────────────────────────────────────────────
   useEffect(() => {
     if (!solicitudActual) return;
+
     if (timerSegundos <= 0) {
-      setSolicitudActual(null);
-      setTimerSegundos(TIMER_DURACION);
-      mostrarToast("Tiempo agotado. Solicitud descartada.", "error");
-      return;
+      const timeout = setTimeout(() => {
+        setSolicitudActual(null);
+        setTimerSegundos(TIMER_DURACION);
+        mostrarToast("Tiempo agotado. Solicitud descartada.", "error");
+      }, 0);
+      return () => clearTimeout(timeout);
     }
+
     const tick = setTimeout(() => setTimerSegundos((t) => t - 1), 1000);
     return () => clearTimeout(tick);
   }, [solicitudActual, timerSegundos, mostrarToast]);
@@ -196,12 +200,7 @@ export default function PanelConductor({ conductorData }: PanelConductorProps) {
         disabled={isPending}
         aria-pressed={isOnline}
         aria-label={isOnline ? "Desconectarte — dejar de recibir viajes" : "Conectarte — empezar a recibir viajes"}
-        className="w-full min-h-[72px] rounded-2xl font-extrabold text-xl tracking-wide transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 shadow-lg active:scale-[0.98] disabled:opacity-60"
-        style={
-          isOnline
-            ? { backgroundColor: "var(--accent)", color: "var(--text-inverted)" }
-            : { backgroundColor: "var(--surface-muted)", color: "var(--foreground)", border: "2px solid var(--border)" }
-        }
+        className={`w-full min-h-[72px] rounded-2xl border-2 px-6 py-4 font-extrabold text-xl tracking-wide transition-transform duration-200 focus:outline-none focus:ring-4 focus:ring-brand/30 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] active:scale-[0.98] disabled:opacity-60 ${isOnline ? "border-zinc-950 bg-brand text-zinc-950" : "border-zinc-950 bg-[rgba(207,255,4,0.08)] text-[var(--foreground)] dark:bg-zinc-950"}`}
       >
         {isPending ? (
           <span className="flex items-center justify-center gap-3">
@@ -216,7 +215,7 @@ export default function PanelConductor({ conductorData }: PanelConductorProps) {
       </button>
 
       {/* ── 2. PANEL DE MÉTRICAS ─────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3" role="group" aria-label="Métricas del día">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" role="group" aria-label="Métricas del día">
         {[
           { label: "HORAS\nONLINE", emoji: "⏱️" },
           { label: "GANANCIAS\nESTIMADAS", emoji: "💵" },
@@ -224,17 +223,16 @@ export default function PanelConductor({ conductorData }: PanelConductorProps) {
         ].map(({ label, emoji }) => (
           <div
             key={label}
-            className="p-3 md:p-5 rounded-xl border flex flex-col justify-between min-h-[90px] shadow-sm"
-            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+            className="p-5 rounded-2xl border-2 border-zinc-950 bg-white text-zinc-950 dark:border-white dark:bg-zinc-900 dark:text-white shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] flex flex-col justify-between min-h-[120px]"
           >
-            <span className="text-[10px] md:text-xs font-bold leading-tight whitespace-pre-line" style={{ color: "var(--muted)" }}>
+            <span className="text-[10px] md:text-xs font-semibold uppercase tracking-[0.24em] leading-tight whitespace-pre-line text-zinc-600 dark:text-zinc-300">
               {label}
             </span>
-            <div className="flex justify-between items-end mt-2">
-              <span className="text-2xl md:text-3xl font-extrabold" style={{ color: "var(--foreground)" }}>
+            <div className="flex justify-between items-end mt-4">
+              <span className="text-4xl md:text-5xl font-extrabold uppercase">
                 —
               </span>
-              <span className="text-lg md:text-xl">{emoji}</span>
+              <span className="text-2xl md:text-3xl">{emoji}</span>
             </div>
           </div>
         ))}
@@ -243,18 +241,14 @@ export default function PanelConductor({ conductorData }: PanelConductorProps) {
       {/* ── 3. TARJETA DE SOLICITUD ──────────────────────────────────── */}
       {isOnline && (
         <div
-          className="rounded-2xl border overflow-hidden shadow-md"
-          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+          className="rounded-2xl border-4 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] overflow-hidden"
           aria-live="polite"
           aria-label="Área de solicitudes de viaje"
         >
           {/* Cabecera */}
-          <div
-            className="px-4 py-2.5 border-b"
-            style={{ backgroundColor: "var(--offer-bg)", borderColor: "var(--border)" }}
-          >
-            <p className="text-xs font-extrabold tracking-widest uppercase" style={{ color: "var(--offer-text)" }}>
-              {solicitudActual ? "🔔 NUEVA SOLICITUD DE VIAJE" : "Rastreando zona..."}
+          <div className="px-4 py-3 border-b-2 border-zinc-950 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-950">
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-zinc-950 dark:text-zinc-100">
+              {solicitudActual ? "NUEVA SOLICITUD DE VIAJE" : "Rastreando zona..."}
             </p>
           </div>
 
@@ -293,36 +287,33 @@ export default function PanelConductor({ conductorData }: PanelConductorProps) {
               </div>
 
               {/* Precio — el dato más importante */}
-              <div className="text-center py-2">
-                <p className="text-5xl font-extrabold tracking-tight" style={{ color: "var(--foreground)" }}>
+              <div className="text-center py-4">
+                <p className="text-5xl md:text-6xl font-extrabold uppercase tracking-tight text-zinc-950 dark:text-white">
                   ${solicitudActual.precio_estimado.toLocaleString("es-AR")}
                 </p>
-                <p className="text-sm mt-1 font-medium" style={{ color: "var(--muted)" }}>
+                <p className="text-sm mt-2 font-medium uppercase tracking-[0.2em] text-zinc-600 dark:text-zinc-300">
                   estimado
                 </p>
               </div>
 
               {/* Datos del viaje */}
-              <div
-                className="rounded-xl p-3 space-y-2 text-sm"
-                style={{ backgroundColor: "var(--surface-muted)" }}
-              >
-                <p className="font-bold text-base" style={{ color: "var(--foreground)" }}>
-                  👤 {solicitudActual.pasajero.nombre}
-                </p>
-                <div className="space-y-1" style={{ color: "var(--muted)" }}>
-                  <p className="flex items-start gap-2">
-                    <span className="text-green-500 font-bold shrink-0">●</span>
-                    <span>{solicitudActual.origen.direccion}</span>
-                  </p>
-                  <p className="flex items-start gap-2">
-                    <span className="text-red-500 font-bold shrink-0">●</span>
-                    <span>{solicitudActual.destino.direccion}</span>
-                  </p>
+              <div className="rounded-2xl border-t-2 border-zinc-950 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-950 p-4 space-y-3 text-sm">
+                <div>
+                  <p className="font-bold text-lg text-zinc-950 dark:text-white">Pasajero</p>
+                  <p className="mt-1 font-medium text-zinc-600 dark:text-zinc-300">{solicitudActual.pasajero.nombre}</p>
                 </div>
-                <p className="text-xs pt-1" style={{ color: "var(--muted)" }}>
-                  {solicitudActual.eta_min} min · {solicitudActual.distancia_km} km al origen
-                </p>
+                <div>
+                  <p className="font-bold text-lg text-zinc-950 dark:text-white">Origen</p>
+                  <p className="mt-1 font-medium text-zinc-600 dark:text-zinc-300">{solicitudActual.origen.direccion}</p>
+                </div>
+                <div className="border-t-2 border-zinc-950 dark:border-zinc-700 pt-3">
+                  <p className="font-bold text-lg text-zinc-950 dark:text-white">Destino</p>
+                  <p className="mt-1 font-medium text-zinc-600 dark:text-zinc-300">{solicitudActual.destino.direccion}</p>
+                </div>
+                <div className="border-t-2 border-zinc-950 dark:border-zinc-700 pt-3">
+                  <p className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-600 dark:text-zinc-300">Tiempo estimado</p>
+                  <p className="mt-1 font-medium text-zinc-600 dark:text-zinc-300">{solicitudActual.eta_min} min · {solicitudActual.distancia_km} km</p>
+                </div>
               </div>
 
               {/* Botones de acción — tamaño táctil mínimo 64px */}
@@ -331,8 +322,7 @@ export default function PanelConductor({ conductorData }: PanelConductorProps) {
                   onClick={handleAceptar}
                   disabled={aceptando}
                   aria-label="Aceptar solicitud de viaje"
-                  className="w-full min-h-[64px] rounded-2xl font-extrabold text-xl transition-all active:scale-[0.98] focus:outline-none focus:ring-4 disabled:opacity-60 shadow-lg"
-                  style={{ backgroundColor: "var(--accent)", color: "var(--text-inverted)" }}
+                  className="w-full min-h-[64px] rounded-2xl border-2 border-zinc-950 bg-brand text-zinc-950 font-extrabold text-xl transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-60"
                 >
                   {aceptando ? (
                     <span className="flex items-center justify-center gap-2">
@@ -348,8 +338,7 @@ export default function PanelConductor({ conductorData }: PanelConductorProps) {
                   onClick={handleRechazar}
                   disabled={aceptando}
                   aria-label="Rechazar solicitud de viaje"
-                  className="w-full min-h-[52px] rounded-2xl font-bold text-base border-2 transition-all active:scale-[0.98] focus:outline-none focus:ring-4 hover:bg-[var(--surface-muted)]"
-                  style={{ borderColor: "var(--border)", color: "var(--muted)", backgroundColor: "transparent" }}
+                  className="w-full min-h-[52px] rounded-2xl border-2 border-zinc-950 bg-[rgba(207,255,4,0.08)] text-[var(--foreground)] font-bold transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:bg-zinc-950 dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-60 hover:bg-[rgba(207,255,4,0.12)]"
                 >
                   Rechazar
                 </button>

@@ -21,13 +21,10 @@ export default async function HistorialViajes() {
   });
 
   return (
-    <div
-      className="flex min-h-screen font-sans"
-      style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}
-    >
+    <div className="flex min-h-screen w-full bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
       <Sidebar rol={rol} />
 
-      <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8 overflow-y-auto">
+      <main className="flex-1 pt-20 pb-24 md:pb-8 md:pl-72 px-4 md:px-8 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
           <div
             className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6 md:mb-8 border-b pb-4"
@@ -45,15 +42,11 @@ export default async function HistorialViajes() {
           </div>
 
           <div
-            className="rounded-xl shadow-sm border overflow-x-auto"
-            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+            className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] overflow-x-auto"
           >
             <table className="w-full text-left border-collapse min-w-[580px]">
               <thead>
-                <tr
-                  className="text-xs md:text-sm"
-                  style={{ backgroundColor: "var(--accent)", color: "var(--text-inverted)" }}
-                >
+                <tr className="text-xs md:text-sm bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
                   <th className="p-3 md:p-4 font-semibold whitespace-nowrap rounded-tl-xl">Fecha</th>
                   {rol === "ADMIN" && (
                     <th className="p-3 md:p-4 font-semibold whitespace-nowrap">Conductor</th>
@@ -68,7 +61,7 @@ export default async function HistorialViajes() {
                 {viajes.map((viaje) => (
                   <tr
                     key={viaje.id_viaje}
-                    className="border-b last:border-b-0 hover:bg-[var(--surface-muted)] transition-colors"
+                    className="border-b last:border-b-0 hover:bg-zinc-100 dark:hover:bg-zinc-950 transition-colors"
                     style={{ borderColor: "var(--border)" }}
                   >
                     <td className="p-3 md:p-4 text-xs md:text-sm whitespace-nowrap" style={{ color: "var(--foreground)" }}>

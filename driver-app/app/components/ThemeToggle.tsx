@@ -24,9 +24,7 @@ export default function ThemeToggle() {
       aria-label="Toggle theme"
       aria-pressed={activeTheme === "dark"}
       onClick={() => setTheme(activeTheme === "dark" ? "light" : "dark")}
-      /* Agregamos h-7 y w-14 fijos, y p-1 uniforme */
-      className={`relative inline-flex h-7 w-14 items-center rounded-full p-1 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-teal-400 ${activeTheme === "dark" ? "bg-zinc-800" : "bg-sky-100"
-        }`}
+      className={`relative inline-flex h-7 w-14 items-center rounded-full p-1 border-2 border-zinc-950 bg-[rgba(207,255,4,0.08)] shadow-[4px_4px_0px_0px_#09090b] transition-transform duration-300 focus:outline-none focus:ring-4 focus:ring-brand/30 hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:bg-zinc-900 dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] ${activeTheme === "dark" ? "bg-zinc-900" : "bg-[rgba(207,255,4,0.08)]"}`}
     >
       <span className="sr-only">Switch theme</span>
       <span
