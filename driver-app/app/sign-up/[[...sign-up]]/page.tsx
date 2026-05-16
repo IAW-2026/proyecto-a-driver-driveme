@@ -25,7 +25,7 @@ export default function Page() {
         signInUrl="/sign-in"
         appearance={{
           variables: {
-            colorPrimary: "#CFFF04",
+            colorPrimary: "#FF007F",
             colorBackground: "white",
             colorText: "#09090B",
             fontFamily: "var(--font-space-grotesk)",

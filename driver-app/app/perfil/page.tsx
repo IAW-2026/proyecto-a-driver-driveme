@@ -1,10 +1,16 @@
 // app/perfil/page.tsx
 // Server Component — Perfil del conductor con calificaciones de la Feedback App.
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getSessionData } from "@/lib/getSessionData";
 import Sidebar from "@/app/components/Sidebar";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import { Car, Star, StarOff, ChevronLeft, ChevronRight } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
 import type { HistorialCalificacionesResponse } from "@/app/types/api";
+import EditarMeta from "@/app/components/EditarMeta";
+
+const ITEMS_PER_PAGE = 5; // Mostramos 5 reseñas por página para no hacer scroll infinito
 
 export const metadata = {
   title: "Mi Perfil — DriveMe Conductores",
@@ -16,7 +22,7 @@ async function fetchCalificaciones(idConductor: string): Promise<HistorialCalifi
   if (!url) return null;
   try {
     const res = await fetch(`${url}/api/usuarios/${idConductor}/calificaciones`, {
-      next: { revalidate: 60 }, // cache de 1 minuto
+      next: { revalidate: 60 },
     });
     if (!res.ok) return null;
     return res.json();
@@ -27,17 +33,23 @@ async function fetchCalificaciones(idConductor: string): Promise<HistorialCalifi
 
 function EstrellasSVG({ puntaje }: { puntaje: number }) {
   return (
-    <div className="flex gap-0.5" aria-label={`${puntaje} de 5 estrellas`}>
+    <div className="flex gap-1" aria-label={`${puntaje} de 5 estrellas`}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className="text-xl" style={{ color: n <= puntaje ? "#ffc800" : "var(--border)" }}>
-          ★
-        </span>
+        <Star
+          key={n}
+          className={`w-5 h-5 ${n <= puntaje ? "text-yellow-400 fill-yellow-400" : "text-zinc-300 dark:text-zinc-700"}`}
+          strokeWidth={2}
+        />
       ))}
     </div>
   );
 }
 
-export default async function PerfilPage() {
+export default async function PerfilPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const { userId, rol, conductorData } = await getSessionData();
   if (rol === "CONDUCTOR_NUEVO") redirect("/");
   if (rol === "ADMIN") redirect("/");
@@ -45,27 +57,49 @@ export default async function PerfilPage() {
   const calificaciones = conductorData ? await fetchCalificaciones(userId) : null;
   const vehiculoPrincipal = conductorData?.vehiculos[0];
 
+  // ── Lógica de Paginación en el Servidor ─────────────────────────────
+  const resolvedParams = await searchParams;
+  const currentPage = Number(resolvedParams.page) || 1;
+  const totalReviews = calificaciones?.detalles.length || 0;
+  const totalPages = Math.ceil(totalReviews / ITEMS_PER_PAGE);
+
+  // Recortamos el array para mostrar solo las reseñas de la página actual
+  const paginatedReviews = calificaciones?.detalles.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  ) || [];
+
   return (
     <div className="flex min-h-screen w-full bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
       <Sidebar rol={rol} />
 
-      <main className="flex-1 pt-20 pb-24 md:pb-8 md:pl-72 px-4 md:px-8 overflow-y-auto">
+      <main className="flex-1 pt-8 pb-24 md:pb-8 md:pl-72 px-4 md:px-8 overflow-y-auto">
         <div className="max-w-3xl mx-auto space-y-6">
 
-          {/* ── Header ───────────────────────────────────────────── */}
+          {/* ── Header ──────────── */}
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl md:text-3xl font-extrabold" style={{ color: "var(--foreground)" }}>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-950 dark:text-white uppercase tracking-wide">
               Mi Perfil
             </h1>
-            <ThemeToggle />
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <div className="bg-white dark:bg-zinc-900 rounded-full border-2 border-zinc-950 dark:border-brand shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#CFFF04] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] transition-all duration-200 p-0.5">
+                <UserButton
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: "w-8 h-8",
+                    }
+                  }}
+                />
+              </div>
+            </div>
           </div>
 
           {/* ── Tarjeta de Identidad ────────────────────────────── */}
-          <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] overflow-hidden">
+          <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-brand dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#CFFF04] overflow-hidden">
             <div className="px-6 py-5 flex items-center gap-4 bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
-              {/* Avatar placeholder */}
               <div
-                className="w-16 h-16 rounded-xl border-4 border-zinc-950 bg-zinc-950 dark:border-white dark:bg-white flex items-center justify-center text-3xl font-extrabold text-white dark:text-zinc-950 shrink-0"
+                className="w-16 h-16 rounded-xl border-4 border-zinc-950 bg-brand flex items-center justify-center text-3xl font-extrabold text-zinc-950 shrink-0"
                 aria-hidden
               >
                 {conductorData?.nombre?.[0] ?? "C"}
@@ -75,31 +109,27 @@ export default async function PerfilPage() {
                   {conductorData?.nombre} {conductorData?.apellido}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-yellow-300 text-lg">★</span>
+                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                   <span className="font-bold text-white text-lg dark:text-zinc-950">
                     {conductorData?.calificacion_promedio.toFixed(1)}
                   </span>
                   {calificaciones && (
-                    <span className="text-white/70 text-sm">
-                      ({calificaciones.total_calificaciones} reseñas)
+                    <span className="text-zinc-400 dark:text-zinc-500 text-sm font-medium">
+                      ({totalReviews} reseñas)
                     </span>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Datos del vehículo */}
             {vehiculoPrincipal && (
-              <div
-                className="px-6 py-4 flex items-center gap-4 border-t"
-                style={{ borderColor: "var(--border)" }}
-              >
-                <span className="text-3xl" aria-hidden>🚗</span>
+              <div className="px-6 py-4 flex items-center gap-4 border-t-2 border-zinc-950 dark:border-zinc-800">
+                <Car className="w-8 h-8 text-zinc-950 dark:text-white" strokeWidth={2.5} aria-hidden />
                 <div>
-                  <p className="font-bold" style={{ color: "var(--foreground)" }}>
+                  <p className="font-bold text-lg text-zinc-950 dark:text-white uppercase tracking-wide">
                     {vehiculoPrincipal.marca} {vehiculoPrincipal.modelo} {vehiculoPrincipal.anio}
                   </p>
-                  <p className="text-sm font-mono" style={{ color: "var(--muted)" }}>
+                  <p className="text-sm font-mono font-medium text-zinc-600 dark:text-zinc-400">
                     {vehiculoPrincipal.patente} · {vehiculoPrincipal.color}
                   </p>
                 </div>
@@ -107,31 +137,37 @@ export default async function PerfilPage() {
             )}
           </div>
 
+          {conductorData && (
+            <EditarMeta
+              conductorId={userId}
+              metaActual={conductorData.meta_diaria || 30000}
+            />
+          )}
+
           {/* ── Calificaciones recibidas ─────────────────────────── */}
           <div>
-            <h2 className="text-lg font-extrabold mb-3" style={{ color: "var(--foreground)" }}>
+            <h2 className="text-lg font-extrabold mb-3 text-zinc-950 dark:text-white uppercase tracking-wide">
               Calificaciones recibidas
             </h2>
 
-            {!calificaciones ? (
-              <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 p-6 text-center text-zinc-600 dark:text-zinc-400">
-                <p className="text-4xl mb-2">⭐</p>
-                <p className="font-medium">No hay calificaciones disponibles todavía.</p>
-                <p className="text-xs mt-1">Las calificaciones de los pasajeros aparecerán acá.</p>
+            {!calificaciones || totalReviews === 0 ? (
+              <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-zinc-700 dark:bg-zinc-900 p-8 flex flex-col items-center justify-center text-center text-zinc-600 dark:text-zinc-400">
+                <StarOff className="w-12 h-12 mb-3 text-zinc-400 dark:text-zinc-600" strokeWidth={2} />
+                <p className="font-bold text-lg text-zinc-950 dark:text-white">No hay calificaciones disponibles todavía.</p>
+                <p className="text-sm mt-1">Las calificaciones de los pasajeros aparecerán acá.</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {calificaciones.detalles.map((cal) => (
+              <div className="space-y-4">
+                {paginatedReviews.map((cal) => (
                   <div
                     key={cal.id_calificacion}
-                    className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] p-4 space-y-2"
+                    className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-zinc-700 dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-none p-5 space-y-3"
                   >
                     <div className="flex justify-between items-start gap-3">
                       <EstrellasSVG puntaje={cal.puntaje} />
                       <time
-                        className="text-xs shrink-0"
+                        className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 shrink-0"
                         dateTime={cal.timestamp}
-                        style={{ color: "var(--muted)" }}
                       >
                         {new Date(cal.timestamp).toLocaleDateString("es-AR", {
                           day: "2-digit", month: "short", year: "numeric",
@@ -139,16 +175,52 @@ export default async function PerfilPage() {
                       </time>
                     </div>
                     {cal.comentario && (
-                      <p className="text-sm italic" style={{ color: "var(--muted)" }}>
+                      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                         &ldquo;{cal.comentario}&rdquo;
                       </p>
                     )}
                   </div>
                 ))}
+
+                {/* ── Controles de Paginación ────────────────────────────── */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between bg-white dark:bg-zinc-900 border-4 border-zinc-950 dark:border-zinc-800 p-4 rounded-2xl shadow-[6px_6px_0px_0px_#09090b] dark:shadow-none mt-6">
+                    <p className="text-sm font-extrabold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider hidden md:block">
+                      Página {currentPage} de {totalPages}
+                    </p>
+
+                    <div className="flex gap-4 w-full md:w-auto justify-between">
+                      {currentPage > 1 ? (
+                        <Link
+                          href={`/perfil?page=${currentPage - 1}`}
+                          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-950 border-2 border-zinc-950 dark:border-brand font-bold rounded-xl shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] transition-all"
+                        >
+                          <ChevronLeft className="w-5 h-5" strokeWidth={3} /> Anterior
+                        </Link>
+                      ) : (
+                        <span className="flex items-center gap-2 px-4 py-2 bg-zinc-200 dark:bg-zinc-800 border-2 border-zinc-400 dark:border-zinc-700 text-zinc-500 rounded-xl font-bold opacity-50 cursor-not-allowed">
+                          <ChevronLeft className="w-5 h-5" strokeWidth={3} /> Anterior
+                        </span>
+                      )}
+
+                      {currentPage < totalPages ? (
+                        <Link
+                          href={`/perfil?page=${currentPage + 1}`}
+                          className="flex items-center gap-2 px-4 py-2 bg-brand border-2 border-zinc-950 text-zinc-950 font-bold rounded-xl shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] transition-all"
+                        >
+                          Siguiente <ChevronRight className="w-5 h-5" strokeWidth={3} />
+                        </Link>
+                      ) : (
+                        <span className="flex items-center gap-2 px-4 py-2 bg-zinc-200 dark:bg-zinc-800 border-2 border-zinc-400 dark:border-zinc-700 text-zinc-500 rounded-xl font-bold opacity-50 cursor-not-allowed">
+                          Siguiente <ChevronRight className="w-5 h-5" strokeWidth={3} />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
-
         </div>
       </main>
     </div>

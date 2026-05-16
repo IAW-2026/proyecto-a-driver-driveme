@@ -15,11 +15,8 @@
 /* 3. Variables de la App (Modo Claro) - Neobrutalismo */
 :root {
   --primary: #CFFF04;
-  /* Verde Lima de tu logo (Acción Principal) */
   --secondary: #FF007F;
-  /* Fucsia (Alertas/Peligro) */
   --info: #8B5CF6;
-  /* ¡El Violeta! (Informativo) */
   --background: #FAFAFA;
   --foreground: #09090B;
   --surface: #FFFFFF;

@@ -12,10 +12,21 @@ import { redirect } from "next/navigation";
 // ────────────────────────────────────────────────────────────────────────────
 export async function toggleConductorStatus(conductorId: string, nuevoEstado: boolean) {
   try {
+    const estadoStr = nuevoEstado ? "ONLINE" : "OFFLINE";
+
+    // 1. Actualizamos el estado actual del conductor
     await prisma.conductor.update({
       where: { id_conductor: conductorId },
       data: {
-        estado: nuevoEstado ? "ONLINE" : "OFFLINE",
+        estado: estadoStr,
+      },
+    });
+
+    // 2. Registramos el evento en la tabla histórica para el cálculo de horas online
+    await prisma.historialConexion.create({
+      data: {
+        id_conductor: conductorId,
+        estado: estadoStr,
       },
     });
 
@@ -37,16 +48,16 @@ export async function registrarConductor(formData: FormData) {
   await prisma.conductor.create({
     data: {
       id_conductor: userId,
-      nombre:   formData.get("nombre")   as string,
+      nombre: formData.get("nombre") as string,
       apellido: formData.get("apellido") as string,
       licencia: formData.get("licencia") as string,
       vehiculos: {
         create: {
           patente: (formData.get("patente") as string).toUpperCase(),
-          marca:   formData.get("marca")   as string,
-          modelo:  formData.get("modelo")  as string,
-          anio:    parseInt(formData.get("anio") as string, 10),
-          color:   String(formData.get("color") ?? "No especificado"),
+          marca: formData.get("marca") as string,
+          modelo: formData.get("modelo") as string,
+          anio: parseInt(formData.get("anio") as string, 10),
+          color: String(formData.get("color") ?? "No especificado"),
         },
       },
     },
@@ -127,13 +138,21 @@ export async function finalizarViaje(id_viaje: string) {
       },
     });
 
-    // 2. Liberar al conductor
+    // 2. Liberar al conductor pasándolo a ONLINE
     await prisma.conductor.update({
       where: { id_conductor: userId },
       data: { estado: "ONLINE" },
     });
 
-    // 3. Procesar cobro via Payments App
+    // 3. Registramos este pase automático a ONLINE en el historial de conexiones
+    await prisma.historialConexion.create({
+      data: {
+        id_conductor: userId,
+        estado: "ONLINE",
+      },
+    });
+
+    // 4. Procesar cobro via Payments App
     let idTransaccion: string | null = null;
     try {
       const pagoRes = await fetch(`${process.env.PAYMENTS_APP_URL}/api/pagos/procesar`, {
@@ -152,7 +171,7 @@ export async function finalizarViaje(id_viaje: string) {
       console.warn("[WARNING] Payments App inalcanzable.");
     }
 
-    // 4. Notificar a Rider App
+    // 5. Notificar a Rider App
     try {
       await fetch(`${process.env.RIDER_APP_URL}/api/notificaciones/viajes/${id_viaje}/estado`, {
         method: "POST",
@@ -173,5 +192,29 @@ export async function finalizarViaje(id_viaje: string) {
   } catch (error) {
     console.error("Error al finalizar viaje:", error);
     return { success: false, error: String(error) };
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Acción 5: Actualizar Meta Diaria
+// ────────────────────────────────────────────────────────────────────────────
+export async function actualizarMetaDiaria(conductorId: string, nuevaMeta: number) {
+  try {
+    // Validamos que no pongan números negativos locos
+    if (nuevaMeta < 1000) return { success: false, error: "La meta debe ser al menos $1.000" };
+
+    await prisma.conductor.update({
+      where: { id_conductor: conductorId },
+      data: { meta_diaria: nuevaMeta },
+    });
+
+    // Revalidamos el perfil y el inicio para que los gráficos se actualicen al instante
+    revalidatePath("/perfil");
+    revalidatePath("/");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error al actualizar la meta:", error);
+    return { success: false, error: "Hubo un error al guardar tu meta." };
   }
 }

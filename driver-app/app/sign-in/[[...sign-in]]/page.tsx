@@ -25,7 +25,7 @@ export default function Page() {
         signUpUrl="/sign-up"
         appearance={{
           variables: {
-            colorPrimary: "#CFFF04",
+            colorPrimary: "#FF007F",
             colorBackground: "white", // Se ajusta vía elements para modo oscuro
             colorText: "#09090B",
             fontFamily: "var(--font-space-grotesk)",

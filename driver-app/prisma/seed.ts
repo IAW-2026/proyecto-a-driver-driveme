@@ -10,43 +10,39 @@ const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
-  console.log('🌱 Destruyendo base de datos anterior...')
+  console.log('🌱 Destruyendo ecosistema anterior (incluyendo historiales)...')
+  await prisma.historialConexion.deleteMany() // <-- ¡NUEVA TABLA!
   await prisma.viaje.deleteMany()
   await prisma.vehiculo.deleteMany()
   await prisma.conductor.deleteMany()
-  // await prisma.administrador.deleteMany() // Descomentar si creaste esta tabla
 
-  console.log('🌱 Sembrando el nuevo ecosistema de datos...')
+  console.log('🌱 Sembrando la nueva flota de datos...')
 
-  // Caso A: Conductora Activa y Online
+  // Caso A: Luciana - Activa, meta estándar.
   const conductorLuciana = await prisma.conductor.create({
     data: {
       id_conductor: 'user_luciana_456',
       nombre: 'Luciana',
       apellido: 'González',
       licencia: 'LIC-LUCIANA',
-      estado: 'ONLINE', // <-- Nace conectada
+      estado: 'ONLINE',
+      meta_diaria: 35000, // <-- ¡NUEVA COLUMNA!
       vehiculos: {
-        create: {
-          patente: 'AGL-001',
-          marca: 'Peugeot',
-          modelo: '208',
-          anio: 2024,
-          color: 'Blanco'
-        }
+        create: { patente: 'AGL-001', marca: 'Peugeot', modelo: '208', anio: 2024, color: 'Blanco' }
       }
     },
     include: { vehiculos: true }
   })
 
-  // Caso B: Conductora Nocturna y Online - Múltiples autos, algunos viajes cancelados.
+  // Caso B: Sofía - Nocturna, meta alta, múltiples autos.
   const conductorSofia = await prisma.conductor.create({
     data: {
       id_conductor: 'user_sofi_888',
       nombre: 'Sofía',
       apellido: 'Gómez',
       licencia: 'LIC-SOFIA',
-      estado: 'ONLINE', // <-- Nace conectada (tiene un viaje en curso)
+      estado: 'ONLINE',
+      meta_diaria: 50000,
       vehiculos: {
         create: [
           { patente: 'PKR-777', marca: 'Volkswagen', modelo: 'Golf', anio: 2021, color: 'Gris' },
@@ -57,65 +53,107 @@ async function main() {
     include: { vehiculos: true }
   })
 
-  // Caso C: El Novato y Offline - Recién registrado, tiene auto pero 0 viajes.
+  // Caso C: Leo - El Novato (Offline, meta baja, 0 viajes)
   const conductorLeo = await prisma.conductor.create({
     data: {
       id_conductor: 'user_leo_321',
       nombre: 'Leonardo',
       apellido: 'Paz',
       licencia: 'LIC-LEO',
-      estado: 'OFFLINE', // <-- Nace desconectado
+      estado: 'OFFLINE',
+      meta_diaria: 15000,
       vehiculos: {
-        create: {
-          patente: 'NEW-999',
-          marca: 'Chevrolet',
-          modelo: 'Onix',
-          anio: 2023,
-          color: 'Azul'
-        }
+        create: { patente: 'NEW-999', marca: 'Chevrolet', modelo: 'Onix', anio: 2023, color: 'Azul' }
       }
     },
     include: { vehiculos: true }
   })
 
-  // Caso D: Conductor Inactivo - Borrado lógico (fecha_baja).
+  // Caso D: Lucas - Borrado lógico (Inactivo)
   const conductorLucas = await prisma.conductor.create({
     data: {
       id_conductor: 'user_lucas_404',
       nombre: 'Lucas',
       apellido: 'Testing',
       licencia: 'LIC-LUCAS',
-      estado: 'OFFLINE', // <-- Desconectado y dado de baja
+      estado: 'OFFLINE',
       isActive: false,
       vehiculos: {
-        create: {
-          patente: 'OLD-111',
-          marca: 'Toyota',
-          modelo: 'Etios',
-          anio: 2015,
-          color: 'Gris',
-          isActive: false
-        }
+        create: { patente: 'OLD-111', marca: 'Toyota', modelo: 'Etios', anio: 2015, color: 'Gris', isActive: false }
       }
     },
     include: { vehiculos: true }
   })
 
-  console.log('🚗 Generando historial de viajes complejo...')
+  // Caso E: Marcos - El Intermitente (Prueba matemática de horas)
+  const conductorMarcos = await prisma.conductor.create({
+    data: {
+      id_conductor: 'user_marcos_777',
+      nombre: 'Marcos',
+      apellido: 'Ruiz',
+      licencia: 'LIC-MARCOS',
+      estado: 'ONLINE',
+      meta_diaria: 40000,
+      vehiculos: {
+        create: { patente: 'INT-404', marca: 'Fiat', modelo: 'Cronos', anio: 2022, color: 'Rojo' }
+      }
+    },
+    include: { vehiculos: true }
+  })
+
+  // Caso F: Valentina - VIP Alta Gama (Para reventar la meta de ingresos hoy)
+  const conductorValentina = await prisma.conductor.create({
+    data: {
+      id_conductor: 'user_vale_999',
+      nombre: 'Valentina',
+      apellido: 'Vip',
+      licencia: 'LIC-VALE',
+      estado: 'ONLINE',
+      meta_diaria: 80000,
+      vehiculos: {
+        create: { patente: 'VIP-001', marca: 'Audi', modelo: 'A4', anio: 2025, color: 'Negro' }
+      }
+    },
+    include: { vehiculos: true }
+  })
+
+  console.log('⏱️  Generando historiales de conexión (Horas Online de hoy)...')
 
   const ahora = Date.now();
   const unDia = 86400000;
+  const unaHora = 3600000;
+
+  await prisma.historialConexion.createMany({
+    data: [
+      // Luciana: Se conectó hace 4 horas y sigue online
+      { id_conductor: conductorLuciana.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 4)) },
+
+      // Sofía: Se conectó hace 7 horas
+      { id_conductor: conductorSofia.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 7)) },
+
+      // Marcos (El intermitente): Se conectó hace 6h, desconectó hace 4h, volvió hace 1h. (Total: 3 horas)
+      { id_conductor: conductorMarcos.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 6)) },
+      { id_conductor: conductorMarcos.id_conductor, estado: 'OFFLINE', timestamp: new Date(ahora - (unaHora * 4)) },
+      { id_conductor: conductorMarcos.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 1)) },
+
+      // Valentina: Se conectó hace 2 horas
+      { id_conductor: conductorValentina.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 2)) }
+    ]
+  });
+
+  console.log('🚗 Generando historial de viajes complejo...')
 
   // Viajes de Luciana
   await prisma.viaje.createMany({
     data: [
       { id_solicitud: 'sol_1', id_pasajero: 'pas_1', metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 4500.00, precio_final: 4500.00, id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - unDia * 5) },
       { id_solicitud: 'sol_2', id_pasajero: 'pas_2', metodo_pago: 'TARJETA', estado_actual: 'FINALIZADO', precio: 3200.50, precio_final: 3200.50, id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - unDia * 2) },
-      { id_solicitud: 'sol_3', id_pasajero: 'pas_3', metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 8900.00, precio_final: 8900.00, id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date() },
+      // Viaje de HOY (suma a la barra)
+      { id_solicitud: 'sol_3', id_pasajero: 'pas_3', metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 18900.00, precio_final: 18900.00, id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - (unaHora * 2)) },
     ]
   })
 
-  // Viajes de Sofía (Usa sus dos autos, tiene cancelaciones y un viaje en curso)
+  // Viajes de Sofía
   await prisma.viaje.createMany({
     data: [
       { id_solicitud: 'sol_4', id_pasajero: 'pas_4', metodo_pago: 'TARJETA', estado_actual: 'FINALIZADO', precio: 12000.00, precio_final: 12000.00, id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - unDia * 10) },
@@ -124,10 +162,10 @@ async function main() {
     ]
   })
 
-  // Viajes de Lucas (Historial viejo, antes de ser dado de baja)
+  // Viaje de Lucas (Historial viejo)
   await prisma.viaje.create({
     data: {
-      id_solicitud: 'sol_7', 
+      id_solicitud: 'sol_7',
       id_pasajero: 'pas_7',
       metodo_pago: 'EFECTIVO',
       estado_actual: 'FINALIZADO',
@@ -139,7 +177,15 @@ async function main() {
     }
   })
 
-  console.log('✅ Base de datos sembrada. Lista para estresar el frontend.')
+  // Viajes VIP de Valentina de HOY (Para llenar la meta diaria)
+  await prisma.viaje.createMany({
+    data: [
+      { id_solicitud: 'sol_8', id_pasajero: 'pas_8', metodo_pago: 'TARJETA', estado_actual: 'FINALIZADO', precio: 35000.00, precio_final: 35000.00, id_conductor: conductorValentina.id_conductor, id_vehiculo: conductorValentina.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - (unaHora * 1.5)) },
+      { id_solicitud: 'sol_9', id_pasajero: 'pas_9', metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 42000.00, precio_final: 42000.00, id_conductor: conductorValentina.id_conductor, id_vehiculo: conductorValentina.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - (unaHora * 0.5)) }
+    ]
+  })
+
+  console.log('✅ Base de datos sembrada y lista. ¡A probar esos Dashboards!')
 }
 
 main()

@@ -40,13 +40,13 @@ model Conductor {
   licencia       String   @unique
   fecha_alta     DateTime @default(now())
   fecha_baja     DateTime?
-
-  // Campos extendidos (agregados vía migración adicional si no existen en la BD)
   estado                EstadoConductor @default(OFFLINE)
   latitud_actual        Float?
   longitud_actual       Float?
   calificacion_promedio Float           @default(5.0)
   isActive              Boolean         @default(true)
+  meta_diaria        Int                 @default(30000) 
+  historial_conexion HistorialConexion[]
 
   // Relaciones
   vehiculos  Vehiculo[]
@@ -101,4 +101,13 @@ model Viaje {
   // Relaciones
   conductor Conductor @relation(fields: [id_conductor], references: [id_conductor])
   vehiculo  Vehiculo  @relation(fields: [id_vehiculo], references: [id_vehiculo])
+}
+
+model HistorialConexion {
+  id_conexion  String   @id @default(uuid())
+  id_conductor String
+  estado       String   // Guardará "ONLINE" u "OFFLINE"
+  timestamp    DateTime @default(now())
+
+  conductor    Conductor @relation(fields: [id_conductor], references: [id_conductor])
 }

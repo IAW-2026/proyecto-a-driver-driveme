@@ -61,7 +61,6 @@ export default async function RegistroPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="py-8 px-4 shadow sm:rounded-lg sm:px-10" style={{ backgroundColor: "var(--surface)", color: "var(--foreground)" }}>
-          {/* El formulario ejecuta el Server Action directamente */}
           <form action={registrarConductor} className="space-y-6">
 
             {/* Datos Personales */}

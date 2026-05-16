@@ -1,6 +1,7 @@
 ﻿"use client";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { Sun, Moon } from "lucide-react";
 
 export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
@@ -29,10 +30,10 @@ export default function ThemeToggle() {
       <span className="sr-only">Switch theme</span>
       <span
         /* Cambiamos translate-x-6 por translate-x-7 para que recorra los 28px exactos */
-        className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-md transition-transform duration-300 ${activeTheme === "dark" ? "translate-x-7" : "translate-x-0"
+        className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-white border border-zinc-950 dark:bg-zinc-950 dark:border-brand transition-transform duration-300 ${activeTheme === "dark" ? "translate-x-7" : "translate-x-0"
           }`}
       >
-        {activeTheme === "dark" ? "🌙" : "☀️"}
+        {activeTheme === "dark" ? <Moon className="w-3 h-3" strokeWidth={3.5} /> : <Sun className="w-3 h-3" strokeWidth={3.5} />}
       </span>
     </button>
   );
