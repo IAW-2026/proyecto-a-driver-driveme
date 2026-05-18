@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* 1. Habilitar el Dark Mode por clase en Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 2. Colores Neobrutalistas inyectados nativamente en Tailwind v4 */
+@theme {
+  --color-brand: #CFFF04;
+  --color-brand-hover: #B5E600;
+  --color-alert: #FF007F;
+  --color-info: #8B5CF6;
+  --font-sans: var(--font-space-grotesk);
+}
+
+/* 3. Variables de la App (Modo Claro) - Neobrutalismo */
+:root {
+  --primary: #CFFF04;
+  --secondary: #FF007F;
+  --info: #8B5CF6;
+  --background: #FAFAFA;
+  --foreground: #09090B;
+  --surface: #FFFFFF;
+  --surface-muted: #F4F4F5;
+  --surface-strong: #E4E4E7;
+  --border: #09090B;
+  /* Bordes negros cómic */
+  --accent: #8B5CF6;
+  /* Usamos el violeta para resaltar detalles sin competir con el verde */
+  --muted: #71717A;
+  --text-inverted: #FFFFFF;
+
+  /* Detalles específicos */
+  --gradient-primary: #09090B;
+  --offer-bg: #8B5CF6;
+  /* Un banner de "novedad" en violeta resalta excelente */
+  --offer-text: #FFFFFF;
+}
+
+/* 4. Variables de la App (Modo Oscuro) - Dark Neobrutalismo */
+html.dark {
+  --primary: #CFFF04;
+  --secondary: #FF007F;
+  --info: #8B5CF6;
+  /* El violeta en modo oscuro se ve hiper futurista */
+  --background: #09090B;
+  --foreground: #FFFFFF;
+  --surface: #18181B;
+  --surface-muted: #27272A;
+  --surface-strong: #3F3F46;
+  --border: #CFFF04;
+  /* Bordes de las tarjetas principales en verde */
+  --accent: #8B5CF6;
+  /* Detalles secundarios en violeta */
+  --muted: #A1A1AA;
+  --text-inverted: #09090B;
+
+  /* Detalles específicos */
+  --gradient-primary: #8B5CF6;
+  /* Un fondo secundario violeta le da el toque "Dopamine" */
+  --offer-bg: #8B5CF6;
+  --offer-text: #09090B;
+}
