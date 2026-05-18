@@ -4,7 +4,7 @@
  * app/_views/ConductorDashboard.tsx
  * -----------------------------------------------------------------------
  * Client Component — Dashboard unificado del conductor activo.
- * Contiene la lógica de conexión, polling de viajes, y la UI de métricas/radar.
+ * Contiene la lógica de conexión, cola rotativa de viajes, y la UI de métricas/radar.
  * -----------------------------------------------------------------------
  */
 
@@ -57,6 +57,7 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
   const [isPending, startTransition] = useTransition();
   const [isOnline, setIsOnline] = useState(conductorData.estado === "ONLINE");
   const [solicitudActual, setSolicitudActual] = useState<SolicitudViaje | null>(null);
+  const [colaSolicitudes, setColaSolicitudes] = useState<SolicitudViaje[]>([]);
   const [timerSegundos, setTimerSegundos] = useState(TIMER_DURACION);
   const [aceptando, setAceptando] = useState(false);
   const [toast, setToast] = useState<{ mensaje: string; tipo: "ok" | "error" } | null>(null);
@@ -66,12 +67,13 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
     setTimeout(() => setToast(null), 2500);
   }, []);
 
-  // ── Lógica de Conexión y Polling ─────────────────────────────────────────
+  // ── Lógica de Conexión y Control de Cola ─────────────────────────────────
   const handleToggle = () => {
     const nuevoEstado = !isOnline;
     setIsOnline(nuevoEstado);
     if (!nuevoEstado) {
       setSolicitudActual(null);
+      setColaSolicitudes([]);
       setTimerSegundos(TIMER_DURACION);
     }
     if (typeof navigator !== "undefined" && navigator.vibrate) {
@@ -89,26 +91,46 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
     });
   };
 
+  // EFECTO 1: Polling del backend para llenar la cola cuando está vacía
   useEffect(() => {
-    if (!isOnline || solicitudActual) return;
+    if (!isOnline || solicitudActual || colaSolicitudes.length > 0) return;
+
     const intervalo = setInterval(async () => {
       try {
-        const res = await fetch("/api/solicitudes/mock");
+        const res = await fetch("/api/solicitudes?estado=BUSCANDO_CONDUCTOR");
         const data = await res.json();
-        if (data.solicitud) {
-          setSolicitudActual(data.solicitud);
-          setTimerSegundos(TIMER_DURACION);
-          if (typeof navigator !== "undefined" && navigator.vibrate) {
-            navigator.vibrate([100, 50, 100, 50, 200]);
-          }
+
+        if (data.solicitudes && data.solicitudes.length > 0) {
+          setColaSolicitudes(data.solicitudes);
         }
       } catch {
-        // silencioso
+
       }
     }, 5000);
-    return () => clearInterval(intervalo);
-  }, [isOnline, solicitudActual]);
 
+    return () => clearInterval(intervalo);
+  }, [isOnline, solicitudActual, colaSolicitudes]);
+
+  // EFECTO 2: Consumir la cola y rotar la solicitud expuesta
+  useEffect(() => {
+    if (isOnline && !solicitudActual && colaSolicitudes.length > 0) {
+      const proximaSolicitud = colaSolicitudes[0];
+
+      const timeout = setTimeout(() => {
+        setSolicitudActual(proximaSolicitud);
+        setColaSolicitudes((prev) => prev.slice(1));
+        setTimerSegundos(TIMER_DURACION);
+
+        if (typeof navigator !== "undefined" && navigator.vibrate) {
+          navigator.vibrate([100, 50, 100, 50, 200]);
+        }
+      }, 0);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isOnline, solicitudActual, colaSolicitudes]);
+
+  // ── Temporizador Regresivo ───────────────────────────────────────────────
   useEffect(() => {
     if (!solicitudActual) return;
     if (timerSegundos <= 0) {
@@ -123,6 +145,7 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
     return () => clearTimeout(tick);
   }, [solicitudActual, timerSegundos, mostrarToast]);
 
+  // ── Acciones de Solicitud ────────────────────────────────────────────────
   const handleAceptar = async () => {
     if (!solicitudActual || aceptando) return;
     setAceptando(true);
@@ -154,20 +177,22 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
           pasajero_nombre: solicitudActual.pasajero.nombre
         }),
       });
-      const data = await res.json();
+
       if (res.status === 409) {
         mostrarToast("Ese viaje ya fue tomado por otro conductor.", "error");
         setSolicitudActual(null);
+        setAceptando(false);
         return;
       }
       if (!res.ok) {
         mostrarToast("Error al aceptar el viaje.", "error");
+        setAceptando(false);
         return;
       }
+      const data = await res.json();
       router.push(`/viaje/${data.data.id_viaje}`);
     } catch {
       mostrarToast("Sin conexión. Intentá de nuevo.", "error");
-    } finally {
       setAceptando(false);
     }
   };
@@ -189,12 +214,11 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
   const metaDiaria = metricasHoy.metaDiaria;
   const porcentajeMeta = Math.min(Math.round((gananciaHoy / metaDiaria) * 100), 100);
 
-  // ── Renderizado ──────────────────────────────────────────────────────────
   return (
     <section className="w-full max-w-5xl mx-auto rounded-2xl border-4 border-zinc-950 bg-zinc-50 dark:border-brand dark:bg-zinc-900 shadow-[8px_8px_0px_0px_#09090b] dark:shadow-[8px_8px_0px_0px_#CFFF04] overflow-hidden">
       {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} />}
 
-      {/* ── Header ────────────────────────────────────────── */}
+      {/* Header */}
       <div className="flex justify-between items-center px-4 py-4 md:px-6 md:py-5 border-b-4 border-zinc-950 dark:border-brand bg-brand dark:bg-zinc-950 transition-colors">
         <div>
           <h1 className="text-xl md:text-2xl font-extrabold tracking-tight uppercase text-zinc-950 dark:text-white">
@@ -218,10 +242,8 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
       </div>
 
       <div className="p-4 md:p-6 space-y-6">
-
-        {/* ── Módulos (Reaccionan al estado isOnline) ───────────────────────── */}
+        {/* Módulos */}
         <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity duration-300 ${!isOnline ? "opacity-50 grayscale-[50%]" : "opacity-100"}`}>
-
           <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-zinc-700 dark:bg-zinc-800 p-4 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-none flex flex-col justify-center">
             <div className="flex justify-between items-end mb-3">
               <div className="flex items-center gap-2">
@@ -269,7 +291,7 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
           </div>
         </div>
 
-        {/* ── BOTÓN ONLINE/OFFLINE ─────────────────────── */}
+        {/* Botón de estado */}
         <button
           onClick={handleToggle}
           disabled={isPending}
@@ -288,7 +310,7 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
           )}
         </button>
 
-        {/* ── PANEL DE MÉTRICAS BÁSICAS ─────────────────────────────────────── */}
+        {/* Métricas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { label: "HORAS ONLINE", valor: horasOnlineHoy, icon: <Clock className="w-8 h-8" strokeWidth={2.5} /> },
@@ -310,7 +332,7 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
           ))}
         </div>
 
-        {/* ── TARJETA DE SOLICITUD ──────────────────────────────────── */}
+        {/* Tarjeta de Solicitud */}
         {isOnline && (
           <div className="rounded-2xl border-4 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] overflow-hidden">
             <div className="px-4 py-3 border-b-2 border-zinc-950 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-950">

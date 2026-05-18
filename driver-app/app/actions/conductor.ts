@@ -6,23 +6,36 @@ import { revalidatePath } from "next/cache";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
+// ── Helper: cabeceras M2M ────────────────────────────────────────────────────
+// Centraliza la construcción del header x-api-key para todas las llamadas
+// salientes M2M (Rider App, Payments App, Feedback App).
+// Si INTERNAL_API_KEY no está definida, lo loguea como error crítico y
+// devuelve solo Content-Type para que la request no falle silenciosamente.
+function m2mHeaders(): HeadersInit {
+  const key = process.env.INTERNAL_API_KEY;
+  if (!key) {
+    console.error(
+      "[ERROR] INTERNAL_API_KEY no definida. Las llamadas M2M serán rechazadas por los otros servicios."
+    );
+  }
+  return {
+    "Content-Type": "application/json",
+    ...(key ? { "x-api-key": key } : {}),
+  };
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // Acción 1: Cambiar estado del switch Online/Offline
-// PK real en la BD: id_conductor
 // ────────────────────────────────────────────────────────────────────────────
 export async function toggleConductorStatus(conductorId: string, nuevoEstado: boolean) {
   try {
     const estadoStr = nuevoEstado ? "ONLINE" : "OFFLINE";
 
-    // 1. Actualizamos el estado actual del conductor
     await prisma.conductor.update({
       where: { id_conductor: conductorId },
-      data: {
-        estado: estadoStr,
-      },
+      data: { estado: estadoStr },
     });
 
-    // 2. Registramos el evento en la tabla histórica para el cálculo de horas online
     await prisma.historialConexion.create({
       data: {
         id_conductor: conductorId,
@@ -63,7 +76,6 @@ export async function registrarConductor(formData: FormData) {
     },
   });
 
-  // Guardar rol en Clerk metadata
   const client = await clerkClient();
   await client.users.updateUserMetadata(userId, {
     publicMetadata: { role: "driver" },
@@ -74,7 +86,6 @@ export async function registrarConductor(formData: FormData) {
 
 // ────────────────────────────────────────────────────────────────────────────
 // Acción 3: Iniciar viaje (ACEPTADO → EN_CURSO)
-// PK real en Viaje: id_viaje
 // ────────────────────────────────────────────────────────────────────────────
 export async function iniciarViaje(id_viaje: string) {
   const { userId } = await auth();
@@ -93,17 +104,21 @@ export async function iniciarViaje(id_viaje: string) {
       },
     });
 
+    // Notificar a Rider App — M2M requerido por el contrato
     try {
-      await fetch(`${process.env.RIDER_APP_URL}/api/notificaciones/viajes/${id_viaje}/estado`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_viaje,
-          id_pasajero: viaje.id_pasajero,
-          estado_actual: "EN_CURSO",
-          fuente: "DRIVER_APP",
-        }),
-      });
+      await fetch(
+        `${process.env.RIDER_APP_URL}/api/notificaciones/viajes/${id_viaje}/estado`,
+        {
+          method: "POST",
+          headers: m2mHeaders(),
+          body: JSON.stringify({
+            id_viaje,
+            id_pasajero: viaje.id_pasajero,
+            estado_actual: "EN_CURSO",
+            fuente: "DRIVER_APP",
+          }),
+        }
+      );
     } catch {
       console.warn("[WARNING] No se pudo notificar a Rider App del inicio del viaje.");
     }
@@ -138,13 +153,13 @@ export async function finalizarViaje(id_viaje: string) {
       },
     });
 
-    // 2. Liberar al conductor pasándolo a ONLINE
+    // 2. Liberar al conductor → ONLINE
     await prisma.conductor.update({
       where: { id_conductor: userId },
       data: { estado: "ONLINE" },
     });
 
-    // 3. Registramos este pase automático a ONLINE en el historial de conexiones
+    // 3. Registrar el pase automático a ONLINE en el historial
     await prisma.historialConexion.create({
       data: {
         id_conductor: userId,
@@ -152,12 +167,12 @@ export async function finalizarViaje(id_viaje: string) {
       },
     });
 
-    // 4. Procesar cobro via Payments App
+    // 4. Procesar cobro via Payments App — M2M requerido por el contrato
     let idTransaccion: string | null = null;
     try {
       const pagoRes = await fetch(`${process.env.PAYMENTS_APP_URL}/api/pagos/procesar`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: m2mHeaders(),
         body: JSON.stringify({
           id_viaje,
           id_pasajero: viaje.id_pasajero,
@@ -171,18 +186,21 @@ export async function finalizarViaje(id_viaje: string) {
       console.warn("[WARNING] Payments App inalcanzable.");
     }
 
-    // 5. Notificar a Rider App
+    // 5. Notificar a Rider App — M2M requerido por el contrato
     try {
-      await fetch(`${process.env.RIDER_APP_URL}/api/notificaciones/viajes/${id_viaje}/estado`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_viaje,
-          id_pasajero: viaje.id_pasajero,
-          estado_actual: "FINALIZADO",
-          fuente: "DRIVER_APP",
-        }),
-      });
+      await fetch(
+        `${process.env.RIDER_APP_URL}/api/notificaciones/viajes/${id_viaje}/estado`,
+        {
+          method: "POST",
+          headers: m2mHeaders(),
+          body: JSON.stringify({
+            id_viaje,
+            id_pasajero: viaje.id_pasajero,
+            estado_actual: "FINALIZADO",
+            fuente: "DRIVER_APP",
+          }),
+        }
+      );
     } catch {
       console.warn("[WARNING] Rider App inalcanzable al notificar finalización.");
     }
@@ -200,7 +218,6 @@ export async function finalizarViaje(id_viaje: string) {
 // ────────────────────────────────────────────────────────────────────────────
 export async function actualizarMetaDiaria(conductorId: string, nuevaMeta: number) {
   try {
-    // Validamos que no pongan números negativos locos
     if (nuevaMeta < 1000) return { success: false, error: "La meta debe ser al menos $1.000" };
 
     await prisma.conductor.update({
@@ -208,7 +225,6 @@ export async function actualizarMetaDiaria(conductorId: string, nuevaMeta: numbe
       data: { meta_diaria: nuevaMeta },
     });
 
-    // Revalidamos el perfil y el inicio para que los gráficos se actualicen al instante
     revalidatePath("/perfil");
     revalidatePath("/");
 

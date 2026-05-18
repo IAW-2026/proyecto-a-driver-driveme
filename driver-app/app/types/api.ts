@@ -47,7 +47,7 @@ export interface VerificarEstadoViajeResponse {
   estado_actual: EstadoViaje;
   id_conductor: string;
   id_pasajero: string;
-  tiempo_completado?: string; // Incluido en la versión de Feedback App
+  tiempo_completado?: string;
 }
 
 // POST /api/conductor/reputacion
@@ -82,6 +82,38 @@ export interface TelemetriaViajeResponse {
  * RIDER APP DTOs
  * --------------------------------------------------------------------------
  */
+
+export interface SolicitudViaje {
+  id_solicitud: string;
+  id_pasajero: string;
+  origen: {
+    direccion: string;
+    latitud: number;
+    longitud: number;
+  };
+  destino: {
+    direccion: string;
+    latitud: number;
+    longitud: number;
+  };
+  precio_estimado: number;
+  metodo_pago: MetodoDePago;
+  created_at: string;
+  distance_m?: number;
+  eta_min?: number;
+  pasajero: {
+    id_pasajero: string;
+    nombre: string;
+  };
+}
+
+// GET /api/solicitudes (Endpoint F)
+export interface ListarSolicitudesResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  solicitudes: SolicitudViaje[];
+}
 
 // POST /api/viajes (Sincronización desde Driver App)
 export type SincronizarViajeRiderRequest = CrearViajeDriverRequest;

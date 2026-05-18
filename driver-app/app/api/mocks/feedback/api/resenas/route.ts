@@ -5,6 +5,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not Found" }, { status: 404 });
   }
 
+  // Validación de Autenticación requerida por la documentación
+  // Según la doc (Endpoints A y B), requiere un JWT (Bearer token del pasajero o conductor)
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return NextResponse.json(
+      { error: "Unauthorized. Missing or invalid Bearer token." },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
     console.log('[MOCK FEEDBACK APP] Reseña recibida:', body);

@@ -29,7 +29,7 @@ export default async function RegistroPage() {
 
     await prisma.conductor.create({
       data: {
-        id_conductor: userId,  // PK real de la BD
+        id_conductor: userId,
         nombre,
         apellido,
         licencia,
