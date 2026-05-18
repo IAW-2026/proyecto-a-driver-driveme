@@ -3,7 +3,7 @@
 /**
  * app/components/MapaViaje.tsx
  * -----------------------------------------------------------------------
- * Mapa Leaflet para la pantalla de Viaje en Curso.
+ * Mapa Leaflet para la pantalla de Viaje en Curso con estética Neobrutalista.
  * Importado dinámicamente (ssr: false) en su componente padre.
  * -----------------------------------------------------------------------
  */
@@ -11,8 +11,11 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
+import { renderToString } from "react-dom/server";
+import { Navigation, MapPin, UserRound } from "lucide-react";
 
-// Interfaces para tipar la respuesta de OSRM
+// ── Tipos ───────────────────────────────────────────────────────────────
+
 interface OSRMResponse {
   routes?: {
     geometry: {
@@ -21,26 +24,30 @@ interface OSRMResponse {
   }[];
 }
 
+// ── Generador de Íconos Neobrutalistas con Lucide y Tailwind ────────────
 
-const iconOrigen = L.divIcon({
-  className: "bg-transparent",
-  html: `<div style="background:#CFFF04; width:16px; height:16px; border:3px solid #09090B; box-shadow: 2px 2px 0px 0px #09090b;"></div>`,
-  iconAnchor: [8, 8],
-});
+const createNeobrutalistIcon = (bgClass: string, IconComponent: React.ElementType) => {
+  // Al no pasarle la prop 'color', Lucide utiliza 'currentColor' por defecto.
+  const iconHtml = renderToString(<IconComponent size={20} strokeWidth={2.5} />);
 
-const iconDestino = L.divIcon({
-  className: "bg-transparent",
-  html: `<div style="background:#FF007F; width:16px; height:16px; border:3px solid #09090B; box-shadow: 2px 2px 0px 0px #09090b;"></div>`,
-  iconAnchor: [8, 8],
-});
+  return L.divIcon({
+    className: "bg-transparent",
+    html: `
+      <div class="${bgClass} w-[36px] h-[36px] border-[3px] border-[#09090B] shadow-[4px_4px_0px_0px_#09090B] flex items-center justify-center rounded-md text-[#09090B]">
+        ${iconHtml}
+      </div>
+    `,
+    iconAnchor: [18, 36], // Anclado en la base central del cuadrado
+    popupAnchor: [0, -36], // El popup aparece arriba del ícono
+  });
+};
 
-const iconConductor = L.divIcon({
-  className: "bg-transparent",
-  html: `<div style="background:#09090B; width:20px; height:20px; border:3px solid #CFFF04; box-shadow: 3px 3px 0px 0px rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center;"></div>`,
-  iconAnchor: [10, 10],
-});
+const iconOrigen = createNeobrutalistIcon("bg-brand", UserRound);
+const iconDestino = createNeobrutalistIcon("bg-alert", MapPin);
+const iconConductor = createNeobrutalistIcon("bg-white", Navigation);
 
-// ── Componente Auxiliar: Centrado Automático ──────────────────────────────
+// ── Componentes y Helpers Auxiliares ────────────────────────────────────
+
 function SeguirConductor({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
   useEffect(() => {
@@ -49,7 +56,25 @@ function SeguirConductor({ lat, lng }: { lat: number; lng: number }) {
   return null;
 }
 
-// ── Props y Componente Principal ──────────────────────────────────────────
+// Lógica extraída para cumplir con DRY
+async function fetchRoute(start: [number, number], end: [number, number]): Promise<[number, number][] | null> {
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
+    const res = await fetch(url);
+    const data: OSRMResponse = await res.json();
+
+    if (data.routes && data.routes[0]) {
+      // Convertir de [lng, lat] a [lat, lng]
+      return data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]] as [number, number]);
+    }
+  } catch (error) {
+    console.error("Error al obtener ruta OSRM:", error);
+  }
+  return null;
+}
+
+// ── Props y Componente Principal ────────────────────────────────────────
+
 interface MapaViajeProps {
   origenLat: number;
   origenLng: number;
@@ -72,11 +97,10 @@ export default function MapaViaje({
   const [rutaOrigen, setRutaOrigen] = useState<[number, number][]>([]);
   const [rutaViaje, setRutaViaje] = useState<[number, number][]>([]);
 
-  // Fix seguro para íconos por defecto de Leaflet en Next.js
   useEffect(() => {
-    // Solo aplicar el fix si la propiedad de Leaflet aún existe y no ha sido purgada
     if (L.Icon && L.Icon.Default && L.Icon.Default.prototype) {
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      const defaultIconPrototype = L.Icon.Default.prototype as { _getIconUrl?: string };
+      delete defaultIconPrototype._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -85,81 +109,55 @@ export default function MapaViaje({
     }
   }, []);
 
-  // Fetch ruta: Conductor -> Origen
+  // Fetch de rutas consolidado
   useEffect(() => {
-    if (estado !== "ACEPTADO") return;
-
     let isMounted = true;
-    setRutaOrigen([[conductorLat, conductorLng], [origenLat, origenLng]]); // Fallback
 
-    fetch(
-      `https://router.project-osrm.org/route/v1/driving/${conductorLng},${conductorLat};${origenLng},${origenLat}?overview=full&geometries=geojson`
-    )
-      .then((res) => res.json())
-      .then((data: OSRMResponse) => {
-        if (!isMounted) return; // Evita memory leaks si el componente se desmonta o actualiza rápido
-        if (data.routes && data.routes[0]) {
-          const coords = data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]] as [number, number]);
-          setRutaOrigen(coords);
+    const loadRoutes = async () => {
+      if (estado === "ACEPTADO") {
+        if (rutaOrigen.length === 0) {
+          setRutaOrigen([[conductorLat, conductorLng], [origenLat, origenLng]]);
         }
-      })
-      .catch((err) => console.error("Error al obtener ruta OSRM:", err));
+        const route = await fetchRoute([conductorLat, conductorLng], [origenLat, origenLng]);
+        if (isMounted && route) setRutaOrigen(route);
+      }
+
+      if (estado === "EN_CURSO") {
+        if (rutaViaje.length === 0) {
+          setRutaViaje([[conductorLat, conductorLng], [destinoLat, destinoLng]]);
+        }
+        const route = await fetchRoute([conductorLat, conductorLng], [destinoLat, destinoLng]);
+        if (isMounted && route) setRutaViaje(route);
+      }
+    };
+
+    loadRoutes();
 
     return () => {
       isMounted = false;
     };
-  }, [conductorLat, conductorLng, origenLat, origenLng, estado]);
-
-  // Fetch ruta: Origen -> Destino
-  useEffect(() => {
-    if (estado !== "EN_CURSO") return;
-
-    let isMounted = true;
-    setRutaViaje([[origenLat, origenLng], [destinoLat, destinoLng]]); // Fallback
-
-    fetch(
-      `https://router.project-osrm.org/route/v1/driving/${origenLng},${origenLat};${destinoLng},${destinoLat}?overview=full&geometries=geojson`
-    )
-      .then((res) => res.json())
-      .then((data: OSRMResponse) => {
-        if (!isMounted) return;
-        if (data.routes && data.routes[0]) {
-          const coords = data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]] as [number, number]);
-          setRutaViaje(coords);
-        }
-      })
-      .catch((err) => console.error("Error al obtener ruta OSRM:", err));
-
-    return () => {
-      isMounted = false;
-    };
-  }, [origenLat, origenLng, destinoLat, destinoLng, estado]);
+  }, [conductorLat, conductorLng, origenLat, origenLng, destinoLat, destinoLng, estado, rutaOrigen.length, rutaViaje.length]);
 
   return (
     <MapContainer
       center={[conductorLat, conductorLng]}
       zoom={15}
-      className="w-full h-full"
+      className="w-full h-full z-0"
       zoomControl={false}
       attributionControl={false}
     >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-
-      {/* Línea Neobrutalista: conductor → origen (ACEPTADO) */}
-      {estado === "ACEPTADO" && (
+      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      {estado === "ACEPTADO" && rutaOrigen.length > 0 && (
         <Polyline
           positions={rutaOrigen}
           color="#09090B"
           weight={6}
-          dashArray="10 10"
+          dashArray="12 12"
           lineCap="square"
         />
       )}
 
-      {/* Línea Neobrutalista: origen → destino (EN_CURSO) */}
-      {estado === "EN_CURSO" && (
+      {estado === "EN_CURSO" && rutaViaje.length > 0 && (
         <Polyline
           positions={rutaViaje}
           color="#09090B"
@@ -168,7 +166,6 @@ export default function MapaViaje({
         />
       )}
 
-      {/* Marcadores */}
       <Marker position={[conductorLat, conductorLng]} icon={iconConductor}>
         <Popup>Tu posición actual</Popup>
       </Marker>

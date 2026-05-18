@@ -11,17 +11,17 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 
 const ORIGENES = [
-  { direccion: "Plaza Rivadavia, Bahía Blanca", latitud: -38.7183, longitud: -62.2663 },
-  { direccion: "Teatro Municipal, Bahía Blanca", latitud: -38.7153, longitud: -62.2655 },
-  { direccion: "Parque de Mayo, Bahía Blanca", latitud: -38.7050, longitud: -62.2675 },
-  { direccion: "Terminal de Ómnibus, Bahía Blanca", latitud: -38.7167, longitud: -62.2583 },
+  { direccion: "Plaza Rivadavia, Bahía Blanca", latitud: -38.71762, longitud: -62.26549 },
+  { direccion: "Teatro Municipal, Bahía Blanca", latitud: -38.71495, longitud: -62.26017 }, // Alsina 425
+  { direccion: "Parque de Mayo, Bahía Blanca", latitud: -38.69541, longitud: -62.27216 },
+  { direccion: "Terminal de Ómnibus, Bahía Blanca", latitud: -38.73604, longitud: -62.24702 }, // Drago 1900
 ];
 
 const DESTINOS = [
-  { direccion: "Hospital Penna, Bahía Blanca", latitud: -38.7118, longitud: -62.2335 },
-  { direccion: "Universidad Nacional del Sur", latitud: -38.7060, longitud: -62.2714 },
-  { direccion: "Bahía Blanca Plaza Shopping", latitud: -38.6975, longitud: -62.2472 },
-  { direccion: "Paseo de las Esculturas, Bahía Blanca", latitud: -38.7111, longitud: -62.2594 },
+  { direccion: "Hospital Penna, Bahía Blanca", latitud: -38.72969, longitud: -62.22772 }, // Av. Láinez 2401
+  { direccion: "Universidad Nacional del Sur", latitud: -38.70173, longitud: -62.27020 }, // Complejo Alem 1253
+  { direccion: "Bahía Blanca Plaza Shopping", latitud: -38.69997, longitud: -62.24168 }, // Sarmiento 2153
+  { direccion: "Paseo de las Esculturas, Bahía Blanca", latitud: -38.70553, longitud: -62.26127 }, // Urquiza 574
 ];
 
 const PASAJEROS = [
@@ -37,7 +37,6 @@ export async function GET() {
 
   // Simula que llega una solicitud con 40% de probabilidad en cada polling
   const hayNuevaSolicitud = Math.random() < 0.4;
-
   if (!hayNuevaSolicitud) {
     return NextResponse.json({ solicitud: null });
   }
