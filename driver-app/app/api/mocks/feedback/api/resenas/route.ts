@@ -5,14 +5,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not Found" }, { status: 404 });
   }
 
-  // Validación de Autenticación requerida por la documentación
-  // Según la doc (Endpoints A y B), requiere un JWT (Bearer token del pasajero o conductor)
+  // Validación M2M/local: acepta x-api-key o Authorization Bearer.
+  const apiKey = request.headers.get('x-api-key');
   const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const expectedKey = process.env.INTERNAL_API_KEY;
+
+  if (!apiKey && !authHeader) {
     return NextResponse.json(
-      { error: "Unauthorized. Missing or invalid Bearer token." },
+      { error: "Unauthorized. Missing x-api-key or Bearer token." },
       { status: 401 }
     );
+  }
+
+  if (expectedKey) {
+    const expectedAuth = `Bearer ${expectedKey}`;
+    if (apiKey !== expectedKey && authHeader !== expectedAuth) {
+      return NextResponse.json(
+        { error: "Unauthorized. Invalid M2M credentials." },
+        { status: 401 }
+      );
+    }
   }
 
   try {
@@ -24,7 +36,7 @@ export async function POST(request: Request) {
       estado: "REGISTRADA",
       timestamp: new Date().toISOString()
     }, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Invalid Payload" }, { status: 400 });
   }
 }

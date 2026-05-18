@@ -3,20 +3,53 @@ import { prisma } from '@/lib/prisma';
 import { handleError } from '@/lib/api-utils';
 import { auth } from '@clerk/nextjs/server';
 
+function getRoleFromSessionClaims(sessionClaims: unknown): string | null {
+  if (typeof sessionClaims !== 'object' || sessionClaims === null) {
+    return null;
+  }
+
+  const claims = sessionClaims as Record<string, unknown>;
+  const metadata = claims.metadata;
+  if (typeof metadata === 'object' && metadata !== null) {
+    const metadataRole = (metadata as Record<string, unknown>)['role'];
+    if (typeof metadataRole === 'string') {
+      return metadataRole;
+    }
+  }
+
+  const directRole = claims.role;
+  if (typeof directRole === 'string') {
+    return directRole;
+  }
+
+  return null;
+}
+
 export async function GET(request: Request, { params }: { params: Promise<{ id_viaje: string }> }) {
   try {
     const { id_viaje } = await params;
-    const { userId, sessionClaims } = await auth();
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // 1. Verificación M2M (Para cuando la Rider App u otro servicio consume esto)
+    const apiKey = request.headers.get('x-api-key');
+    const expectedKey = process.env.INTERNAL_API_KEY;
+    const isM2M = apiKey && expectedKey && apiKey === expectedKey;
+
+    let userId: string | null = null;
+    let role: string | null = null;
+
+    // 2. Si no es M2M, validamos la sesión de Clerk (Para cuando el frontend lo consume)
+    if (!isM2M) {
+      const authData = await auth();
+      userId = authData.userId;
+
+      if (!userId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      role = getRoleFromSessionClaims(authData.sessionClaims);
     }
 
-    const role = (sessionClaims?.metadata as any)?.role || (sessionClaims as any)?.role;
-    if (role !== 'rider') {
-      return NextResponse.json({ error: "Forbidden: Solo pasajeros pueden consultar telemetría" }, { status: 403 });
-    }
-
+    // Buscamos el viaje en la base de datos
     const viaje = await prisma.viaje.findUnique({
       where: { id_viaje },
       include: { conductor: true }
@@ -26,17 +59,26 @@ export async function GET(request: Request, { params }: { params: Promise<{ id_v
       return NextResponse.json({ success: false, error: 'Viaje no encontrado' }, { status: 404 });
     }
 
-    if (viaje.id_pasajero !== userId) {
-      return NextResponse.json({ error: "Forbidden: No eres el pasajero de este viaje" }, { status: 403 });
+    // 3. Verificación de permisos (Solo si es una petición desde el frontend)
+    if (!isM2M) {
+      if (role === 'rider' && viaje.id_pasajero !== userId) {
+        return NextResponse.json({ error: "Forbidden: No sos el pasajero de este viaje" }, { status: 403 });
+      }
+      if (role === 'driver' && viaje.id_conductor !== userId) {
+        return NextResponse.json({ error: "Forbidden: No sos el conductor de este viaje" }, { status: 403 });
+      }
     }
 
+    // 4. Retornamos la telemetría según el contrato
     return NextResponse.json({
       id_viaje: viaje.id_viaje,
       coordenadas: {
-        lat: viaje.conductor.latitud_actual,
-        lng: viaje.conductor.longitud_actual
+        lat: viaje.conductor?.latitud_actual ?? 0,
+        lng: viaje.conductor?.longitud_actual ?? 0
       },
-      ultima_actualizacion: new Date().toISOString() // En un entorno real, sería el timestamp del último reporte
+      rumbo: 0, // Mockeado hasta que implementes cálculos reales de dirección
+      velocidad_kmh: 0, // Mockeado
+      ultima_actualizacion: new Date().toISOString()
     });
   } catch (error) {
     return handleError(error);

@@ -24,17 +24,19 @@ const createViajeSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    let { userId, sessionClaims } = await auth();
-    let role = (sessionClaims?.metadata as any)?.role || (sessionClaims as any)?.role;
+    const authResult = await auth();
+    let userId = authResult.userId;
 
     // Bypass para pruebas de integración local
-    if ((process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && request.headers.get('Authorization')?.includes('test-jwt-token')) {
+    if (
+      (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') &&
+      request.headers.get('Authorization')?.includes('test-jwt-token')
+    ) {
       userId = request.headers.get('x-test-driver-id') || 'cond_test_123';
-      role = 'driver';
     }
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -42,18 +44,28 @@ export async function POST(request: Request) {
 
     // Verificar que el conductor autenticado es quien acepta el viaje
     if (parsed.id_conductor !== userId) {
-      return NextResponse.json({ error: "Forbidden: No podés aceptar viajes para otro conductor" }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Forbidden: No podés aceptar viajes para otro conductor' },
+        { status: 403 }
+      );
     }
 
-    // Verificar que existe como conductor en la BD (fuente de verdad de autorización)
+    // Verificar que existe como conductor activo y guardar su estado previo para posibles rollbacks
     const conductorExiste = await prisma.conductor.findUnique({
       where: { id_conductor: userId },
-      select: { id_conductor: true, isActive: true }
+      select: { id_conductor: true, isActive: true, estado: true },
     });
+
     if (!conductorExiste || !conductorExiste.isActive) {
-      return NextResponse.json({ error: "Forbidden: Solo conductores activos pueden aceptar viajes" }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Forbidden: Solo conductores activos pueden aceptar viajes' },
+        { status: 403 }
+      );
     }
 
+    const estadoOriginalConductor = conductorExiste.estado;
+
+    // Persistir el viaje localmente de forma transaccional
     const viaje = await prisma.$transaction(async (tx: TransactionClient) => {
       const v = await tx.viaje.create({
         data: {
@@ -71,8 +83,8 @@ export async function POST(request: Request) {
           destino_latitud: parsed.destino_latitud,
           destino_longitud: parsed.destino_longitud,
           destino_direccion: parsed.destino_direccion,
-          pasajero_nombre: parsed.pasajero_nombre
-        }
+          pasajero_nombre: parsed.pasajero_nombre,
+        },
       });
 
       await tx.conductor.update({
@@ -80,31 +92,72 @@ export async function POST(request: Request) {
         data: {
           estado: 'OCUPADO',
           latitud_actual: parsed.latitud_actual,
-          longitud_actual: parsed.longitud_actual
-        }
+          longitud_actual: parsed.longitud_actual,
+        },
       });
 
       return v;
     });
 
-    // Llamada saliente (Outbound) a Rider App (POST /api/viajes)
+    // ── Sincronización M2M saliente → Rider App ─────────────────────────────────────
+    const internalApiKey = process.env.INTERNAL_API_KEY;
+    if (!internalApiKey) {
+      console.error(
+        '[ERROR] INTERNAL_API_KEY no está definida en las variables de entorno. ' +
+        'La sincronización M2M con Rider App no puede realizarse de forma segura.'
+      );
+    }
+
     try {
       const riderResponse = await fetch(`${process.env.RIDER_APP_URL}/api/viajes`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          // AGREGAMOS EL HEADER M2M REQUERIDO
+          ...(internalApiKey ? { 'x-api-key': internalApiKey } : {}),
+        },
         body: JSON.stringify({
           id_solicitud: viaje.id_solicitud,
           id_conductor: viaje.id_conductor,
           id_vehiculo: viaje.id_vehiculo,
           latitud_actual: parsed.latitud_actual,
-          longitud_actual: parsed.longitud_actual
-        })
+          longitud_actual: parsed.longitud_actual,
+        }),
       });
+
+      // MANEJO CORRECTO DEL CONFLICTO 409
+      if (riderResponse.status === 409) {
+        console.warn(`[CONFLICT] La solicitud ${parsed.id_solicitud} ya fue tomada. Iniciando reversión local...`);
+
+        // Acción de compensación: deshacer los cambios en la base de datos de manera segura
+        await prisma.$transaction(async (tx) => {
+          await tx.viaje.delete({
+            where: { id_viaje: viaje.id_viaje }
+          });
+
+          await tx.conductor.update({
+            where: { id_conductor: parsed.id_conductor },
+            data: { estado: estadoOriginalConductor }
+          });
+        });
+
+        // Retornar 409 al frontend propio para disparar el aviso en pantalla
+        return NextResponse.json(
+          { error: 'La solicitud de viaje ya fue aceptada por otro conductor.' },
+          { status: 409 }
+        );
+      }
+
       if (!riderResponse.ok) {
-        console.warn(`[WARNING] Rider App devolvió estado ${riderResponse.status} al sincronizar.`);
+        console.warn(
+          `[WARNING] Rider App devolvió estado ${riderResponse.status} al sincronizar el viaje ${viaje.id_viaje}.`
+        );
       }
     } catch (e) {
-      console.warn("[WARNING] Rider App inalcanzable. El viaje local se guardó, pero la sincronización falló.", e);
+      console.warn(
+        '[WARNING] Rider App inalcanzable. El viaje local se guardó, pero la sincronización M2M falló.',
+        e
+      );
     }
 
     return NextResponse.json({ success: true, data: viaje }, { status: 201 });

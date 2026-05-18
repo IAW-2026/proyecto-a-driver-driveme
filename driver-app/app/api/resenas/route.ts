@@ -32,9 +32,13 @@ export async function POST(request: Request) {
     // Si hay una Feedback App configurada, reenviar allá
     const feedbackUrl = process.env.FEEDBACK_APP_URL;
     if (feedbackUrl) {
+      const internalApiKey = process.env.INTERNAL_API_KEY;
       const res = await fetch(`${feedbackUrl}/api/resenas`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(internalApiKey ? { "x-api-key": internalApiKey } : {}),
+        },
         body: JSON.stringify(parsed),
       });
       const data = await res.json().catch(() => ({}));
