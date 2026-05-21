@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, MapPin, User, Car, DollarSign } from "lucide-react";
+import { Home, MapPin, User, Car, DollarSign, Wallet } from "lucide-react";
 import Image from "next/image";
 
 interface SidebarProps {
@@ -19,7 +19,6 @@ export default function Sidebar({ rol }: SidebarProps) {
       : 'border-zinc-950 bg-white text-zinc-950 dark:bg-zinc-950 dark:border-zinc-700 dark:text-white hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_#09090b] dark:hover:shadow-[4px_4px_0px_0px_#CFFF04]'
     }`;
 
-  // Se agregó "flex-1" para que todos midan igual de ancho
   const mobileLinkClass = (href: string) =>
     `flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-xl transition-all duration-200 ${isActive(href)
       ? 'bg-brand text-zinc-950 font-extrabold border-2 border-zinc-950 shadow-[2px_2px_0px_0px_#09090b] dark:border-brand dark:shadow-[2px_2px_0px_0px_#CFFF04] -translate-y-1'
@@ -67,8 +66,12 @@ export default function Sidebar({ rol }: SidebarProps) {
           {rol === 'CONDUCTOR_ACTIVO' && (
             <>
               <Link href="/historial" className={desktopLinkClass("/historial")}>
-                <MapPin className="h-5 w-5" strokeWidth={3} />
+                <Car className="h-5 w-5" strokeWidth={3} />
                 <span className="font-bold">Mis Viajes</span>
+              </Link>
+              <Link href="/billetera" className={desktopLinkClass("/billetera")}>
+                <Wallet className="h-5 w-5" strokeWidth={3} />
+                <span className="font-bold">Mi Billetera</span>
               </Link>
               <Link href="/perfil" className={desktopLinkClass("/perfil")}>
                 <User className="h-5 w-5" strokeWidth={3} />
@@ -109,7 +112,10 @@ export default function Sidebar({ rol }: SidebarProps) {
                 <MapPin className="h-5 w-5" strokeWidth={3} />
                 <span className="text-[10px] font-bold uppercase tracking-wider mt-0.5">Viajes</span>
               </Link>
-
+              <Link href="/billetera" className={mobileLinkClass("/billetera")}>
+                <Wallet className="h-5 w-5" strokeWidth={3} />
+                <span className="text-[10px] font-bold uppercase tracking-wider mt-0.5">Billetera</span>
+              </Link>
               <Link href="/perfil" className={mobileLinkClass("/perfil")}>
                 <User className="h-5 w-5" strokeWidth={3} />
                 <span className="text-[10px] font-bold uppercase tracking-wider mt-0.5">Perfil</span>

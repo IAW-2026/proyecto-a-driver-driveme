@@ -11,7 +11,7 @@ const prisma = new PrismaClient({ adapter })
 
 async function main() {
   console.log('🌱 Destruyendo ecosistema anterior (incluyendo historiales)...')
-  await prisma.historialConexion.deleteMany() // <-- ¡NUEVA TABLA!
+  await prisma.historialConexion.deleteMany()
   await prisma.viaje.deleteMany()
   await prisma.vehiculo.deleteMany()
   await prisma.conductor.deleteMany()
@@ -147,7 +147,7 @@ async function main() {
   await prisma.viaje.createMany({
     data: [
       { id_solicitud: 'sol_1', id_pasajero: 'pas_1', metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 4500.00, precio_final: 4500.00, id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - unDia * 5) },
-      { id_solicitud: 'sol_2', id_pasajero: 'pas_2', metodo_pago: 'TARJETA', estado_actual: 'FINALIZADO', precio: 3200.50, precio_final: 3200.50, id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - unDia * 2) },
+      { id_solicitud: 'sol_2', id_pasajero: 'pas_2', metodo_pago: 'MERCADO_PAGO', estado_actual: 'FINALIZADO', precio: 3200.50, precio_final: 3200.50, id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - unDia * 2) },
       // Viaje de HOY (suma a la barra)
       { id_solicitud: 'sol_3', id_pasajero: 'pas_3', metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 18900.00, precio_final: 18900.00, id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - (unaHora * 2)) },
     ]
@@ -156,9 +156,9 @@ async function main() {
   // Viajes de Sofía
   await prisma.viaje.createMany({
     data: [
-      { id_solicitud: 'sol_4', id_pasajero: 'pas_4', metodo_pago: 'TARJETA', estado_actual: 'FINALIZADO', precio: 12000.00, precio_final: 12000.00, id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - unDia * 10) },
+      { id_solicitud: 'sol_4', id_pasajero: 'pas_4', metodo_pago: 'MERCADO_PAGO', estado_actual: 'FINALIZADO', precio: 12000.00, precio_final: 12000.00, id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - unDia * 10) },
       { id_solicitud: 'sol_5', id_pasajero: 'pas_5', metodo_pago: 'EFECTIVO', estado_actual: 'CANCELADO_POR_CONDUCTOR', precio: 0, precio_final: 0, id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[1].id_vehiculo, tiempo_aceptado: new Date(ahora - 3600000) },
-      { id_solicitud: 'sol_6', id_pasajero: 'pas_6', metodo_pago: 'TARJETA', estado_actual: 'EN_CURSO', precio: 5600.00, precio_final: 5600.00, id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date() },
+      { id_solicitud: 'sol_6', id_pasajero: 'pas_6', metodo_pago: 'MERCADO_PAGO', estado_actual: 'EN_CURSO', precio: 5600.00, precio_final: 5600.00, id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date() },
     ]
   })
 
@@ -180,7 +180,7 @@ async function main() {
   // Viajes VIP de Valentina de HOY (Para llenar la meta diaria)
   await prisma.viaje.createMany({
     data: [
-      { id_solicitud: 'sol_8', id_pasajero: 'pas_8', metodo_pago: 'TARJETA', estado_actual: 'FINALIZADO', precio: 35000.00, precio_final: 35000.00, id_conductor: conductorValentina.id_conductor, id_vehiculo: conductorValentina.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - (unaHora * 1.5)) },
+      { id_solicitud: 'sol_8', id_pasajero: 'pas_8', metodo_pago: 'MERCADO_PAGO', estado_actual: 'FINALIZADO', precio: 35000.00, precio_final: 35000.00, id_conductor: conductorValentina.id_conductor, id_vehiculo: conductorValentina.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - (unaHora * 1.5)) },
       { id_solicitud: 'sol_9', id_pasajero: 'pas_9', metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 42000.00, precio_final: 42000.00, id_conductor: conductorValentina.id_conductor, id_vehiculo: conductorValentina.vehiculos[0].id_vehiculo, tiempo_aceptado: new Date(ahora - (unaHora * 0.5)) }
     ]
   })

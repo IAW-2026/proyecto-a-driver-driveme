@@ -4,9 +4,6 @@ import { handleError } from '@/lib/api-utils';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 
-// ── Helper: validación M2M ────────────────────────────────────────────────────
-// Acepta x-api-key o Authorization: Bearer, según el contrato en 03-apis.md.
-// Devuelve true si la request está autorizada como llamada M2M.
 function validateM2M(request: Request): boolean {
   const apiKey = request.headers.get('x-api-key');
   const authHeader = request.headers.get('authorization');
@@ -24,9 +21,6 @@ function validateM2M(request: Request): boolean {
   );
 }
 
-// ── GET /api/viajes/[id_viaje]/estado ─────────────────────────────────────────
-// [M2M] Consumidor: Feedback App
-// Valida que el viaje finalizó antes de permitir una reseña.
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id_viaje: string }> }
@@ -65,8 +59,6 @@ export async function GET(
   }
 }
 
-// ── PATCH /api/viajes/[id_viaje]/estado ───────────────────────────────────────
-// User JWT (conductor autenticado) — sin cambios respecto al original.
 const patchSchema = z.object({
   estado_actual: z.enum(['EN_CURSO', 'FINALIZADO']),
 });
@@ -115,6 +107,37 @@ export async function PATCH(
       }
       return v;
     });
+
+    if (parsed.estado_actual === 'FINALIZADO' && viajeActual.metodo_pago === 'EFECTIVO') {
+      const paymentsAppUrl = process.env.PAYMENTS_APP_URL;
+      const internalApiKey = process.env.INTERNAL_API_KEY;
+
+      if (!paymentsAppUrl) {
+        console.error('[ERROR] PAYMENTS_APP_URL no definida. No se pudo notificar el pago en efectivo.');
+      } else {
+        try {
+          const res = await fetch(`${paymentsAppUrl}/api/pagos/procesar`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(internalApiKey ? { 'x-api-key': internalApiKey } : {}),
+            },
+            body: JSON.stringify({
+              id_viaje,
+              id_pasajero: viajeActual.id_pasajero,
+              monto: viajeActual.precio_final,
+              tipo: 'EFECTIVO',
+            }),
+          });
+
+          if (!res.ok) {
+            console.warn(`[WARNING] Payments App respondió ${res.status} al notificar pago en efectivo del viaje ${id_viaje}.`);
+          }
+        } catch (e) {
+          console.warn('[WARNING] Payments App inalcanzable. El viaje se finalizó pero el pago no fue notificado.', e);
+        }
+      }
+    }
 
     return NextResponse.json({ success: true, data: viajeUpdated });
   } catch (error) {

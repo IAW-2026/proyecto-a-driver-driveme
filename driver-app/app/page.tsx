@@ -13,11 +13,9 @@ export default async function HomePage() {
   let metricasHoy = { ganancia: 0, viajes: 0, horas: "0.0", metaDiaria: 30000 };
 
   if (rol === "CONDUCTOR_ACTIVO" && conductorData) {
-    // Calculamos el inicio del día actual (00:00:00)
     const inicioDelDia = new Date();
     inicioDelDia.setHours(0, 0, 0, 0);
 
-    // Buscamos los viajes del conductor de HOY que estén finalizados
     const viajesDeHoy = await prisma.viaje.findMany({
       where: {
         id_conductor: conductorData.id_conductor,
@@ -33,13 +31,12 @@ export default async function HomePage() {
         id_conductor: conductorData.id_conductor,
         timestamp: { gte: inicioDelDia }
       },
-      orderBy: { timestamp: 'asc' } // Ordenamos de más viejo a más nuevo
+      orderBy: { timestamp: 'asc' }
     });
 
     let totalMilisegundos = 0;
     let ultimaConexion: number | null = null;
 
-    // Recorremos el historial sumando el tiempo entre cada "ONLINE" y "OFFLINE"
     conexionesHoy.forEach(registro => {
       if (registro.estado === "ONLINE") {
         ultimaConexion = registro.timestamp.getTime();
@@ -49,14 +46,12 @@ export default async function HomePage() {
       }
     });
 
-    // Si el chofer sigue conectado AHORA mismo, sumamos el tiempo desde su último "ONLINE" hasta este instante
     if (ultimaConexion !== null) {
       totalMilisegundos += new Date().getTime() - ultimaConexion;
     }
 
     const horasCalculadas = (totalMilisegundos / (1000 * 60 * 60)).toFixed(1);
 
-    // 3. Juntamos todo en el objeto final (¡ahora sí, 100% real!)
     metricasHoy = {
       ganancia: gananciaTotal,
       viajes: viajesDeHoy.length,
@@ -72,7 +67,6 @@ export default async function HomePage() {
         {rol === "ADMIN" && <AdminDashboard />}
 
         {rol === "CONDUCTOR_ACTIVO" && conductorData && (
-          // Inyectamos las métricas reales como propiedad
           <ConductorDashboard conductorData={conductorData} metricasHoy={metricasHoy} />
         )}
 

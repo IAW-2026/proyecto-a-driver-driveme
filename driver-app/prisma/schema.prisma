@@ -26,7 +26,7 @@ enum EstadoViaje {
 
 enum MetodoPago {
   EFECTIVO
-  TARJETA
+  MERCADO_PAGO
 }
 
 // ── Modelos ───────────────────────────────────────────────────────────────────

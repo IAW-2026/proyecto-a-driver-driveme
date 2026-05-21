@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs'
-import Nav from "@/app/components/Nav";
 import { ThemeProvider } from "@/app/components/ThemeProvider";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
@@ -33,7 +32,6 @@ export default function RootLayout({
       >
         <ClerkProvider>
           <ThemeProvider>
-            <Nav />
             {children}
           </ThemeProvider>
         </ClerkProvider>

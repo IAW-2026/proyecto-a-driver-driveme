@@ -5,8 +5,6 @@
  * -----------------------------------------------------------------------
  */
 import { NextResponse } from "next/server";
-
-// Coordenadas verificadas contra Google Maps (mayo 2026)
 const ORIGENES = [
   { direccion: "Plaza Rivadavia, Bahía Blanca", latitud: -38.71762, longitud: -62.26549 },
   { direccion: "Teatro Municipal, Bahía Blanca", latitud: -38.71495, longitud: -62.26017 },
