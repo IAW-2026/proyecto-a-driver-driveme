@@ -15,6 +15,6 @@ export interface Transaccion {
 }
 
 export interface BilleteraClientProps {
-  rol: string;
+  rol: "ADMIN" | "CONDUCTOR_NUEVO" | "CONDUCTOR_ACTIVO";
   conductorId: string;
 }

@@ -60,7 +60,6 @@ export function useBilletera(conductorId: string) {
     fetchTransacciones();
   };
 
-  // 🛡️ DEFENSA 2: Garantizamos que txnsSeguras siempre sea un array
   const txnsSeguras = Array.isArray(transacciones) ? transacciones : [];
 
   const txnsFiltradas = txnsSeguras.filter((t) => {
