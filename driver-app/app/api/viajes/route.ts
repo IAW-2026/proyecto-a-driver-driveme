@@ -11,7 +11,7 @@ const createViajeSchema = z.object({
   id_vehiculo: z.string(),
   latitud_actual: z.number(),
   longitud_actual: z.number(),
-  metodo_pago: z.enum(['EFECTIVO', 'TARJETA']),
+  metodo_pago: z.enum(['EFECTIVO', 'MERCADO_PAGO']),
   precio_estimado: z.number(),
   origen_latitud: z.number().optional(),
   origen_longitud: z.number().optional(),
