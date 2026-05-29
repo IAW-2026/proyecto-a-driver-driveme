@@ -1,35 +1,131 @@
 /**
  * app/_views/AdminDashboard.tsx
- * Server Component — Vista del panel de control para el rol ADMIN.
+ * Server Component — Panel de control del ADMIN con métricas globales reales.
  */
+import { Users, Car, Route, Zap, BarChart3, LayoutDashboard } from "lucide-react";
+import prisma from "@/lib/prisma";
+import HeaderModulo from "@/app/components/HeaderModulo";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import AdminMetricaCard from "@/app/components/admin/AdminMetricaCard";
+import { formatARS } from "@/lib/formatters";
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+  // ── Consultas en paralelo para minimizar latencia ──────────────────────────
+  const [
+    totalConductores,
+    conductoresActivos,
+    totalVehiculos,
+    totalViajes,
+    viajesFinalizados,
+    recaudacionAgregada,
+  ] = await Promise.all([
+    prisma.conductor.count({ where: { isActive: true } }),
+    prisma.conductor.count({ where: { isActive: true, estado: "ONLINE" } }),
+    prisma.vehiculo.count({ where: { isActive: true } }),
+    prisma.viaje.count(),
+    prisma.viaje.count({ where: { estado_actual: "FINALIZADO" } }),
+    prisma.viaje.aggregate({
+      _sum: { precio_final: true },
+      where: { estado_actual: "FINALIZADO" },
+    }),
+  ]);
+
+  const recaudacionTotal = recaudacionAgregada._sum.precio_final ?? 0;
+
+  const metricas = [
+    {
+      label: "Conductores Totales",
+      valor: totalConductores.toString(),
+      icono: <Users className="w-8 h-8" strokeWidth={2.5} />,
+      acento: "brand" as const,
+    },
+    {
+      label: "Conductores Activos",
+      valor: conductoresActivos.toString(),
+      icono: <Zap className="w-8 h-8" strokeWidth={2.5} />,
+      acento: "alert" as const,
+    },
+    {
+      label: "Vehículos en Flota",
+      valor: totalVehiculos.toString(),
+      icono: <Car className="w-8 h-8" strokeWidth={2.5} />,
+      acento: "info" as const,
+    },
+    {
+      label: "Viajes Totales",
+      valor: totalViajes.toString(),
+      icono: <Route className="w-8 h-8" strokeWidth={2.5} />,
+      acento: "brand" as const,
+    },
+    {
+      label: "Viajes Finalizados",
+      valor: viajesFinalizados.toString(),
+      icono: <BarChart3 className="w-8 h-8" strokeWidth={2.5} />,
+      acento: "info" as const,
+    },
+    {
+      label: "Recaudación Total",
+      valor: formatARS(recaudacionTotal),
+      icono: <BarChart3 className="w-8 h-8" strokeWidth={2.5} />,
+      acento: "alert" as const,
+    },
+  ];
+
   return (
-    <section className="w-full max-w-5xl mx-auto rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] overflow-hidden">
-      <div
-        className="flex justify-between items-center p-4 md:p-6 border-b"
-        style={{ borderColor: "var(--border)" }}
-      >
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-            Panel de Control de Flota
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-            Bienvenido al centro de mando. Aquí verás las métricas globales.
-          </p>
-        </div>
-        <ThemeToggle />
+    <div className="w-full max-w-5xl mx-auto space-y-6">
+      {/* Encabezado */}
+      <HeaderModulo
+        titulo="Dashboard"
+        icono={LayoutDashboard}
+        subtitulo="Centro de mando — métricas globales en tiempo real"
+        acciones={<ThemeToggle />}
+      />
+
+      {/* Grid de métricas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {metricas.map(({ label, valor, icono, acento }) => (
+          <AdminMetricaCard
+            key={label}
+            label={label}
+            valor={valor}
+            icono={icono}
+            acento={acento}
+          />
+        ))}
       </div>
 
-      <div className="p-8 text-center" style={{ color: "var(--muted)" }}>
-        {/* Placeholder — métricas globales en una etapa futura */}
-        <p className="text-5xl mb-4">📊</p>
-        <p className="text-lg font-medium" style={{ color: "var(--foreground)" }}>
-          Módulo de administración
+      {/* Resumen rápido */}
+      <div className="rounded-2xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-none p-6">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 mb-3">
+          Resumen Operativo
         </p>
-        <p className="text-sm mt-2">Los gráficos y reportes de flota estarán disponibles próximamente.</p>
+        <div className="flex flex-wrap gap-6">
+          <div>
+            <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">Tasa de finalización</p>
+            <p className="text-2xl font-extrabold text-zinc-950 dark:text-white">
+              {totalViajes > 0
+                ? `${Math.round((viajesFinalizados / totalViajes) * 100)}%`
+                : "—"}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">Conductores online</p>
+            <p className="text-2xl font-extrabold text-zinc-950 dark:text-white">
+              {totalConductores > 0
+                ? `${conductoresActivos} / ${totalConductores}`
+                : "—"}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">Recaudación promedio/viaje</p>
+            <p className="text-2xl font-extrabold text-zinc-950 dark:text-white">
+              {viajesFinalizados > 0
+                ? formatARS(recaudacionTotal / viajesFinalizados)
+                : "—"}
+            </p>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
