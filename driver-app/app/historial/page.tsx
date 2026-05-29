@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { getSessionData } from "@/lib/getSessionData";
 import prisma from "@/lib/prisma";
-import Sidebar from "@/app/components/Sidebar";
+import Sidebar from "@/app/components/Nav";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import EstadoVacio from "@/app/components/EstadoVacio";
@@ -58,7 +58,7 @@ export default async function HistorialPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[600px]">
+                <table className="w-full text-left border-collapse min-w-150">
                   <thead>
                     <tr className="bg-zinc-100 dark:bg-zinc-900 border-b-2 border-zinc-950 dark:border-zinc-700">
                       <th className="p-4 font-black uppercase text-xs tracking-wider">ID Viaje</th>

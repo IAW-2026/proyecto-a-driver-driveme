@@ -1,7 +1,7 @@
 // app/page.tsx — Orquestador delgado. Solo decide qué vista renderizar.
 import { getSessionData } from "@/lib/getSessionData";
 import prisma from "@/lib/prisma"; // Importamos Prisma para hacer la consulta a la BD
-import Sidebar from "@/app/components/Sidebar";
+import Sidebar from "@/app/components/Nav";
 import AdminDashboard from "@/app/_views/AdminDashboard";
 import ConductorDashboard from "@/app/_views/ConductorDashboard";
 import RegistroConductor from "@/app/_views/RegistroConductor";
@@ -61,7 +61,7 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
+    <div className="flex min-h-screen w-full overflow-x-hidden bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
       <Sidebar rol={rol} />
       <main className="flex-1 pt-8 pb-24 md:pb-8 md:pl-72 px-4 md:px-10 overflow-y-auto">
         {rol === "ADMIN" && <AdminDashboard />}

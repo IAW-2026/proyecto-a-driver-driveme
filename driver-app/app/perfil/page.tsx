@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSessionData } from "@/lib/getSessionData";
-import Sidebar from "@/app/components/Sidebar";
+import Sidebar from "@/app/components/Nav";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import EstadoVacio from "@/app/components/EstadoVacio";

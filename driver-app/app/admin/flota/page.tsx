@@ -6,7 +6,7 @@
 import { Metadata } from "next";
 import { Car } from "lucide-react";
 import prisma from "@/lib/prisma";
-import Sidebar from "@/app/components/Sidebar";
+import Sidebar from "@/app/components/Nav";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import DriverTable from "@/app/components/admin/DriverTable";
@@ -28,10 +28,10 @@ export default async function FlotaPage() {
   });
 
   return (
-    <div className="flex min-h-screen w-full bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
+    <div className="flex min-h-screen w-full overflow-x-hidden bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
       <Sidebar rol="ADMIN" />
 
-      <main className="flex-1 pt-8 pb-24 md:pb-8 md:pl-72 px-4 md:px-10">
+      <main className="flex-1 pt-8 pb-28 md:pb-8 md:pl-72 px-4 md:px-10">
         <div className="w-full max-w-6xl mx-auto space-y-6">
           {/* Encabezado */}
           <HeaderModulo

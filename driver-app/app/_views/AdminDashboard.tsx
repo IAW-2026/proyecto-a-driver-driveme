@@ -72,7 +72,7 @@ export default async function AdminDashboard() {
   ];
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6">
+    <div className="w-full max-w-5xl mx-auto space-y-6 pb-28 md:pb-0">
       {/* Encabezado */}
       <HeaderModulo
         titulo="Dashboard"
@@ -95,29 +95,29 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Resumen rápido */}
-      <div className="rounded-2xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-none p-6">
-        <p className="text-xs font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 mb-3">
+      <div className="rounded-2xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_#09090b] dark:shadow-none p-6">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 mb-4">
           Resumen Operativo
         </p>
-        <div className="flex flex-wrap gap-6">
-          <div>
-            <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">Tasa de finalización</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-3 rounded-xl border border-zinc-100 dark:border-zinc-800">
+            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1">Tasa de finalización</p>
             <p className="text-2xl font-extrabold text-zinc-950 dark:text-white">
               {totalViajes > 0
                 ? `${Math.round((viajesFinalizados / totalViajes) * 100)}%`
                 : "—"}
             </p>
           </div>
-          <div>
-            <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">Conductores online</p>
+          <div className="p-3 rounded-xl border border-zinc-100 dark:border-zinc-800">
+            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1">Conductores online</p>
             <p className="text-2xl font-extrabold text-zinc-950 dark:text-white">
               {totalConductores > 0
                 ? `${conductoresActivos} / ${totalConductores}`
                 : "—"}
             </p>
           </div>
-          <div>
-            <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">Recaudación promedio/viaje</p>
+          <div className="p-3 rounded-xl border border-zinc-100 dark:border-zinc-800">
+            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1">Recaudación promedio/viaje</p>
             <p className="text-2xl font-extrabold text-zinc-950 dark:text-white">
               {viajesFinalizados > 0
                 ? formatARS(recaudacionTotal / viajesFinalizados)

@@ -3,7 +3,7 @@
 
 import { Wallet, Clock, TrendingUp, RefreshCw, Receipt, Banknote, Smartphone, ChevronRight, AlertTriangle } from "lucide-react";
 import ThemeToggle from "@/app/components/ThemeToggle";
-import Sidebar from "@/app/components/Sidebar";
+import Sidebar from "@/app/components/Nav";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import StatusBadge from "@/app/components/EtiquetaEstado";
 import EstadoVacio from "@/app/components/EstadoVacio";

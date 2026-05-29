@@ -16,6 +16,11 @@ interface AdminTablaProps<T> {
   keyExtractor: (fila: T) => string;
   /** Mensaje cuando no hay datos */
   mensajeVacio?: string;
+  /**
+   * Custom renderer for each row in the mobile card view.
+   * When provided, replaces the default label-value column pairs.
+   */
+  mobileRender?: (fila: T) => React.ReactNode;
 }
 
 /**
@@ -27,6 +32,7 @@ export default function AdminTabla<T>({
   filas,
   keyExtractor,
   mensajeVacio = "No hay datos para mostrar.",
+  mobileRender,
 }: AdminTablaProps<T>) {
   if (filas.length === 0) {
     return (
@@ -76,18 +82,22 @@ export default function AdminTabla<T>({
         {filas.map((fila) => (
           <div
             key={keyExtractor(fila)}
-            className="rounded-xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_#09090b] dark:shadow-none p-4 space-y-2"
+            className="rounded-xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_#09090b] dark:shadow-none p-4 space-y-2.5"
           >
-            {columnas.map((col) => (
-              <div key={col.cabecera} className="flex justify-between items-center gap-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 shrink-0">
-                  {col.cabecera}
-                </span>
-                <span className="font-semibold text-sm text-zinc-950 dark:text-white text-right">
-                  {col.render(fila)}
-                </span>
-              </div>
-            ))}
+            {mobileRender ? (
+              mobileRender(fila)
+            ) : (
+              columnas.map((col) => (
+                <div key={col.cabecera} className="flex items-start justify-between gap-3 flex-wrap">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 shrink-0 pt-0.5">
+                    {col.cabecera}
+                  </span>
+                  <span className="font-semibold text-sm text-zinc-950 dark:text-white text-right min-w-0 wrap-break-word">
+                    {col.render(fila)}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         ))}
       </div>

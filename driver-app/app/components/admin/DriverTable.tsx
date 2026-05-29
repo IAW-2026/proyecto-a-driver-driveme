@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { UserX, UserCheck, Loader2, Users } from "lucide-react";
 import AdminTabla from "@/app/components/admin/AdminTabla";
 import { Prisma } from "@/app/generated/prisma/client";
-import { toggleEstadoConductor } from "@/app/admin/flota/actions";
+import { toggleEstadoConductor } from "@/app/actions/admin";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -278,10 +278,10 @@ export default function DriverTable({ conductores }: DriverTableProps) {
     ];
 
   return (
-    <div className="rounded-2xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-none overflow-hidden">
+    <div className="rounded-2xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_#09090b] dark:shadow-none overflow-hidden">
       {/* Barra de filtros */}
       <div className="px-5 py-4 border-b-2 border-zinc-950 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 space-y-4">
-        <div className="flex flex-wrap gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <GrupoFiltro
             label="Actividad"
             opciones={OPCIONES_ACTIVIDAD}
