@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
   const mockResponse: ProcesarCobroResponse = {
     id_transaccion: "tx_" + Math.random().toString(36).substr(2, 9),
-    estado: body.tipo === 'TARJETA' ? 'CAPTURED' : 'PENDING'
+    estado: 'CAPTURED'
   };
 
   return NextResponse.json(mockResponse);
