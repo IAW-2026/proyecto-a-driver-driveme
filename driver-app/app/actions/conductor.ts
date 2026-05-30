@@ -28,6 +28,9 @@ function m2mHeaders(): HeadersInit {
 // Acción 1: Cambiar estado del switch Online/Offline
 // ────────────────────────────────────────────────────────────────────────────
 export async function toggleConductorStatus(conductorId: string, nuevoEstado: boolean) {
+  const { userId } = await auth();
+  if (!userId || userId !== conductorId) return { success: false, error: "No autorizado" };
+
   try {
     const estadoStr = nuevoEstado ? "ONLINE" : "OFFLINE";
 
@@ -217,6 +220,9 @@ export async function finalizarViaje(id_viaje: string) {
 // Acción 5: Actualizar Meta Diaria
 // ────────────────────────────────────────────────────────────────────────────
 export async function actualizarMetaDiaria(conductorId: string, nuevaMeta: number) {
+  const { userId } = await auth();
+  if (!userId || userId !== conductorId) return { success: false, error: "No autorizado" };
+
   try {
     if (nuevaMeta < 1000) return { success: false, error: "La meta debe ser al menos $1.000" };
 
