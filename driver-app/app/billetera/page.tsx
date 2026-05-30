@@ -29,8 +29,6 @@ export default async function BilleteraPage({
   // 2. Definir la URL base para el microservicio de pagos interno/mockeado
   const baseUrl = process.env.PAYMENTS_APP_URL;
 
-  
-
   let billetera = null;
   let transaccionesPaginadas: any[] = [];
   let totalPages = 0;

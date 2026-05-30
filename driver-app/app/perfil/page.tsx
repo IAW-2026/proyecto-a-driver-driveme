@@ -1,7 +1,6 @@
 // app/perfil/page.tsx
 // Server Component — Perfil del conductor con calificaciones de la Feedback App.
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getSessionData } from "@/lib/getSessionData";
 import Sidebar from "@/app/components/Nav";
 import ThemeToggle from "@/app/components/ThemeToggle";

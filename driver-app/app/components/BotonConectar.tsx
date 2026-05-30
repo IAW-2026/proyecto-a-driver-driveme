@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { toggleConductorStatus } from "@/app/actions/conductor";
+import { toggleConductorStatus } from "@/app/actions/conductor/toggleConductorStatus";
 
 interface ConnectButtonProps {
   conductorId: string;

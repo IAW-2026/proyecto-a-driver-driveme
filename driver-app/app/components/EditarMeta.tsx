@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { actualizarMetaDiaria } from "@/app/actions/conductor";
+import { actualizarMetaDiaria } from "@/app/actions/conductor/actualizarMetaDiaria";
 import { Target, Check } from "lucide-react";
 
 interface EditarMetaProps {

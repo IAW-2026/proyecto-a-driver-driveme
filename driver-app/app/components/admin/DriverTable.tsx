@@ -25,7 +25,7 @@ import {
 import AdminTabla from "@/app/components/admin/AdminTabla";
 import PaginadorURL from "@/app/components/admin/PaginadorURL";
 import { Prisma } from "@/app/generated/prisma/client";
-import { toggleEstadoConductor } from "@/app/actions/admin";
+import { toggleEstadoConductor } from "@/app/actions/admin/toggleEstadoConductor";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 

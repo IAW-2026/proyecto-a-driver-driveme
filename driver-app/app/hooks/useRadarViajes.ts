@@ -1,7 +1,8 @@
 // app/hooks/useRadarViajes.ts
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { SolicitudViaje } from "@/app/types/viajes";
+import { aceptarViaje } from "@/app/actions/conductor/aceptarViaje";
+import { buscarSolicitudes } from "@/app/actions/conductor/buscarSolicitudes";
 
 interface Props {
   isOnline: boolean;
@@ -14,33 +15,40 @@ interface Props {
 
 const TIMER_DURACION = 30;
 
-export function useRadarViajes({ isOnline, conductorId, vehiculoId, latitud, longitud, mostrarToast }: Props) {
-  const router = useRouter();
-
+export function useRadarViajes({
+  isOnline,
+  conductorId,
+  vehiculoId,
+  latitud,
+  longitud,
+  mostrarToast,
+}: Props) {
   const [solicitudActual, setSolicitudActual] = useState<SolicitudViaje | null>(null);
   const [colaSolicitudes, setColaSolicitudes] = useState<SolicitudViaje[]>([]);
-  const [timerSegundos, setTimerSegundos] = useState(TIMER_DURACION);
-  const [aceptando, setAceptando] = useState(false);
+  const [timerSegundos, setTimerSegundos]     = useState(TIMER_DURACION);
+  const [aceptando, setAceptando]             = useState(false);
 
+  // ── Radar: polling cada 5s ────────────────────────────────────────────────
   useEffect(() => {
     if (!isOnline || solicitudActual || colaSolicitudes.length > 0) return;
 
     const intervalo = setInterval(async () => {
-      try {
-        const res = await fetch("/api/solicitudes?estado=BUSCANDO_CONDUCTOR");
-        const data = await res.json();
+      const result = await buscarSolicitudes();
 
-        if (data && Array.isArray(data.solicitudes) && data.solicitudes.length > 0) {
-          setColaSolicitudes(data.solicitudes);
-        }
-      } catch (error) {
-        console.error("Error en el radar:", error);
+      if (!result.success) {
+        console.warn("[Radar] Rider App no disponible, reintentando...");
+        return;
+      }
+
+      if (result.solicitudes.length > 0) {
+        setColaSolicitudes(result.solicitudes);
       }
     }, 5000);
 
     return () => clearInterval(intervalo);
   }, [isOnline, solicitudActual, colaSolicitudes.length]);
 
+  // ── Desencolar siguiente solicitud ────────────────────────────────────────
   useEffect(() => {
     if (isOnline && !solicitudActual && colaSolicitudes.length > 0) {
       const [siguiente, ...restoDeLaCola] = colaSolicitudes;
@@ -55,6 +63,7 @@ export function useRadarViajes({ isOnline, conductorId, vehiculoId, latitud, lon
     }
   }, [isOnline, solicitudActual, colaSolicitudes]);
 
+  // ── Timer de decisión ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!solicitudActual) return;
 
@@ -68,54 +77,63 @@ export function useRadarViajes({ isOnline, conductorId, vehiculoId, latitud, lon
     return () => clearTimeout(tick);
   }, [solicitudActual, timerSegundos, mostrarToast]);
 
-  // ── ACCIONES ──
+  // ── ACCIONES ──────────────────────────────────────────────────────────────
+
   const handleAceptar = async () => {
     if (!solicitudActual || aceptando) return;
-    setAceptando(true);
 
     if (!vehiculoId) {
       mostrarToast("No tenés vehículo registrado.", "error");
-      setAceptando(false);
       return;
     }
 
-    try {
-      const res = await fetch("/api/viajes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_solicitud: solicitudActual.id_solicitud,
-          id_conductor: conductorId,
-          id_pasajero: solicitudActual.pasajero.id_pasajero,
-          id_vehiculo: vehiculoId,
-          latitud_actual: latitud,
-          longitud_actual: longitud,
-          metodo_pago: "EFECTIVO",
-          precio_estimado: solicitudActual.precio_estimado,
-          origen_latitud: solicitudActual.origen.latitud,
-          origen_longitud: solicitudActual.origen.longitud,
-          origen_direccion: solicitudActual.origen.direccion,
-          destino_latitud: solicitudActual.destino.latitud,
-          destino_longitud: solicitudActual.destino.longitud,
-          destino_direccion: solicitudActual.destino.direccion,
-          pasajero_nombre: solicitudActual.pasajero.nombre
-        }),
-      });
+    setAceptando(true);
 
-      const data = await res.json();
-      if (res.status === 409) {
+    const result = await aceptarViaje({
+      id_solicitud:      solicitudActual.id_solicitud,
+      id_conductor:      conductorId,
+      id_pasajero:       solicitudActual.pasajero.id_pasajero,
+      id_vehiculo:       vehiculoId,
+      latitud_actual:    latitud,
+      longitud_actual:   longitud,
+      metodo_pago:       "EFECTIVO",
+      precio_estimado:   solicitudActual.precio_estimado,
+      origen_latitud:    solicitudActual.origen.latitud,
+      origen_longitud:   solicitudActual.origen.longitud,
+      origen_direccion:  solicitudActual.origen.direccion,
+      destino_latitud:   solicitudActual.destino.latitud,
+      destino_longitud:  solicitudActual.destino.longitud,
+      destino_direccion: solicitudActual.destino.direccion,
+      pasajero_nombre:   solicitudActual.pasajero.nombre,
+    });
+
+    setAceptando(false);
+
+    switch (result.error) {
+      case "CONFLICTO":
         mostrarToast("Ese viaje ya fue tomado por otro conductor.", "error");
         setSolicitudActual(null);
-        return;
-      }
-      if (!res.ok) throw new Error();
+        break;
 
-      limpiarSolicitud();
-      router.push(`/viaje/${data.data.id_viaje}`);
-    } catch {
-      mostrarToast("Sin conexión o error al aceptar.", "error");
-    } finally {
-      setAceptando(false);
+      case "RIDER_APP_DOWN":
+        // El viaje se guardó localmente; la sincronización M2M falló pero
+        // no es bloqueante. El servidor igual ejecuta el redirect.
+        mostrarToast("Viaje aceptado. La sincronización tardará unos segundos.", "ok");
+        limpiarSolicitud();
+        break;
+
+      case "UNAUTHORIZED":
+      case "FORBIDDEN_CONDUCTOR":
+      case "CONDUCTOR_INACTIVO":
+        mostrarToast("No tenés permisos para aceptar este viaje.", "error");
+        break;
+
+      case "VALIDACION":
+        mostrarToast("Error en los datos del viaje. Intentá de nuevo.", "error");
+        break;
+
+      default:
+        mostrarToast("Sin conexión o error al aceptar.", "error");
     }
   };
 
@@ -136,6 +154,6 @@ export function useRadarViajes({ isOnline, conductorId, vehiculoId, latitud, lon
     aceptando,
     handleAceptar,
     handleRechazar,
-    limpiarSolicitud
+    limpiarSolicitud,
   };
 }

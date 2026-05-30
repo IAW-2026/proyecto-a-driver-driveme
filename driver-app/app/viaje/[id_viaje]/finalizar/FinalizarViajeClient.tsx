@@ -12,7 +12,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { finalizarViaje } from "@/app/actions/conductor";
+import { finalizarViaje } from "@/app/actions/conductor/finalizarViaje";
 
 interface FinalizarViajeClientProps {
   idViaje: string;

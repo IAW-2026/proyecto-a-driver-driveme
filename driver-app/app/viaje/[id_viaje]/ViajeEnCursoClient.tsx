@@ -10,7 +10,7 @@
 import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { iniciarViaje } from "@/app/actions/conductor";
+import { iniciarViaje } from "@/app/actions/conductor/inciarViaje";
 import { MapPin, Navigation, Flag, AlertTriangle, X, Circle, CheckCircle } from "lucide-react";
 
 // Importación dinámica sin SSR (Cargador Neobrutalista)

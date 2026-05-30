@@ -3,7 +3,7 @@
  * Server Component — Formulario de onboarding para conductores nuevos.
  * El <form> usa una Server Action directamente (no necesita "use client").
  */
-import { registrarConductor } from "@/app/actions/conductor";
+import { registrarConductor } from "@/app/actions/conductor/registrarConductor";
 
 export default function RegistroConductor() {
   return (
