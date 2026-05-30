@@ -27,6 +27,7 @@ async function main() {
       licencia: 'LIC-LUCIANA',
       estado: 'ONLINE',
       meta_diaria: 35000,
+      fecha_ultima_liquidacion: new Date(Date.now() - (86400000 * 10)), // Hace 10 días (Puede liquidar)
       vehiculos: {
         create: { patente: 'AGL-001', marca: 'Peugeot', modelo: '208', anio: 2024, color: 'Blanco' }
       }
@@ -43,6 +44,7 @@ async function main() {
       licencia: 'LIC-SOFIA',
       estado: 'ONLINE',
       meta_diaria: 50000,
+      fecha_ultima_liquidacion: new Date(Date.now() - (86400000 * 2)), // Hace 2 días (Bloqueada por límite de 7 días)
       vehiculos: {
         create: [
           { patente: 'PKR-777', marca: 'Volkswagen', modelo: 'Golf', anio: 2021, color: 'Gris' },

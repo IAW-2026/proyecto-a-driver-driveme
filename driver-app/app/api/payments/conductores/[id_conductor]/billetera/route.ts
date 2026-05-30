@@ -2,20 +2,20 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 
 // ── GET /api/payments/conductores/[id_conductor]/billetera ────────────────────
-// Consumidor: Driver App (este archivo)
-// Proveedor:  Payments App → GET /api/conductores/[id_conductor]/billetera
-//
-// Retorna el estado actual de la billetera del conductor:
-//   - saldo_a_liquidar:  monto ganado aún no transferido
-//   - saldo_liquidado:   acumulado histórico de liquidaciones procesadas
+// BFF proxy: reenvía la petición al endpoint correcto de Payments App:
+// GET /api/pagos/liquidaciones (03-apis.md §E)
+// Devuelve montoPendiente, montoLiquidado e historial de liquidaciones.
+// Autenticación: Bearer JWT del conductor (Clerk, rol DRIVER).
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id_conductor: string }> }
 ) {
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    const token = await authResult.getToken();
+    const userId = authResult.userId;
 
-    if (!userId) {
+    if (!userId || !token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -26,7 +26,6 @@ export async function GET(
     }
 
     const paymentsAppUrl = process.env.PAYMENTS_APP_URL;
-    const internalApiKey = process.env.INTERNAL_API_KEY;
 
     if (!paymentsAppUrl) {
       console.error('[ERROR] PAYMENTS_APP_URL no está definida en las variables de entorno.');
@@ -36,17 +35,14 @@ export async function GET(
       );
     }
 
-    const res = await fetch(
-      `${paymentsAppUrl}/api/conductores/${id_conductor}/billetera`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(internalApiKey ? { 'x-api-key': internalApiKey } : {}),
-        },
-        cache: 'no-store',
-      }
-    );
+    const res = await fetch(`${paymentsAppUrl}/api/pagos/liquidaciones`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      cache: 'no-store',
+    });
 
     if (!res.ok) {
       console.warn(

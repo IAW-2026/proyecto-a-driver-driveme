@@ -46,6 +46,7 @@ model Conductor {
   calificacion_promedio Float           @default(5.0)
   isActive              Boolean         @default(true)
   meta_diaria        Int                 @default(30000) 
+  fecha_ultima_liquidacion DateTime?
   historial_conexion HistorialConexion[]
 
   // Relaciones

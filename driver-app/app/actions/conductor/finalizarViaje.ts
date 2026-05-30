@@ -42,14 +42,11 @@ export async function finalizarViaje(id_viaje: string) {
     // 4. Procesar cobro via Payments App — M2M requerido por el contrato
     let idTransaccion: string | null = null;
     try {
-      const pagoRes = await fetch(`${process.env.PAYMENTS_APP_URL}/api/pagos/procesar`, {
-        method: "POST",
+      const pagoRes = await fetch(`${process.env.PAYMENTS_APP_URL}/api/pagos/transacciones`, {
+        method: "PUT",
         headers: m2mHeaders(),
         body: JSON.stringify({
-          id_viaje,
-          id_pasajero: viaje.id_pasajero,
-          monto: viaje.precio_final,
-          tipo: viaje.metodo_pago,
+          id_transaccion: id_viaje,
         }),
       });
       const pagoData = await pagoRes.json();
@@ -76,6 +73,7 @@ export async function finalizarViaje(id_viaje: string) {
     } catch {
       console.warn("[WARNING] Rider App inalcanzable al notificar finalización.");
     }
+
 
     revalidatePath("/");
     revalidateTag(`sugerencias-${userId}`, "default");

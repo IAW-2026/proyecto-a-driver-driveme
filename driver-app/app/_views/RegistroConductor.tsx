@@ -1,11 +1,24 @@
 /**
  * app/_views/RegistroConductor.tsx
- * Server Component — Formulario de onboarding para conductores nuevos.
- * El <form> usa una Server Action directamente (no necesita "use client").
+ * Client Component — Formulario de onboarding para conductores nuevos.
+ * Llama la Server Action explícitamente con useTransition.
  */
+"use client";
+
+import { useTransition } from "react";
 import { registrarConductor } from "@/app/actions/conductor/registrarConductor";
 
 export default function RegistroConductor() {
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    startTransition(() => {
+      registrarConductor(formData);
+    });
+  }
+
   return (
     <section className="max-w-2xl w-full p-8 rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff]">
       <div className="mb-6 pb-4 border-b" style={{ borderColor: "var(--border)" }}>
@@ -17,7 +30,7 @@ export default function RegistroConductor() {
         </p>
       </div>
 
-      <form action={registrarConductor} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* ── Datos Personales ─────────────────────────────────── */}
         <fieldset className="space-y-4">
           <legend className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
@@ -146,10 +159,11 @@ export default function RegistroConductor() {
 
         <button
           type="submit"
-          className="w-full p-4 rounded-2xl border-2 border-zinc-950 bg-zinc-950 text-white font-bold text-base shadow-[6px_6px_0px_0px_#09090b] transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-brand/30"
+          disabled={isPending}
+          className="w-full p-4 rounded-2xl border-2 border-zinc-950 bg-zinc-950 text-white font-bold text-base shadow-[6px_6px_0px_0px_#09090b] transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           aria-label="Guardar datos y activar cuenta de conductor"
         >
-          Activar mi cuenta de conductor
+          {isPending ? "Activando cuenta…" : "Activar mi cuenta de conductor"}
         </button>
       </form>
     </section>

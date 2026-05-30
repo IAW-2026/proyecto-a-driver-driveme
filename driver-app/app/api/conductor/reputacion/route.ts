@@ -25,6 +25,7 @@ function validateM2M(request: Request): boolean {
 const reputacionSchema = z.object({
   id_conductor: z.string().min(1),
   puntaje: z.number().min(1).max(5),
+  comentario_promedio: z.string().nullable().optional(),
 });
 
 // ── POST /api/conductor/reputacion ────────────────────────────────────────────

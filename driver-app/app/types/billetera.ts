@@ -1,20 +1,24 @@
 // app/types/billetera.ts
 
+export interface Liquidacion {
+  id: string;
+  montoPagado: number;
+  estado: "PROCESADA";
+  fechaEjecutada: string;
+}
+
 export interface BilleteraData {
-  saldo_a_liquidar: number;
-  saldo_liquidado: number;
+  montoPendiente: number;
+  montoLiquidado: number;
+  liquidaciones: Liquidacion[];
 }
 
 export interface Transaccion {
-  id_transaccion: string;
-  id_viaje: string;
-  monto: number;
-  tipo: "EFECTIVO" | "MERCADO_PAGO";
-  liquidacion: "PENDIENTE" | "LIQUIDADO";
-  fecha: string;
-}
-
-export interface BilleteraClientProps {
-  rol: "ADMIN" | "CONDUCTOR_NUEVO" | "CONDUCTOR_ACTIVO";
-  conductorId: string;
+  id: string;
+  idViaje: string;
+  monto: string; // Payments devuelve string según el contrato
+  metodoPago: "EFECTIVO" | "MERCADO_PAGO";
+  estado: "CONFIRMADO" | "PENDIENTE";
+  estadoLiquidacion: "PENDIENTE" | "LIQUIDADO";
+  fechaCreacion: string;
 }

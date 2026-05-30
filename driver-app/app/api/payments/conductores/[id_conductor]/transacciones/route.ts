@@ -2,20 +2,20 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 
 // ── GET /api/payments/conductores/[id_conductor]/transacciones ────────────────
-// Consumidor: Driver App (este archivo)
-// Proveedor:  Payments App → GET /api/conductores/[id_conductor]/transacciones
-//
-// Retorna el historial de transacciones del conductor. Cada transacción incluye
-// el atributo `liquidacion` (enum: 'PENDIENTE' | 'LIQUIDADO') que indica
-// si ese monto ya fue transferido al conductor o está esperando el cierre semanal.
+// BFF proxy: reenvía la petición del conductor autenticado al endpoint
+// Payments App → GET /api/pagos/transacciones (con JWT Clerk, rol DRIVER)
+// La documentación (03-apis.md §C) especifica que este endpoint acepta el
+// JWT del usuario; el rol se resuelve en Payments App desde la base de datos.
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id_conductor: string }> }
 ) {
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    const token = await authResult.getToken();
+    const userId = authResult.userId;
 
-    if (!userId) {
+    if (!userId || !token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -26,7 +26,6 @@ export async function GET(
     }
 
     const paymentsAppUrl = process.env.PAYMENTS_APP_URL;
-    const internalApiKey = process.env.INTERNAL_API_KEY;
 
     if (!paymentsAppUrl) {
       console.error('[ERROR] PAYMENTS_APP_URL no está definida en las variables de entorno.');
@@ -35,16 +34,18 @@ export async function GET(
         { status: 500 }
       );
     }
+
+    // Reenviar query params (ej: ?estado_liquidacion=PENDIENTE)
     const { searchParams } = new URL(request.url);
     const query = searchParams.toString();
 
     const res = await fetch(
-      `${paymentsAppUrl}/api/conductores/${id_conductor}/transacciones${query ? `?${query}` : ''}`,
+      `${paymentsAppUrl}/api/pagos/transacciones${query ? `?${query}` : ''}`,
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          ...(internalApiKey ? { 'x-api-key': internalApiKey } : {}),
+          Authorization: `Bearer ${token}`,
         },
         cache: 'no-store',
       }

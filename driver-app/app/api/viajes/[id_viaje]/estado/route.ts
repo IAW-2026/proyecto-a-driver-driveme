@@ -116,23 +116,26 @@ export async function PATCH(
         console.error('[ERROR] PAYMENTS_APP_URL no definida. No se pudo notificar el pago en efectivo.');
       } else {
         try {
-          const res = await fetch(`${paymentsAppUrl}/api/pagos/procesar`, {
-            method: 'POST',
+          const res = await fetch(`${paymentsAppUrl}/api/pagos/transacciones`, {
+            method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
               ...(internalApiKey ? { 'x-api-key': internalApiKey } : {}),
             },
             body: JSON.stringify({
-              id_viaje,
-              id_pasajero: viajeActual.id_pasajero,
-              monto: viajeActual.precio_final,
-              tipo: 'EFECTIVO',
+              id_transaccion: id_viaje,
             }),
           });
 
-          if (!res.ok) {
+          let idTransaccion = id_viaje;
+          if (res.ok) {
+            const pagoData = await res.json().catch(() => ({}));
+            if (pagoData.id_transaccion) idTransaccion = pagoData.id_transaccion;
+          } else {
             console.warn(`[WARNING] Payments App respondió ${res.status} al notificar pago en efectivo del viaje ${id_viaje}.`);
           }
+
+
         } catch (e) {
           console.warn('[WARNING] Payments App inalcanzable. El viaje se finalizó pero el pago no fue notificado.', e);
         }

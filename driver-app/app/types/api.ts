@@ -205,12 +205,9 @@ export interface SolicitarReembolsoResponse {
   estado: EstadoPago;
 }
 
-// POST /api/pagos/procesar
+// PUT /api/pagos/transacciones
 export interface ProcesarCobroRequest {
-  id_viaje: string;
-  id_pasajero: string;
-  monto: number;
-  tipo: MetodoDePago;
+  id_transaccion: string;
 }
 
 export interface ProcesarCobroResponse {
