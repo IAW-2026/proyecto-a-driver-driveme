@@ -1,14 +1,29 @@
 "use client";
 
 /**
- * app/admin/flota/DriverTable.tsx
- * Client Component — Filtros locales (useState) + tabla de conductores.
- * Recibe el array completo desde el Server Component y filtra en el browser.
+ * app/components/admin/DriverTable.tsx
+ * Client Component — Filtros y búsqueda basados en URL (useSearchParams + useRouter).
+ * NO usa useState para el estado de filtros; toda la lógica de filtrado y paginación
+ * ocurre en el Server Component (flota/page.tsx) a nivel de base de datos.
+ *
+ * URL params que controla este componente:
+ *   ?query=      texto libre (nombre, apellido, licencia)
+ *   ?actividad=  ACTIVO | INACTIVO
+ *   ?conexion=   ONLINE | OFFLINE | OCUPADO
+ *   ?page=       número de página
  */
-import { useState, useMemo, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { UserX, UserCheck, Loader2, Users } from "lucide-react";
+import { useState, useTransition, useEffect, useRef } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import {
+  UserX,
+  UserCheck,
+  Loader2,
+  Users,
+  Search,
+  X,
+} from "lucide-react";
 import AdminTabla from "@/app/components/admin/AdminTabla";
+import PaginadorURL from "@/app/components/admin/PaginadorURL";
 import { Prisma } from "@/app/generated/prisma/client";
 import { toggleEstadoConductor } from "@/app/actions/admin";
 
@@ -23,6 +38,10 @@ type FiltroConexion = "TODOS" | "ONLINE" | "OFFLINE" | "OCUPADO";
 
 interface DriverTableProps {
   conductores: ConductorConVehiculos[];
+  totalFiltrado: number;
+  totalGlobal: number;
+  paginaActual: number;
+  totalPaginas: number;
 }
 
 // ── Sub-componentes locales ───────────────────────────────────────────────────
@@ -74,8 +93,6 @@ function AccionConductor({
     startTransition(async () => {
       const result = await toggleEstadoConductor(id_conductor, isActive);
       if (result.ok) {
-        // router.refresh() provoca que el Server Component re-fetche los datos
-        // frescos de la BD (revalidatePath ya invalidó la caché).
         router.refresh();
       } else {
         alert(result.error ?? "Error desconocido.");
@@ -133,13 +150,15 @@ const OPCIONES_CONEXION: { valor: FiltroConexion; label: string }[] = [
   { valor: "OCUPADO", label: "Ocupado" },
 ];
 
-// ── Componente de filtro tipo tab ─────────────────────────────────────────────
+// ── Grupo de filtros tipo tab ─────────────────────────────────────────────────
 
 interface GrupoFiltroProps<T extends string> {
   label: string;
   opciones: { valor: T; label: string }[];
   seleccionado: T;
+  /** Callback que recibe el nuevo valor — el padre decide cómo actualizar la URL */
   onChange: (valor: T) => void;
+  isPending: boolean;
 }
 
 function GrupoFiltro<T extends string>({
@@ -147,17 +166,14 @@ function GrupoFiltro<T extends string>({
   opciones,
   seleccionado,
   onChange,
+  isPending,
 }: GrupoFiltroProps<T>) {
   return (
     <fieldset>
       <legend className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 mb-2">
         {label}
       </legend>
-      <div
-        role="group"
-        aria-label={label}
-        className="flex flex-wrap gap-2"
-      >
+      <div role="group" aria-label={label} className="flex flex-wrap gap-2">
         {opciones.map(({ valor, label: lbl }) => {
           const activo = seleccionado === valor;
           return (
@@ -165,8 +181,9 @@ function GrupoFiltro<T extends string>({
               key={valor}
               type="button"
               onClick={() => onChange(valor)}
+              disabled={isPending}
               aria-pressed={activo}
-              className={`px-3 py-1.5 rounded-xl border-2 text-xs font-extrabold uppercase tracking-wide transition-all duration-150
+              className={`px-3 py-1.5 rounded-xl border-2 text-xs font-extrabold uppercase tracking-wide transition-all duration-150 disabled:opacity-60
                 ${
                   activo
                     ? "bg-zinc-950 text-white border-zinc-950 shadow-[3px_3px_0px_0px_#09090b] dark:bg-brand dark:text-zinc-950 dark:border-brand dark:shadow-[3px_3px_0px_0px_#CFFF04]"
@@ -184,24 +201,74 @@ function GrupoFiltro<T extends string>({
 
 // ── Componente principal ──────────────────────────────────────────────────────
 
-export default function DriverTable({ conductores }: DriverTableProps) {
-  const [filtroActividad, setFiltroActividad] = useState<FiltroActividad>("TODOS");
-  const [filtroConexion, setFiltroConexion] = useState<FiltroConexion>("TODOS");
+export default function DriverTable({
+  conductores,
+  totalFiltrado,
+  totalGlobal,
+  paginaActual,
+  totalPaginas,
+}: DriverTableProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
-  // Filtrado en memoria: sin viajes de red, instantáneo
-  const conductoresFiltrados = useMemo(() => {
-    return conductores.filter((c) => {
-      const pasaActividad =
-        filtroActividad === "TODOS" ||
-        (filtroActividad === "ACTIVO" && c.isActive) ||
-        (filtroActividad === "INACTIVO" && !c.isActive);
+  // Leer el estado actual de la URL
+  const queryActual = searchParams.get("query") ?? "";
+  const actividadActual = (searchParams.get("actividad") ?? "TODOS") as FiltroActividad;
+  const conexionActual = (searchParams.get("conexion") ?? "TODOS") as FiltroConexion;
 
-      const pasaConexion =
-        filtroConexion === "TODOS" || c.estado === filtroConexion;
+  // Estado LOCAL solo para el input de búsqueda (debounce sin afectar la URL en cada keystroke)
+  const [inputValue, setInputValue] = useState(queryActual);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-      return pasaActividad && pasaConexion;
+  // Sincronizar inputValue cuando la URL cambia externamente (ej: botón "limpiar")
+  useEffect(() => {
+    setInputValue(queryActual);
+  }, [queryActual]);
+
+  /** Actualiza la URL preservando los parámetros existentes */
+  function actualizarURL(cambios: Record<string, string>) {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(cambios)) {
+      if (value === "" || value === "TODOS") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    }
+    // Cualquier cambio de filtro resetea a la página 1
+    params.set("page", "1");
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`);
     });
-  }, [conductores, filtroActividad, filtroConexion]);
+  }
+
+  /** Cambia el filtro de actividad y actualiza la URL */
+  function handleActividad(valor: FiltroActividad) {
+    actualizarURL({ actividad: valor });
+  }
+
+  /** Cambia el filtro de conexión y actualiza la URL */
+  function handleConexion(valor: FiltroConexion) {
+    actualizarURL({ conexion: valor });
+  }
+
+  /** Maneja el input de búsqueda con debounce de 400ms */
+  function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value;
+    setInputValue(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      actualizarURL({ query: val });
+    }, 400);
+  }
+
+  /** Limpia la búsqueda */
+  function limpiarBusqueda() {
+    setInputValue("");
+    actualizarURL({ query: "" });
+  }
 
   // Columnas de la tabla
   const columnas: Parameters<typeof AdminTabla<ConductorConVehiculos>>[0]["columnas"] =
@@ -222,7 +289,6 @@ export default function DriverTable({ conductores }: DriverTableProps) {
       {
         cabecera: "Vehículo",
         render: (c) => {
-          // Priorizar el vehículo activo; si no hay, mostrar el primero disponible
           const v = c.vehiculos.find((v) => v.isActive) ?? c.vehiculos[0];
           if (!v)
             return (
@@ -278,40 +344,89 @@ export default function DriverTable({ conductores }: DriverTableProps) {
     ];
 
   return (
-    <div className="rounded-2xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_#09090b] dark:shadow-none overflow-hidden">
-      {/* Barra de filtros */}
+    <div
+      className={`rounded-2xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_#09090b] dark:shadow-none overflow-hidden transition-opacity duration-200 ${
+        isPending ? "opacity-70" : "opacity-100"
+      }`}
+    >
+      {/* ── Barra de filtros ── */}
       <div className="px-5 py-4 border-b-2 border-zinc-950 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 space-y-4">
+
+        {/* Búsqueda de texto */}
+        <div className="relative">
+          <label htmlFor="busqueda-conductor" className="sr-only">
+            Buscar conductor por nombre, apellido o licencia
+          </label>
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500 pointer-events-none"
+            strokeWidth={2.5}
+            aria-hidden
+          />
+          <input
+            id="busqueda-conductor"
+            type="search"
+            value={inputValue}
+            onChange={handleSearchChange}
+            placeholder="Buscar por nombre, apellido o licencia…"
+            className="w-full pl-9 pr-9 py-2.5 rounded-xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-950 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:focus:ring-brand transition-all"
+          />
+          {inputValue && (
+            <button
+              onClick={limpiarBusqueda}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors"
+            >
+              <X className="w-3 h-3 text-zinc-600 dark:text-zinc-300" strokeWidth={3} />
+            </button>
+          )}
+        </div>
+
+        {/* Filtros de tab */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <GrupoFiltro
             label="Actividad"
             opciones={OPCIONES_ACTIVIDAD}
-            seleccionado={filtroActividad}
-            onChange={setFiltroActividad}
+            seleccionado={actividadActual}
+            onChange={handleActividad}
+            isPending={isPending}
           />
           <GrupoFiltro
             label="Estado de conexión"
             opciones={OPCIONES_CONEXION}
-            seleccionado={filtroConexion}
-            onChange={setFiltroConexion}
+            seleccionado={conexionActual}
+            onChange={handleConexion}
+            isPending={isPending}
           />
         </div>
 
         {/* Contador de resultados */}
         <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-          <Users className="w-3.5 h-3.5" strokeWidth={2.5} />
-          {conductoresFiltrados.length} de {conductores.length} conductor
-          {conductores.length !== 1 ? "es" : ""}
+          <Users className="w-3.5 h-3.5" strokeWidth={2.5} aria-hidden />
+          {isPending ? (
+            <span className="flex items-center gap-1">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Filtrando…
+            </span>
+          ) : (
+            <>
+              {totalFiltrado} de {totalGlobal} conductor
+              {totalGlobal !== 1 ? "es" : ""}
+            </>
+          )}
         </p>
       </div>
 
-      {/* Tabla */}
+      {/* ── Tabla ── */}
       <div className="p-4 md:p-5">
         <AdminTabla<ConductorConVehiculos>
           columnas={columnas}
-          filas={conductoresFiltrados}
+          filas={conductores}
           keyExtractor={(c) => c.id_conductor}
           mensajeVacio="Ningún conductor coincide con los filtros seleccionados."
         />
+
+        {/* ── Paginación ── */}
+        <PaginadorURL paginaActual={paginaActual} totalPaginas={totalPaginas} />
       </div>
     </div>
   );

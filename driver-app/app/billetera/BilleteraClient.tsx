@@ -1,29 +1,35 @@
 // app/billetera/BilleteraClient.tsx
 "use client";
 
-import { Wallet, Clock, TrendingUp, RefreshCw, Receipt, Banknote, Smartphone, ChevronRight, AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { Wallet, Clock, TrendingUp, Receipt, Banknote, Smartphone, ChevronRight } from "lucide-react";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Sidebar from "@/app/components/Nav";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import StatusBadge from "@/app/components/EtiquetaEstado";
 import EstadoVacio from "@/app/components/EstadoVacio";
 import { formatARS, formatFecha } from "@/lib/formatters";
-import type { BilleteraClientProps } from "@/app/types/billetera";
-import { useBilletera } from "@/app/hooks/useBilletera";
+import type { BilleteraData, Transaccion } from "@/app/types/billetera";
+import type { Rol } from "@/lib/getSessionData";
+import PaginadorURL from "@/app/components/admin/PaginadorURL";
 
-export default function BilleteraClient({ rol, conductorId }: BilleteraClientProps) {
-  const {
-    billetera,
-    transacciones,
-    filtro,
-    setFiltro,
-    loadingBilletera,
-    loadingTxns,
-    errorBilletera,
-    errorTxns,
-    recargar,
-  } = useBilletera(conductorId);
+interface BilleteraClientProps {
+  rol: Rol;
+  billetera: BilleteraData | null;
+  transacciones: Transaccion[];
+  currentPage: number;
+  totalPages: number;
+  currentFiltro: string;
+}
 
+export default function BilleteraClient({
+  rol,
+  billetera,
+  transacciones,
+  currentPage,
+  totalPages,
+  currentFiltro,
+}: BilleteraClientProps) {
   return (
     <div className="flex min-h-screen w-full bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
       <Sidebar rol={rol} />
@@ -34,28 +40,13 @@ export default function BilleteraClient({ rol, conductorId }: BilleteraClientPro
           <HeaderModulo
             titulo="Mi Billetera"
             icono={Wallet}
-            acciones={
-              <>
-                <button
-                  onClick={recargar}
-                  className="p-2 rounded-xl border-2 border-zinc-950 bg-white dark:bg-zinc-900 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_#09090b] dark:hover:shadow-[4px_4px_0px_0px_#CFFF04] transition-all"
-                >
-                  <RefreshCw className={`w-5 h-5 ${(loadingBilletera || loadingTxns) ? 'animate-spin' : ''}`} strokeWidth={3} />
-                </button>
-                <ThemeToggle />
-              </>
-            }
+            acciones={<ThemeToggle />}
           />
 
           <section className="space-y-4">
-            {errorBilletera && (
-              <div className="p-4 rounded-xl border-2 border-zinc-950 bg-[#FF007F] text-white shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#FF007F] flex items-center gap-3">
-                <AlertTriangle className="w-6 h-6 shrink-0" strokeWidth={3} />
-                <p className="text-sm font-bold uppercase tracking-wider">Error: {errorBilletera}</p>
-              </div>
-            )}
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Tarjeta de Saldo Pendiente */}
               <div className="relative overflow-hidden rounded-2xl border-4 border-zinc-950 bg-brand shadow-[8px_8px_0px_0px_#09090b] dark:shadow-[8px_8px_0px_0px_#CFFF04] p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -65,10 +56,11 @@ export default function BilleteraClient({ rol, conductorId }: BilleteraClientPro
                   <Clock className="w-6 h-6 text-zinc-950" strokeWidth={3} />
                 </div>
                 <p className="text-4xl md:text-5xl font-black text-zinc-950 tracking-tighter">
-                  {loadingBilletera ? "..." : formatARS(billetera?.saldo_a_liquidar ?? 0)}
+                  {formatARS(billetera?.saldo_a_liquidar ?? 0)}
                 </p>
               </div>
 
+              {/* Tarjeta de Histórico Liquidado */}
               <div className="relative overflow-hidden rounded-2xl border-4 border-zinc-950 bg-white dark:bg-zinc-900 dark:border-white shadow-[8px_8px_0px_0px_#09090b] dark:shadow-[8px_8px_0px_0px_#ffffff] p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -78,9 +70,10 @@ export default function BilleteraClient({ rol, conductorId }: BilleteraClientPro
                   <TrendingUp className="w-6 h-6 text-info" strokeWidth={3} />
                 </div>
                 <p className="text-4xl md:text-5xl font-black tracking-tighter">
-                  {loadingBilletera ? "..." : formatARS(billetera?.saldo_liquidado ?? 0)}
+                  {formatARS(billetera?.saldo_liquidado ?? 0)}
                 </p>
               </div>
+
             </div>
           </section>
 
@@ -90,29 +83,28 @@ export default function BilleteraClient({ rol, conductorId }: BilleteraClientPro
                 <Receipt className="w-6 h-6" strokeWidth={3} />
                 <h2 className="text-xl font-black uppercase tracking-tight">Movimientos</h2>
               </div>
+              
+              {/* Selector de Filtros a través de Componentes Link (URL State) */}
               <div className="flex bg-zinc-200 dark:bg-zinc-800 p-1 rounded-xl border-2 border-zinc-950">
                 {(["TODOS", "PENDIENTE", "LIQUIDADO"] as const).map((f) => (
-                  <button
+                  <Link
                     key={f}
-                    onClick={() => setFiltro(f)}
-                    className={`flex-1 sm:flex-none text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-lg transition-all ${filtro === f
-                      ? "bg-brand text-zinc-950 shadow-[2px_2px_0px_0px_#09090b]"
-                      : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                      }`}
+                    href={`/billetera?filtro=${f}&page=1`}
+                    className={`flex-1 sm:flex-none text-center text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-lg transition-all ${
+                      currentFiltro === f
+                        ? "bg-brand text-zinc-950 shadow-[2px_2px_0px_0px_#09090b]"
+                        : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                    }`}
                   >
                     {f}
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
 
+            {/* Listado de Transacciones */}
             <div className="space-y-3">
-              {errorTxns ? (
-                <div className="p-4 rounded-xl border-2 border-zinc-950 bg-[#FF007F] text-white shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#FF007F] flex items-center gap-3">
-                  <AlertTriangle className="w-6 h-6 shrink-0" strokeWidth={3} />
-                  <p className="text-sm font-bold uppercase tracking-wider">Error: {errorTxns}</p>
-                </div>
-              ) : transacciones.length === 0 && !loadingTxns ? (
+              {transacciones.length === 0 ? (
                 <EstadoVacio
                   icono={Receipt}
                   titulo="No hay movimientos para mostrar"
@@ -146,7 +138,15 @@ export default function BilleteraClient({ rol, conductorId }: BilleteraClientPro
                 ))
               )}
             </div>
+            
+            {/* Componente de Paginación Compartido por Parámetros URL */}
+            {totalPages > 1 && (
+               <div className="mt-6 flex justify-center">
+                 <PaginadorURL paginaActual={currentPage} totalPaginas={totalPages} />
+               </div>
+            )}
           </section>
+
         </div>
       </main>
     </div>

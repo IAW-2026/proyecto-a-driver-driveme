@@ -3,7 +3,6 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { Webhook } from "svix";
 
 const webhookSecret = process.env.CLERK_WEBHOOK_SECRET ?? "";
-const webhook = new Webhook(webhookSecret);
 
 export async function POST(request: NextRequest) {
 
@@ -13,6 +12,8 @@ export async function POST(request: NextRequest) {
   if (!webhookSecret) {
     return NextResponse.json({ error: "Missing webhook secret" }, { status: 401 });
   }
+
+  const webhook = new Webhook(webhookSecret);
 
   let event: any;
   try {

@@ -2,35 +2,49 @@
 import { redirect } from "next/navigation";
 import { getSessionData } from "@/lib/getSessionData";
 import prisma from "@/lib/prisma";
-import Sidebar from "@/app/components/Nav";
+import Sidebar from "@/app/components/Nav"; 
 import ThemeToggle from "@/app/components/ThemeToggle";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import EstadoVacio from "@/app/components/EstadoVacio";
 import StatusBadge from "@/app/components/EtiquetaEstado";
 import { Car } from "lucide-react";
 import { formatARS, formatFecha } from "@/lib/formatters";
+import PaginadorURL from "@/app/components/admin/PaginadorURL"; 
 
 export const metadata = {
   title: "Mis Viajes — DriveMe Conductores",
   description: "Historial completo de tus viajes realizados.",
 };
 
-export default async function HistorialPage() {
+export default async function HistorialPage({
+  searchParams,
+}: {
+  searchParams: { page?: string };
+}) {
   const { userId, rol } = await getSessionData();
 
   if (rol === "ADMIN" || rol === "CONDUCTOR_NUEVO") {
     redirect("/");
   }
 
+  const ITEMS_POR_PAGINA = 10;
+  const currentPage = Number(searchParams?.page) || 1; 
+  const skip = (currentPage - 1) * ITEMS_POR_PAGINA; 
+
   const viajes = await prisma.viaje.findMany({
     where: { id_conductor: userId },
     orderBy: { creado_en: "desc" },
+    skip: skip,
+    take: ITEMS_POR_PAGINA,
     include: {
       vehiculo: true,
     },
   });
 
-  const totalCount = viajes.length;
+  const totalCount = await prisma.viaje.count({
+    where: { id_conductor: userId },
+  });
+  const totalPages = Math.ceil(totalCount / ITEMS_POR_PAGINA);
 
   return (
     <div className="flex min-h-screen w-full bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
@@ -47,7 +61,7 @@ export default async function HistorialPage() {
           />
 
           <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-zinc-800 shadow-[4px_4px_0px_0px_#09090b] overflow-hidden">
-
+            
             {totalCount === 0 ? (
               <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40">
                 <EstadoVacio
@@ -88,8 +102,16 @@ export default async function HistorialPage() {
                 </table>
               </div>
             )}
-
           </div>
+
+          {/* --- CONTROLES DE PAGINACIÓN --- */}
+          {totalPages > 1 && (
+            <PaginadorURL 
+              paginaActual={currentPage} 
+              totalPaginas={totalPages} 
+            />
+          )}
+
         </div>
       </main>
     </div>

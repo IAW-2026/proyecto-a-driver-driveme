@@ -11,6 +11,7 @@ import { Car, Star, StarOff, ChevronLeft, ChevronRight, User } from "lucide-reac
 import { UserButton } from "@clerk/nextjs";
 import type { HistorialCalificacionesResponse } from "@/app/types/api";
 import EditarMeta from "@/app/components/EditarMeta";
+import PaginadorURL from "@/app/components/admin/PaginadorURL";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -173,32 +174,11 @@ export default async function PerfilPage({
 
                 {/* Controles de Paginación */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between bg-white dark:bg-zinc-900 border-4 border-zinc-950 dark:border-zinc-800 p-4 rounded-2xl shadow-[6px_6px_0px_0px_#09090b] dark:shadow-none mt-6">
-                    <p className="text-sm font-extrabold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider hidden md:block">
-                      Página {currentPage} de {totalPages}
-                    </p>
-
-                    <div className="flex gap-4 w-full md:w-auto justify-between">
-                      {currentPage > 1 ? (
-                        <Link href={`/perfil?page=${currentPage - 1}`} className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-950 border-2 border-zinc-950 dark:border-brand font-bold rounded-xl shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] transition-all">
-                          <ChevronLeft className="w-5 h-5" strokeWidth={3} /> Anterior
-                        </Link>
-                      ) : (
-                        <span className="flex items-center gap-2 px-4 py-2 bg-zinc-200 dark:bg-zinc-800 border-2 border-zinc-400 dark:border-zinc-700 text-zinc-500 rounded-xl font-bold opacity-50 cursor-not-allowed">
-                          <ChevronLeft className="w-5 h-5" strokeWidth={3} /> Anterior
-                        </span>
-                      )}
-
-                      {currentPage < totalPages ? (
-                        <Link href={`/perfil?page=${currentPage + 1}`} className="flex items-center gap-2 px-4 py-2 bg-brand border-2 border-zinc-950 text-zinc-950 font-bold rounded-xl shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] transition-all">
-                          Siguiente <ChevronRight className="w-5 h-5" strokeWidth={3} />
-                        </Link>
-                      ) : (
-                        <span className="flex items-center gap-2 px-4 py-2 bg-zinc-200 dark:bg-zinc-800 border-2 border-zinc-400 dark:border-zinc-700 text-zinc-500 rounded-xl font-bold opacity-50 cursor-not-allowed">
-                          Siguiente <ChevronRight className="w-5 h-5" strokeWidth={3} />
-                        </span>
-                      )}
-                    </div>
+                  <div className="mt-6 flex justify-center">
+                    <PaginadorURL 
+                      paginaActual={currentPage} 
+                      totalPaginas={totalPages} 
+                    />
                   </div>
                 )}
               </div>
