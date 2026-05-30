@@ -6,8 +6,8 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import Toast from "@/app/components/Toast";
 import { formatARS } from "@/lib/formatters";
-
-// ── IMPORTAMOS NUESTROS HOOKS ──
+import { useEffect, useState } from "react";
+import { sugerirZonasAction, type SugerenciaIA } from "@/app/actions/conductor/sugerirZonas";
 import { useToast } from "@/app/hooks/useToast";
 import { useEstadoConductor } from "@/app/hooks/useEstadoConductor";
 import { useRadarViajes } from "@/app/hooks/useRadarViajes";
@@ -45,6 +45,29 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
     mostrarToast,
     onApagar: limpiarSolicitud
   });
+
+  // 4. Hook de Sugerencias IA
+  const [sugerencias, setSugerencias] = useState<SugerenciaIA | null>(null);
+  const [cargandoSugerencias, setCargandoSugerencias] = useState(true);
+
+  useEffect(() => {
+    async function fetchSugerencias() {
+      try {
+        const res = await sugerirZonasAction();
+        if (res.success && res.data) {
+          setSugerencias(res.data);
+        } else {
+          setSugerencias(null);
+        }
+      } catch (error) {
+        console.error("Error al obtener sugerencias:", error);
+        setSugerencias(null);
+      } finally {
+        setCargandoSugerencias(false);
+      }
+    }
+    fetchSugerencias();
+  }, []);
 
   // Cálculos Visuales
   const porcentajeTimer = (timerSegundos / 30) * 100;
@@ -95,11 +118,26 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
           <div className="absolute -right-4 -top-4 opacity-20"><Zap className="w-24 h-24" strokeWidth={3} /></div>
           <div className="relative z-10">
             <h2 className="font-extrabold uppercase text-sm flex items-center gap-2 mb-1 dark:text-alert">
-              <Zap className="w-4 h-4" strokeWidth={3} /> Radar Predictivo
+              <Zap className="w-4 h-4" strokeWidth={3} /> Radar Predictivo IA
             </h2>
-            <p className="text-lg font-bold leading-tight mt-1">
-              {isOnline ? <>La demanda en el <span className="underline decoration-brand decoration-4 underline-offset-2">Centro</span> está aumentando.</> : "Conectate para recibir alertas de demanda."}
-            </p>
+            {cargandoSugerencias ? (
+              <p className="text-sm font-bold leading-tight mt-2 animate-pulse">
+                Consultando tendencias...
+              </p>
+            ) : sugerencias?.suggestedZones && sugerencias.suggestedZones.length > 0 ? (
+              <div className="mt-2 flex flex-col gap-2 max-h-32 overflow-y-auto pr-1 pb-1">
+                {sugerencias.suggestedZones.map((zona, idx) => (
+                  <div key={idx} className="bg-black/15 dark:bg-white/5 rounded-lg p-2.5 border-2 border-transparent">
+                    <p className="font-extrabold text-sm">{zona.zoneName}</p>
+                    <p className="text-xs mt-1 font-medium leading-tight opacity-90">{zona.reason}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-lg font-bold leading-tight mt-1">
+                {isOnline ? "Sin datos recientes. ¡Empezá a recorrer!" : "Conectate para recibir alertas de demanda."}
+              </p>
+            )}
           </div>
         </div>
       </div>

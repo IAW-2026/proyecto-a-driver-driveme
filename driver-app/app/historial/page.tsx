@@ -19,7 +19,7 @@ export const metadata = {
 export default async function HistorialPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: Promise<{ page?: string }>;
 }) {
   const { userId, rol } = await getSessionData();
 
@@ -28,7 +28,8 @@ export default async function HistorialPage({
   }
 
   const ITEMS_POR_PAGINA = 10;
-  const currentPage = Number(searchParams?.page) || 1; 
+  const params = await searchParams;
+  const currentPage = Number(params?.page) || 1; 
   const skip = (currentPage - 1) * ITEMS_POR_PAGINA; 
 
   const viajes = await prisma.viaje.findMany({

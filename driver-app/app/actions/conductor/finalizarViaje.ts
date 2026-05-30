@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth} from "@clerk/nextjs/server";
 import { m2mHeaders } from "@/lib/m2m";
+import { revalidateTag } from 'next/cache';
 
 export async function finalizarViaje(id_viaje: string) {
   const { userId } = await auth();
@@ -77,6 +78,7 @@ export async function finalizarViaje(id_viaje: string) {
     }
 
     revalidatePath("/");
+    revalidateTag(`sugerencias-${userId}`, "default");
     return { success: true, id_transaccion: idTransaccion, precio_final: viaje.precio_final };
   } catch (error) {
     console.error("Error al finalizar viaje:", error);
