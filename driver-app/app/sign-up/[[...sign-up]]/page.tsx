@@ -38,6 +38,7 @@ export default function Page() {
             socialButtonsBlockButton: "border-2 border-zinc-950 shadow-[3px_3px_0px_0px_#09090b] hover:translate-y-[-2px] transition-all dark:border-brand dark:shadow-[3px_3px_0px_0px_#CFFF04] !text-zinc-950 dark:!text-zinc-950 bg-white",
             formButtonPrimary: "bg-brand !text-zinc-950 font-extrabold border-2 border-zinc-950 shadow-[4px_4px_0px_0px_#09090b] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#09090b] transition-all py-3 dark:shadow-[4px_4px_0px_0px_#CFFF04]",
             formFieldInput: "border-2 border-zinc-950 focus:ring-2 focus:ring-brand dark:bg-zinc-800 dark:!text-white dark:border-zinc-700",
+            otpCodeFieldInput: "!border-2 !border-solid !border-zinc-300 focus:!border-brand focus:!ring-2 focus:!ring-brand !text-zinc-950 dark:!text-zinc-950 !bg-white dark:!border-zinc-400 !rounded-md",
             footerActionLink: "!text-brand font-bold hover:underline",
             identityPreviewText: "!text-zinc-950 dark:!text-zinc-950",
             formResendCodeLink: "!text-brand",
