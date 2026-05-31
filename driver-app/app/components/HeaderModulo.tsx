@@ -15,8 +15,8 @@ export default function HeaderModulo({
   acciones
 }: HeaderModuloProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b-4 border-zinc-950 dark:border-zinc-800 pb-4">
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-4 border-zinc-950 dark:border-zinc-800 pb-4">
+      <div className="flex items-center gap-3 min-w-0 w-full sm:flex-1">
         <div className="bg-brand border-2 border-zinc-950 shadow-[3px_3px_0px_0px_#09090b] dark:shadow-[3px_3px_0px_0px_#CFFF04] p-2 rounded-xl shrink-0">
           <Icon className="w-6 h-6 text-zinc-950" strokeWidth={3} />
         </div>
