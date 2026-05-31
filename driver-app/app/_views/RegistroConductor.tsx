@@ -5,18 +5,81 @@
  */
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { registrarConductor } from "@/app/actions/conductor/registrarConductor";
+import { reactivarConductor } from "@/app/actions/conductor/reactivarConductor";
 
 export default function RegistroConductor() {
   const [isPending, startTransition] = useTransition();
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [reactivationLicencia, setReactivationLicencia] = useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setErrorMsg(null);
     const formData = new FormData(e.currentTarget);
-    startTransition(() => {
-      registrarConductor(formData);
+    startTransition(async () => {
+      const result = await registrarConductor(formData);
+      if (result?.code === "REQUIRES_REACTIVATION") {
+        setReactivationLicencia(result.licencia);
+        return;
+      }
+      if (result?.error) {
+        setErrorMsg(result.error);
+      }
     });
+  }
+
+  function handleReactivate() {
+    if (!reactivationLicencia) return;
+    setErrorMsg(null);
+    startTransition(async () => {
+      const result = await reactivarConductor(reactivationLicencia);
+      if (result?.error) {
+        setErrorMsg(result.error);
+      }
+    });
+  }
+
+  if (reactivationLicencia) {
+    return (
+      <section className="max-w-2xl w-full p-8 rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff]">
+        <div className="mb-6 pb-4 border-b" style={{ borderColor: "var(--border)" }}>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+            Cuenta inactiva detectada
+          </h1>
+          <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
+            Vemos que ya tenías una cuenta registrada en DriveMe. ¿Deseas recuperar tu perfil y tu historial de viajes?
+          </p>
+        </div>
+        
+        {errorMsg && (
+          <div className="mb-6 p-4 rounded-xl border-2 border-alert bg-alert/10 text-alert font-bold shadow-[4px_4px_0px_0px_#ff007f] dark:shadow-[4px_4px_0px_0px_#ff007f]">
+            {errorMsg}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-4">
+          <button
+            onClick={handleReactivate}
+            disabled={isPending}
+            className="w-full p-4 rounded-2xl border-2 border-zinc-950 bg-brand text-zinc-950 font-bold text-base shadow-[6px_6px_0px_0px_#09090b] transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isPending ? "Reactivando..." : "Sí, recuperar mi cuenta"}
+          </button>
+          <button
+            onClick={() => {
+              setReactivationLicencia(null);
+              setErrorMsg(null);
+            }}
+            disabled={isPending}
+            className="w-full p-4 rounded-2xl border-2 border-zinc-950 bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 font-bold text-base hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+          >
+            Cancelar y volver
+          </button>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -29,6 +92,12 @@ export default function RegistroConductor() {
           Ingresá tus datos personales y los de tu vehículo para activar tu cuenta.
         </p>
       </div>
+
+      {errorMsg && (
+        <div className="mb-6 p-4 rounded-xl border-2 border-alert bg-alert/10 text-alert font-bold shadow-[4px_4px_0px_0px_#ff007f] dark:shadow-[4px_4px_0px_0px_#ff007f]">
+          {errorMsg}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* ── Datos Personales ─────────────────────────────────── */}

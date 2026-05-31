@@ -31,7 +31,14 @@ export async function getSessionData(): Promise<SessionData> {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const user = await currentUser();
+  let user;
+  try {
+    user = await currentUser();
+  } catch (error) {
+    // Si la sesión existe pero el usuario fue eliminado de Clerk (ej: hard delete)
+    redirect("/sign-in");
+  }
+  if (!user) redirect("/sign-in");
   const clerkRole = String(user?.publicMetadata?.role ?? "").toLowerCase();
 
   if (clerkRole === "admin") {

@@ -11,6 +11,7 @@ import { UserButton } from "@clerk/nextjs";
 import type { HistorialCalificacionesResponse } from "@/app/types/api";
 import EditarMeta from "@/app/components/EditarMeta";
 import PaginadorURL from "@/app/components/admin/PaginadorURL";
+import BotonBaja from "@/app/components/BotonBaja";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -183,6 +184,8 @@ export default async function PerfilPage({
               </div>
             )}
           </div>
+
+          <BotonBaja />
         </div>
       </main>
     </div>

@@ -68,7 +68,7 @@ model Vehiculo {
   isActive Boolean  @default(true)
 
   // Relaciones
-  conductor Conductor @relation(fields: [id_conductor], references: [id_conductor])
+  conductor Conductor @relation(fields: [id_conductor], references: [id_conductor], onUpdate: Cascade)
   viajes    Viaje[]
 }
 
@@ -100,7 +100,7 @@ model Viaje {
   pasajero_nombre   String?
 
   // Relaciones
-  conductor Conductor @relation(fields: [id_conductor], references: [id_conductor])
+  conductor Conductor @relation(fields: [id_conductor], references: [id_conductor], onUpdate: Cascade)
   vehiculo  Vehiculo  @relation(fields: [id_vehiculo], references: [id_vehiculo])
 }
 
@@ -110,5 +110,5 @@ model HistorialConexion {
   estado       String   // Guardará "ONLINE" u "OFFLINE"
   timestamp    DateTime @default(now())
 
-  conductor    Conductor @relation(fields: [id_conductor], references: [id_conductor])
+  conductor    Conductor @relation(fields: [id_conductor], references: [id_conductor], onUpdate: Cascade)
 }
