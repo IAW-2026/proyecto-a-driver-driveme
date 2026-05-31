@@ -1,4 +1,4 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { clerkMiddleware, createRouteMatcher, clerkClient } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 const isPublicRoute = createRouteMatcher([
@@ -16,11 +16,20 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   if (isAdminRoute(req)) {
-    const { sessionClaims } = await auth();
-    const userRole = (sessionClaims?.publicMetadata as any)?.role || 
-                     (sessionClaims?.metadata as any)?.role;
+    const { sessionClaims, userId } = await auth();
+    
+    let userRole = (sessionClaims?.publicMetadata as any)?.role || 
+                   (sessionClaims?.metadata as any)?.role;
 
-    if (userRole !== "ADMIN") {
+    // Si el JWT dice que no es admin (o falta), verificamos con la API por si fue promovido recientemente
+    if (String(userRole || "").toLowerCase() !== "admin" && userId) {
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      userRole = user.publicMetadata?.role;
+    }
+
+    const normalizedRole = String(userRole || "").toLowerCase();
+    if (normalizedRole !== "admin") {
       const homeUrl = new URL('/', req.url);
       return NextResponse.redirect(homeUrl);
     }

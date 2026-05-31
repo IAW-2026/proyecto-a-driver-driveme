@@ -6,6 +6,7 @@ import { Users, Car, Route, Zap, BarChart3, LayoutDashboard } from "lucide-react
 import prisma from "@/lib/prisma";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import SignOutButton from "@/app/components/SignOutButton";
 import AdminMetricaCard from "@/app/components/admin/AdminMetricaCard";
 import { formatARS } from "@/lib/formatters";
 
@@ -78,7 +79,12 @@ export default async function AdminDashboard() {
         titulo="Dashboard"
         icono={LayoutDashboard}
         subtitulo="Centro de mando — métricas globales en tiempo real"
-        acciones={<ThemeToggle />}
+        acciones={
+          <>
+            <ThemeToggle />
+            <SignOutButton />
+          </>
+        }
       />
 
       {/* Grid de métricas */}

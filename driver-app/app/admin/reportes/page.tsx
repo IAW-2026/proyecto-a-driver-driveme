@@ -16,6 +16,7 @@ import prisma from "@/lib/prisma";
 import Sidebar from "@/app/components/Nav";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import SignOutButton from "@/app/components/SignOutButton";
 import AdminMetricaCard from "@/app/components/admin/AdminMetricaCard";
 import ExportarPDF from "@/app/components/admin/ExportarPDF";
 import type { ViajeParaPDF } from "@/app/components/admin/ExportarPDF";
@@ -182,6 +183,7 @@ export default async function ReportesPage({
               <>
                 <ExportarPDF viajes={viajesParaPDF} timestamp={timestampReporte} />
                 <ThemeToggle />
+                <SignOutButton />
               </>
             }
           />

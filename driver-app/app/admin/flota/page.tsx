@@ -17,6 +17,7 @@ import prisma from "@/lib/prisma";
 import Sidebar from "@/app/components/Nav";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import SignOutButton from "@/app/components/SignOutButton";
 import DriverTable from "@/app/components/admin/DriverTable";
 
 export const metadata: Metadata = {
@@ -93,7 +94,12 @@ export default async function FlotaPage({
                 ? `${totalFiltrado} de ${totalGlobal} conductor${totalGlobal !== 1 ? "es" : ""}`
                 : `${totalGlobal} conductor${totalGlobal !== 1 ? "es" : ""} en total`
             }
-            acciones={<ThemeToggle />}
+            acciones={
+              <>
+                <ThemeToggle />
+                <SignOutButton />
+              </>
+            }
           />
 
           {/* Tabla con filtros URL (Client Component) */}
