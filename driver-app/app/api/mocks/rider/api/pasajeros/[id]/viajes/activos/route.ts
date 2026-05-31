@@ -4,7 +4,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCKS !== 'true') {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 });
   }
 

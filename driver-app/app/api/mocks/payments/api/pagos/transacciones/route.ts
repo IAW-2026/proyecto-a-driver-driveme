@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 // Autenticación: Bearer JWT del usuario (Clerk). Rol resuelto en Payments App.
 // Query param opcional: ?estado_liquidacion=PENDIENTE|LIQUIDADO
 export async function GET(request: Request) {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCKS !== 'true') {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 });
   }
 
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
 // Body: { id_transaccion: string }
 // Response: ProcesarCobroResponse { id_transaccion, estado: "CAPTURED" }
 export async function PUT(request: Request) {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCKS !== 'true') {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 });
   }
 

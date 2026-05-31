@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   // Bloqueo de seguridad: No exponer mocks en producción
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCKS !== 'true') {
     return NextResponse.json({ error: "Not Found" }, { status: 404 });
   }
 
