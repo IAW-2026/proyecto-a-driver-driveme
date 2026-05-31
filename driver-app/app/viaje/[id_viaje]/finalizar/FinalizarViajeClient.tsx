@@ -57,38 +57,35 @@ export default function FinalizarViajeClient({
   const duracion = formatDuracion(tiempoComienzo);
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center p-4"
-      style={{ backgroundColor: "var(--background)" }}
+    <main
+      className="min-h-screen flex flex-col items-center justify-center p-4 bg-zinc-50 dark:bg-zinc-950"
     >
       <div
-        className="w-full max-w-md rounded-3xl shadow-xl border overflow-hidden"
-        style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+        className="w-full max-w-md rounded-3xl border-4 border-zinc-950 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_#09090b] overflow-hidden"
       >
         {/* ── Encabezado ──────────────────────────────────────── */}
         <div
-          className="px-6 py-5 border-b text-center"
-          style={{ background: "var(--gradient-primary)", borderColor: "var(--border)" }}
+          className="px-6 py-5 border-b-4 border-zinc-950 dark:border-zinc-800 text-center bg-zinc-950 dark:bg-info"
         >
           <p className="text-4xl mb-2" aria-hidden>🏁</p>
-          <h1 className="text-xl font-extrabold text-white">Resumen del viaje</h1>
-          <p className="text-sm text-white/80 mt-1">Confirmá la finalización para procesar el cobro</p>
+          <h1 className="text-xl font-extrabold text-white dark:text-zinc-950">Resumen del viaje</h1>
+          <p className="text-sm font-bold text-zinc-300 dark:text-zinc-950 mt-1">Confirmá la finalización para procesar el cobro</p>
         </div>
 
         {/* ── Resumen financiero ───────────────────────────────── */}
         <div className="px-6 py-6 space-y-4">
           {/* Precio destacado */}
           <div className="text-center py-4">
-            <p className="text-6xl font-extrabold tracking-tight" style={{ color: "var(--foreground)" }}>
+            <p className="text-6xl font-black text-zinc-950 dark:text-white tracking-tight">
               ${precioFinal.toLocaleString("es-AR")}
             </p>
-            <p className="text-sm mt-2 font-medium" style={{ color: "var(--muted)" }}>
+            <p className="text-sm mt-2 font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">
               A cobrar
             </p>
           </div>
 
           {/* Línea divisoria */}
-          <div className="border-t" style={{ borderColor: "var(--border)" }} />
+          <div className="border-t-2 border-zinc-200 dark:border-zinc-800" />
 
           {/* Detalles */}
           <dl className="space-y-3">
@@ -103,8 +100,8 @@ export default function FinalizarViajeClient({
               },
             ].map(({ label, value }) => (
               <div key={label} className="flex justify-between items-center">
-                <dt className="text-sm" style={{ color: "var(--muted)" }}>{label}</dt>
-                <dd className="font-bold text-sm" style={{ color: "var(--foreground)" }}>{value}</dd>
+                <dt className="text-sm font-bold text-zinc-600 dark:text-zinc-400">{label}</dt>
+                <dd className="font-black text-sm text-zinc-950 dark:text-white">{value}</dd>
               </div>
             ))}
           </dl>
@@ -112,8 +109,7 @@ export default function FinalizarViajeClient({
           {/* Aviso si es efectivo */}
           {metodoPago === "EFECTIVO" && (
             <div
-              className="rounded-xl p-3 flex items-start gap-2 text-sm"
-              style={{ backgroundColor: "#ECC94B22", color: "#744210" }}
+              className="rounded-xl p-3 flex items-start gap-2 text-sm border-2 border-zinc-950 bg-brand text-zinc-950 font-bold shadow-[2px_2px_0px_0px_#09090b] dark:bg-brand dark:text-zinc-950"
               role="note"
             >
               <span className="shrink-0">💡</span>
@@ -131,16 +127,15 @@ export default function FinalizarViajeClient({
             onClick={handleFinalizar}
             disabled={procesando}
             aria-label="Confirmar finalización del viaje y procesar el cobro"
-            className="w-full min-h-[64px] rounded-2xl font-extrabold text-xl transition-all active:scale-[0.98] focus:outline-none focus:ring-4 disabled:opacity-60 shadow-lg mt-2"
-            style={{ background: "var(--gradient-primary)", color: "white" }}
+            className="w-full min-h-[64px] rounded-xl font-black text-xl bg-brand text-zinc-950 border-4 border-zinc-950 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] transition-all active:translate-y-0 active:shadow-none focus:outline-none focus:ring-4 focus:ring-brand/50 disabled:opacity-60 flex items-center justify-center gap-2 mt-6"
           >
             {procesando ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin border-white" />
-                Procesando cobro...
-              </span>
+              <>
+                <span className="w-5 h-5 border-4 border-t-transparent rounded-full animate-spin border-zinc-950" />
+                PROCESANDO...
+              </>
             ) : (
-              "✓ CONFIRMAR FINALIZACIÓN"
+              "✓ CONFIRMAR"
             )}
           </button>
 
@@ -148,13 +143,12 @@ export default function FinalizarViajeClient({
           <button
             onClick={() => router.back()}
             disabled={procesando}
-            className="w-full py-3 text-sm font-medium transition-colors focus:outline-none"
-            style={{ color: "var(--muted)" }}
+            className="w-full py-3 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white uppercase tracking-widest transition-colors focus:outline-none"
           >
             Volver al mapa
           </button>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

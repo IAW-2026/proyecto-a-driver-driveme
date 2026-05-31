@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 // GET /api/pagos/liquidaciones — devuelve billetera + historial de liquidaciones.
 // Autenticación: Bearer JWT del conductor (no requiere M2M).
 export async function GET() {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCKS !== 'true') {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 });
   }
 
@@ -42,7 +42,7 @@ export async function GET() {
 // POST /api/pagos/liquidaciones — solicita liquidación de ganancias pendientes.
 // Autenticación: Bearer JWT del conductor. No requiere body.
 export async function POST() {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCKS !== 'true') {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 });
   }
 

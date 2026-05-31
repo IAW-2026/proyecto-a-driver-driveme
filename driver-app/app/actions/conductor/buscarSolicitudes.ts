@@ -16,13 +16,10 @@ export async function buscarSolicitudes(): Promise<BuscarSolicitudesResult> {
 
   try {
     // En desarrollo apunta al mock local; en producción a la Rider App real.
-    const baseUrl =
-      process.env.NODE_ENV === "production"
-        ? process.env.RIDER_APP_URL
-        : process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const baseUrl = process.env.RIDER_APP_URL ?? "http://localhost:3000/api/mocks/rider";
 
     const res = await fetch(
-      `${baseUrl}/api/mocks/rider/api/solicitudes?estado=BUSCANDO_CONDUCTOR`,
+      `${baseUrl}/api/solicitudes?estado=BUSCANDO_CONDUCTOR`,
       {
         headers: m2mHeaders(),
         cache: "no-store",

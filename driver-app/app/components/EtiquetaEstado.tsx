@@ -9,14 +9,14 @@ export default function StatusBadge({ estado, size = "md" }: StatusBadgeProps) {
   // Ahora el diccionario devuelve un string con las clases de Tailwind
   const colorMap: Record<string, string> = {
     // Estados de Viajes
-    FINALIZADO: "bg-green-500 text-white border-green-500",
+    FINALIZADO: "bg-green-500 text-zinc-950 border-zinc-950",
     EN_CURSO: "bg-brand text-zinc-950 border-zinc-950",
-    CANCELADO_POR_CONDUCTOR: "bg-info text-white border-info",
-    CANCELADO: "bg-alert text-white border-alert",
+    CANCELADO_POR_CONDUCTOR: "bg-info text-zinc-950 border-zinc-950",
+    CANCELADO: "bg-alert text-zinc-950 border-zinc-950",
 
     // Estados de Billetera
     LIQUIDADO: "bg-brand text-zinc-950 border-zinc-950",
-    PENDIENTE: "bg-alert text-white border-zinc-950",
+    PENDIENTE: "bg-alert text-zinc-950 border-zinc-950",
   };
 
   // Clases por defecto si llega un estado desconocido

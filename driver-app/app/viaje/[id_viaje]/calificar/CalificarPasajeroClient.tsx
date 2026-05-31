@@ -73,22 +73,19 @@ export default function CalificarPasajeroClient({
   const colorActivo = puntaje >= 4 ? "#ECC94B" : puntaje >= 2 ? "#ED8936" : "#E53E3E";
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center p-4"
-      style={{ backgroundColor: "var(--background)" }}
+    <main
+      className="min-h-screen flex flex-col items-center justify-center p-4 bg-zinc-50 dark:bg-zinc-950"
     >
       <div
-        className="w-full max-w-sm rounded-3xl shadow-xl border overflow-hidden"
-        style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+        className="w-full max-w-sm rounded-3xl border-4 border-zinc-950 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_#09090b] overflow-hidden"
       >
         {/* ── Encabezado ──────────────────────────────────────── */}
         <div
-          className="px-6 py-6 text-center"
-          style={{ background: "var(--gradient-primary)" }}
+          className="px-6 py-6 border-b-4 border-zinc-950 dark:border-zinc-800 text-center bg-zinc-950 dark:bg-info"
         >
           <p className="text-5xl mb-3" aria-hidden>⭐</p>
-          <h1 className="text-xl font-extrabold text-white">¡Viaje completado!</h1>
-          <p className="text-sm text-white/80 mt-1">
+          <h1 className="text-xl font-extrabold text-white dark:text-zinc-950">¡Viaje completado!</h1>
+          <p className="text-sm font-bold text-zinc-300 dark:text-zinc-950 mt-1">
             ¿Cómo estuvo {nombrePasajero}?
           </p>
         </div>
@@ -111,7 +108,7 @@ export default function CalificarPasajeroClient({
                   aria-pressed={puntaje === n}
                   className="min-w-13 min-h-13 text-4xl transition-transform active:scale-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] rounded-xl"
                   style={{
-                    color: n <= (hover || puntaje) ? colorActivo : "var(--border)",
+                    color: n <= (hover || puntaje) ? colorActivo : "#a1a1aa",
                     filter: n <= (hover || puntaje) ? "drop-shadow(0 0 6px rgba(236,201,75,0.6))" : "none",
                   }}
                 >
@@ -134,10 +131,9 @@ export default function CalificarPasajeroClient({
           <div>
             <label
               htmlFor="comentario"
-              className="block text-sm font-semibold mb-2"
-              style={{ color: "var(--foreground)" }}
+              className="block text-sm font-bold text-zinc-950 dark:text-white mb-2"
             >
-              Comentario <span style={{ color: "var(--muted)" }}>(opcional)</span>
+              Comentario <span className="text-zinc-500 dark:text-zinc-400 font-normal">(opcional)</span>
             </label>
             <NeonTextarea
               id="comentario"
@@ -148,7 +144,7 @@ export default function CalificarPasajeroClient({
               placeholder="¿Querés agregar algo sobre este pasajero?"
               className="resize-none"
             />
-            <p className="text-xs text-right mt-1" style={{ color: "var(--muted)" }}>
+            <p className="text-xs text-right mt-1 text-zinc-500 dark:text-zinc-400">
               {comentario.length}/280
             </p>
           </div>
@@ -187,6 +183,6 @@ export default function CalificarPasajeroClient({
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

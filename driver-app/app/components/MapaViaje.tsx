@@ -97,17 +97,7 @@ export default function MapaViaje({
   const [rutaOrigen, setRutaOrigen] = useState<[number, number][]>([]);
   const [rutaViaje, setRutaViaje] = useState<[number, number][]>([]);
 
-  useEffect(() => {
-    if (L.Icon && L.Icon.Default && L.Icon.Default.prototype) {
-      const defaultIconPrototype = L.Icon.Default.prototype as { _getIconUrl?: string };
-      delete defaultIconPrototype._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
-    }
-  }, []);
+  // Usamos íconos SVG personalizados, no necesitamos los fallbacks de Leaflet por defecto.
 
   // Fetch de rutas consolidado
   useEffect(() => {
@@ -166,15 +156,15 @@ export default function MapaViaje({
         />
       )}
 
-      <Marker position={[conductorLat, conductorLng]} icon={iconConductor}>
+      <Marker position={[conductorLat, conductorLng]} icon={iconConductor} alt="Posición actual del conductor" title="Posición actual del conductor">
         <Popup>Tu posición actual</Popup>
       </Marker>
 
-      <Marker position={[origenLat, origenLng]} icon={iconOrigen}>
+      <Marker position={[origenLat, origenLng]} icon={iconOrigen} alt="Punto de recogida" title="Punto de recogida">
         <Popup>Punto de recogida</Popup>
       </Marker>
 
-      <Marker position={[destinoLat, destinoLng]} icon={iconDestino}>
+      <Marker position={[destinoLat, destinoLng]} icon={iconDestino} alt="Destino del pasajero" title="Destino del pasajero">
         <Popup>Destino del pasajero</Popup>
       </Marker>
 

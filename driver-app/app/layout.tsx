@@ -27,6 +27,10 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="preconnect" href="https://tile.openstreetmap.org" />
+        <link rel="dns-prefetch" href="https://tile.openstreetmap.org" />
+      </head>
       <body
         className="font-sans min-h-full flex flex-col transition-colors duration-300 bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white"
       >
