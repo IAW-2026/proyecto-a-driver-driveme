@@ -20,6 +20,10 @@ export default function RegistroConductor() {
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
       const result = await registrarConductor(formData);
+      if (result?.code === "BANNED_DRIVER") {
+        setErrorMsg("Esta licencia/patente se encuentra inhabilitada permanentemente por un administrador. Contactá a soporte.");
+        return;
+      }
       if (result?.code === "REQUIRES_REACTIVATION") {
         setReactivationLicencia(result.licencia);
         return;

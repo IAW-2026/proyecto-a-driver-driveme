@@ -75,6 +75,20 @@ export default async function HomePage() {
             <RegistroConductor />
           </div>
         )}
+
+        {rol === "CONDUCTOR_SUSPENDIDO" && (
+          <div className="flex justify-center items-center h-[50vh]">
+            <div className="max-w-md w-full p-8 rounded-2xl border-2 border-alert bg-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#ff007f] text-center">
+              <h1 className="text-2xl font-bold text-alert mb-4">Cuenta Suspendida</h1>
+              <p className="text-zinc-700 dark:text-zinc-300 font-medium">
+                Tu cuenta ha sido inhabilitada temporalmente por un administrador debido a infracciones en nuestras políticas.
+              </p>
+              <p className="text-zinc-700 dark:text-zinc-300 font-medium mt-4">
+                Si creés que esto es un error, por favor contactá a soporte.
+              </p>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

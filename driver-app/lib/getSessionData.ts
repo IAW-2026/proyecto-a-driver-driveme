@@ -11,7 +11,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma/client";
 
-export type Rol = "ADMIN" | "CONDUCTOR_NUEVO" | "CONDUCTOR_ACTIVO";
+export type Rol = "ADMIN" | "CONDUCTOR_NUEVO" | "CONDUCTOR_ACTIVO" | "CONDUCTOR_SUSPENDIDO";
 
 export type ConductorConVehiculos = Prisma.ConductorGetPayload<{
   include: { vehiculos: true };
@@ -52,6 +52,9 @@ export async function getSessionData(): Promise<SessionData> {
 
   if (clerkRole === "driver") {
     if (conductorData) {
+      if (!conductorData.isActive && conductorData.motivoBaja === "SUSPENSION_ADMIN") {
+        return { userId, rol: "CONDUCTOR_SUSPENDIDO", conductorData };
+      }
       return { userId, rol: "CONDUCTOR_ACTIVO", conductorData };
     }
 

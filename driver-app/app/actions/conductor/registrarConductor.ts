@@ -35,6 +35,9 @@ export async function registrarConductor(formData: FormData) {
         where: { licencia }
       });
       if (conductorExistente && !conductorExistente.isActive) {
+        if (conductorExistente.motivoBaja === "SUSPENSION_ADMIN") {
+          return { success: false, code: "BANNED_DRIVER", licencia };
+        }
         return { success: false, code: "REQUIRES_REACTIVATION", licencia };
       }
 
@@ -43,6 +46,9 @@ export async function registrarConductor(formData: FormData) {
         include: { conductor: true }
       });
       if (vehiculoExistente && !vehiculoExistente.conductor.isActive) {
+        if (vehiculoExistente.conductor.motivoBaja === "SUSPENSION_ADMIN") {
+          return { success: false, code: "BANNED_DRIVER", licencia: vehiculoExistente.conductor.licencia };
+        }
         return { success: false, code: "REQUIRES_REACTIVATION", licencia: vehiculoExistente.conductor.licencia };
       }
 

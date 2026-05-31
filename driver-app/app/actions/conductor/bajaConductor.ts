@@ -14,6 +14,7 @@ export async function bajaConductor() {
       data: {
         isActive: false,
         fecha_baja: new Date(),
+        motivoBaja: "VOLUNTARIA",
         estado: "OFFLINE", // asegurarnos de que no quede online
       },
     });

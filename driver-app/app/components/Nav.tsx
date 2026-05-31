@@ -6,7 +6,7 @@ import { Home, MapPin, User, Car, DollarSign, Wallet } from "lucide-react";
 import Image from "next/image";
 
 interface SidebarProps {
-  rol: 'ADMIN' | 'CONDUCTOR_NUEVO' | 'CONDUCTOR_ACTIVO';
+  rol: 'ADMIN' | 'CONDUCTOR_NUEVO' | 'CONDUCTOR_ACTIVO' | 'CONDUCTOR_SUSPENDIDO';
 }
 
 export default function Sidebar({ rol }: SidebarProps) {

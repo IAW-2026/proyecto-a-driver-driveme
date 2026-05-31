@@ -40,6 +40,7 @@ model Conductor {
   licencia       String   @unique
   fecha_alta     DateTime @default(now())
   fecha_baja     DateTime?
+  motivoBaja     String?
   estado                EstadoConductor @default(OFFLINE)
   latitud_actual        Float?
   longitud_actual       Float?
