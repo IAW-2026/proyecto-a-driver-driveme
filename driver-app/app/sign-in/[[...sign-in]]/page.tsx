@@ -32,17 +32,20 @@ export default function Page() {
             borderRadius: "12px",
           },
           elements: {
-            card: "border-4 border-zinc-950 shadow-[8px_8px_0px_0px_#09090b] dark:border-brand dark:shadow-[8px_8px_0px_0px_#CFFF04] dark:bg-zinc-900",
-            headerTitle: "font-extrabold uppercase tracking-tight text-2xl",
-            headerSubtitle: "font-medium text-zinc-600 dark:text-zinc-400",
-            socialButtonsBlockButton: "border-2 border-zinc-950 shadow-[3px_3px_0px_0px_#09090b] hover:translate-y-[-2px] transition-all dark:border-brand dark:shadow-[3px_3px_0px_0px_#CFFF04] dark:text-white",
-            formButtonPrimary: "bg-brand text-zinc-950 font-extrabold border-2 border-zinc-950 shadow-[4px_4px_0px_0px_#09090b] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#09090b] transition-all py-3 dark:shadow-[4px_4px_0px_0px_#CFFF04]",
-            formFieldInput: "border-2 border-zinc-950 focus:ring-2 focus:ring-brand dark:bg-zinc-800 dark:text-white dark:border-zinc-700",
-            footerActionLink: "text-brand font-bold hover:underline",
-            identityPreviewText: "dark:text-white",
-            formResendCodeLink: "text-brand",
-            dividerLine: "bg-zinc-950 dark:bg-brand/30",
-            dividerText: "text-zinc-950 font-bold dark:text-white"
+            card: "border-4 border-zinc-950 shadow-[8px_8px_0px_0px_#09090b] dark:border-brand dark:shadow-[8px_8px_0px_0px_#CFFF04] bg-white",
+            headerTitle: "font-extrabold uppercase tracking-tight text-2xl !text-zinc-950 dark:!text-zinc-950",
+            headerSubtitle: "font-medium !text-zinc-600 dark:!text-zinc-800",
+            socialButtonsBlockButton: "border-2 border-zinc-950 shadow-[3px_3px_0px_0px_#09090b] hover:translate-y-[-2px] transition-all dark:border-brand dark:shadow-[3px_3px_0px_0px_#CFFF04] !text-zinc-950 dark:!text-zinc-950 bg-white",
+            formButtonPrimary: "bg-brand !text-zinc-950 font-extrabold border-2 border-zinc-950 shadow-[4px_4px_0px_0px_#09090b] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#09090b] transition-all py-3 dark:shadow-[4px_4px_0px_0px_#CFFF04]",
+            formFieldInput: "border-2 border-zinc-950 focus:ring-2 focus:ring-brand dark:bg-zinc-800 dark:!text-white dark:border-zinc-700",
+            footerActionLink: "!text-alert font-bold hover:underline",
+            identityPreviewText: "!text-zinc-950 dark:!text-zinc-950",
+            formResendCodeLink: "!text-alert",
+            dividerLine: "bg-zinc-950 dark:bg-zinc-300",
+            dividerText: "!text-zinc-950 font-bold dark:!text-zinc-950",
+            formFieldLabel: "!text-zinc-950 font-bold dark:!text-zinc-950",
+            footerActionText: "!text-zinc-950 dark:!text-zinc-950",
+            formFieldErrorText: "!text-alert dark:!text-alert text-sm"
           }
         }}
       />
