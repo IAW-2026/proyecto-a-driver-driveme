@@ -94,7 +94,7 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
       />
 
       {/* METAS Y RADAR PREDICTIVO */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity duration-300 ${!isOnline ? "opacity-50 grayscale-[50%]" : "opacity-100"}`}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-zinc-700 dark:bg-zinc-800 p-4 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-none flex flex-col justify-center">
           <div className="flex justify-between items-end mb-3">
             <div className="flex items-center gap-2">
@@ -106,19 +106,19 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
             <span className="font-extrabold text-xl text-zinc-950 dark:text-brand">{porcentajeMeta}%</span>
           </div>
           <div className="w-full h-4 rounded-full border-2 border-zinc-950 bg-zinc-100 dark:bg-zinc-950 overflow-hidden">
-            <div className="h-full bg-brand border-r-2 border-zinc-950 transition-all duration-1000" style={{ width: `${porcentajeMeta}%` }} />
+            <div className="h-full w-full bg-brand transition-transform duration-1000 origin-left" style={{ transform: `scaleX(${porcentajeMeta / 100})` }} />
           </div>
-          <div className="flex justify-between items-center mt-2 text-xs font-bold text-zinc-600 dark:text-zinc-400">
+          <div className="flex justify-between items-center mt-2 text-xs font-bold text-zinc-700 dark:text-zinc-300">
             <span>{formatARS(metricasHoy.ganancia)} logrados</span>
             <span>{formatARS(metricasHoy.metaDiaria)}</span>
           </div>
         </div>
 
-        <div className="rounded-2xl border-2 border-zinc-950 bg-alert text-white dark:border-alert dark:bg-zinc-900 p-4 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#FF007F] flex flex-col justify-center relative overflow-hidden">
-          <div className="absolute -right-4 -top-4 opacity-20"><Zap className="w-24 h-24" strokeWidth={3} /></div>
+        <div className="rounded-2xl border-2 border-zinc-950 bg-alert text-zinc-950 dark:text-white dark:border-alert dark:bg-zinc-900 p-4 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#FF007F] flex flex-col justify-center relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 opacity-20" aria-hidden="true"><Zap className="w-24 h-24" strokeWidth={3} /></div>
           <div className="relative z-10">
             <h2 className="font-extrabold uppercase text-sm flex items-center gap-2 mb-1 dark:text-alert">
-              <Zap className="w-4 h-4" strokeWidth={3} /> Radar Predictivo IA
+              <Zap className="w-4 h-4" strokeWidth={3} aria-hidden="true" /> Radar Predictivo IA
             </h2>
             {cargandoSugerencias ? (
               <p className="text-sm font-bold leading-tight mt-2 animate-pulse">
@@ -127,9 +127,9 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
             ) : sugerencias?.suggestedZones && sugerencias.suggestedZones.length > 0 ? (
               <div className="mt-2 flex flex-col gap-2 max-h-32 overflow-y-auto pr-1 pb-1">
                 {sugerencias.suggestedZones.map((zona, idx) => (
-                  <div key={idx} className="bg-black/15 dark:bg-white/5 rounded-lg p-2.5 border-2 border-transparent">
+                  <div key={idx} className="bg-white text-zinc-950 dark:bg-white/10 dark:text-white rounded-xl p-3 border-2 border-zinc-950 dark:border-transparent shadow-[2px_2px_0px_0px_#09090b] dark:shadow-none">
                     <p className="font-extrabold text-sm">{zona.zoneName}</p>
-                    <p className="text-xs mt-1 font-medium leading-tight opacity-90">{zona.reason}</p>
+                    <p className="text-xs mt-1 font-semibold leading-tight text-zinc-800 dark:text-zinc-300">{zona.reason}</p>
                   </div>
                 ))}
               </div>
@@ -159,7 +159,7 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
           { label: "ESTIMADO", valor: formatARS(metricasHoy.ganancia), icon: <DollarSign className="w-8 h-8" strokeWidth={2.5} /> },
           { label: "VIAJES", valor: metricasHoy.viajes.toString(), icon: <Car className="w-8 h-8" strokeWidth={2.5} /> },
         ].map(({ label, valor, icon }) => (
-          <div key={label} className="p-4 rounded-2xl border-2 border-zinc-950 bg-info text-white dark:border-info dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#8B5CF6] flex flex-col justify-between min-h-[100px]">
+          <div key={label} className="p-4 rounded-2xl border-2 border-zinc-950 bg-info text-zinc-950 dark:text-white dark:border-info dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#8B5CF6] flex flex-col justify-between min-h-[100px]">
             <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">{label}</span>
             <div className="flex justify-between items-end mt-2">
               <span className="text-3xl font-extrabold uppercase">{valor}</span>
@@ -179,7 +179,7 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
           </div>
 
           {!solicitudActual ? (
-            <div className="flex flex-col items-center justify-center py-10 gap-3 text-zinc-500 dark:text-zinc-400">
+            <div className="flex flex-col items-center justify-center py-10 gap-3 text-zinc-700 dark:text-zinc-300">
               <div className="w-12 h-12 border-4 border-t-transparent border-brand rounded-full animate-spin" />
               <p className="text-sm font-semibold">Esperando solicitudes cercanas...</p>
             </div>
@@ -187,11 +187,11 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
             <div className="p-4 flex flex-col gap-4">
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-zinc-500">Tiempo para decidir</span>
-                  <span className="text-lg font-extrabold tabular-nums" style={{ color: colorTimer }}>{timerSegundos}s</span>
+                  <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Tiempo para decidir</span>
+                  <span className="text-lg font-extrabold tabular-nums text-zinc-950 dark:text-white">{timerSegundos}s</span>
                 </div>
                 <div className="w-full h-2 rounded-full border border-zinc-950 bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
-                  <div className="h-full transition-all duration-1000 ease-linear" style={{ width: `${porcentajeTimer}%`, backgroundColor: colorTimer }} />
+                  <div className="h-full w-full transition-transform duration-1000 ease-linear origin-left" style={{ transform: `scaleX(${porcentajeTimer / 100})`, backgroundColor: colorTimer }} />
                 </div>
               </div>
 
@@ -204,15 +204,15 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
               <div className="rounded-2xl border-2 border-zinc-950 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-950 p-4 space-y-3 text-sm">
                 <div>
                   <p className="font-bold text-lg">Pasajero</p>
-                  <p className="mt-1 font-medium text-zinc-600 dark:text-zinc-400">{solicitudActual.pasajero.nombre}</p>
+                  <p className="mt-1 font-medium text-zinc-700 dark:text-zinc-300">{solicitudActual.pasajero.nombre}</p>
                 </div>
                 <div className="border-t-2 border-zinc-950 dark:border-zinc-700 pt-3">
                   <p className="font-bold text-lg">Origen</p>
-                  <p className="mt-1 font-medium text-zinc-600 dark:text-zinc-400">{solicitudActual.origen.direccion}</p>
+                  <p className="mt-1 font-medium text-zinc-700 dark:text-zinc-300">{solicitudActual.origen.direccion}</p>
                 </div>
                 <div className="border-t-2 border-zinc-950 dark:border-zinc-700 pt-3">
                   <p className="font-bold text-lg">Destino</p>
-                  <p className="mt-1 font-medium text-zinc-600 dark:text-zinc-400">{solicitudActual.destino.direccion}</p>
+                  <p className="mt-1 font-medium text-zinc-700 dark:text-zinc-300">{solicitudActual.destino.direccion}</p>
                 </div>
               </div>
 

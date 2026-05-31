@@ -36,12 +36,13 @@ async function fetchCalificaciones(idConductor: string): Promise<HistorialCalifi
 
 function EstrellasSVG({ puntaje }: { puntaje: number }) {
   return (
-    <div className="flex gap-1" aria-label={`${puntaje} de 5 estrellas`}>
+    <div className="flex gap-1" role="img" aria-label={`${puntaje} de 5 estrellas`}>
       {[1, 2, 3, 4, 5].map((n) => (
         <Star
           key={n}
-          className={`w-5 h-5 ${n <= puntaje ? "text-yellow-400 fill-yellow-400" : "text-zinc-300 dark:text-zinc-700"}`}
+          className={`w-5 h-5 ${n <= puntaje ? "text-yellow-400 fill-yellow-400" : "text-zinc-300 dark:text-zinc-500"}`}
           strokeWidth={2}
+          aria-hidden="true"
         />
       ))}
     </div>
@@ -106,12 +107,12 @@ export default async function PerfilPage({
                   {conductorData?.nombre} {conductorData?.apellido}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" aria-hidden="true" />
                   <span className="font-bold text-white text-lg dark:text-zinc-950">
                     {conductorData?.calificacion_promedio.toFixed(1)}
                   </span>
                   {calificaciones && (
-                    <span className="text-zinc-400 dark:text-zinc-500 text-sm font-medium">
+                    <span className="text-zinc-300 dark:text-zinc-600 text-sm font-medium">
                       ({totalReviews} reseñas)
                     </span>
                   )}
@@ -126,7 +127,7 @@ export default async function PerfilPage({
                   <p className="font-bold text-lg text-zinc-950 dark:text-white uppercase tracking-wide">
                     {vehiculoPrincipal.marca} {vehiculoPrincipal.modelo} {vehiculoPrincipal.anio}
                   </p>
-                  <p className="text-sm font-mono font-medium text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm font-mono font-medium text-zinc-600 dark:text-zinc-300">
                     {vehiculoPrincipal.patente} · {vehiculoPrincipal.color}
                   </p>
                 </div>
@@ -141,7 +142,7 @@ export default async function PerfilPage({
             />
           )}
 
-          <div className="space-y-3">
+          <section className="space-y-3">
             <h2 className="text-lg font-extrabold text-zinc-950 dark:text-white uppercase tracking-wide">
               Calificaciones recibidas
             </h2>
@@ -158,7 +159,7 @@ export default async function PerfilPage({
                   <div key={cal.id_calificacion} className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-zinc-700 dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-none p-5 space-y-3">
                     <div className="flex justify-between items-start gap-3">
                       <EstrellasSVG puntaje={cal.puntaje} />
-                      <time className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 shrink-0" dateTime={cal.timestamp}>
+                      <time className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-300 shrink-0" dateTime={cal.timestamp}>
                         {new Date(cal.timestamp).toLocaleDateString("es-AR", {
                           day: "2-digit", month: "short", year: "numeric",
                         })}
@@ -183,7 +184,7 @@ export default async function PerfilPage({
                 )}
               </div>
             )}
-          </div>
+          </section>
 
           <BotonBaja />
         </div>

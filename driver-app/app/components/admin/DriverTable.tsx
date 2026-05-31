@@ -52,7 +52,7 @@ function BadgeConexion({ estado }: { estado: string }) {
     ONLINE:
       "bg-brand text-zinc-950 border-zinc-950 shadow-[2px_2px_0px_0px_#09090b] dark:border-brand dark:shadow-[2px_2px_0px_0px_#CFFF04]",
     OFFLINE:
-      "bg-zinc-200 text-zinc-700 border-zinc-950 shadow-[2px_2px_0px_0px_#09090b] dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-600 dark:shadow-none",
+      "bg-zinc-200 text-zinc-700 border-zinc-950 shadow-[2px_2px_0px_0px_#09090b] dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-600 dark:shadow-none",
     OCUPADO:
       "bg-alert text-white border-zinc-950 shadow-[2px_2px_0px_0px_#09090b] dark:border-alert dark:shadow-[2px_2px_0px_0px_#FF007F]",
   };
@@ -72,7 +72,7 @@ function BadgeActividad({ isActive }: { isActive: boolean }) {
       Activo
     </span>
   ) : (
-    <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg border-2 border-zinc-400 bg-zinc-100 text-zinc-500 text-[10px] font-extrabold uppercase tracking-widest dark:bg-zinc-800 dark:text-zinc-500 dark:border-zinc-600">
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg border-2 border-zinc-400 bg-zinc-100 text-zinc-600 text-[10px] font-extrabold uppercase tracking-widest dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-600">
       Inactivo
     </span>
   );

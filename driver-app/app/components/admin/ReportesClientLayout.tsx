@@ -60,11 +60,11 @@ const ESTADO_ESTILOS: Record<string, string> = {
   FINALIZADO:
     "bg-brand text-zinc-950 border-zinc-950 dark:border-brand dark:shadow-[2px_2px_0px_0px_#CFFF04]",
   EN_CURSO:
-    "bg-info text-white border-zinc-950 dark:border-info dark:shadow-[2px_2px_0px_0px_#8B5CF6]",
+    "bg-info text-zinc-950 border-zinc-950 dark:border-info dark:shadow-[2px_2px_0px_0px_#8B5CF6]",
   ACEPTADO:
     "bg-zinc-200 text-zinc-700 border-zinc-950 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-600",
   CANCELADO_POR_CONDUCTOR:
-    "bg-alert text-white border-zinc-950 dark:border-alert dark:shadow-[2px_2px_0px_0px_#FF007F]",
+    "bg-alert text-zinc-950 border-zinc-950 dark:border-alert dark:shadow-[2px_2px_0px_0px_#FF007F]",
 };
 const ESTADO_ETIQUETAS: Record<string, string> = {
   FINALIZADO: "Finalizado",
@@ -288,7 +288,7 @@ export default function ReportesClientLayout({
           <p className="font-extrabold text-sm text-zinc-950 dark:text-white truncate">
             {v.conductor_display}
           </p>
-          <p className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500">{v.patente}</p>
+          <p className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">{v.patente}</p>
         </div>
         <span className="font-extrabold text-base text-zinc-950 dark:text-brand whitespace-nowrap shrink-0">
           {v.monto_display}

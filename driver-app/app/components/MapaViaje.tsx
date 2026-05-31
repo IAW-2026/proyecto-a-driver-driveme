@@ -166,15 +166,15 @@ export default function MapaViaje({
         />
       )}
 
-      <Marker position={[conductorLat, conductorLng]} icon={iconConductor}>
+      <Marker position={[conductorLat, conductorLng]} icon={iconConductor} alt="Posición actual del conductor" title="Posición actual del conductor">
         <Popup>Tu posición actual</Popup>
       </Marker>
 
-      <Marker position={[origenLat, origenLng]} icon={iconOrigen}>
+      <Marker position={[origenLat, origenLng]} icon={iconOrigen} alt="Punto de recogida" title="Punto de recogida">
         <Popup>Punto de recogida</Popup>
       </Marker>
 
-      <Marker position={[destinoLat, destinoLng]} icon={iconDestino}>
+      <Marker position={[destinoLat, destinoLng]} icon={iconDestino} alt="Destino del pasajero" title="Destino del pasajero">
         <Popup>Destino del pasajero</Popup>
       </Marker>
 

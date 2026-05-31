@@ -61,10 +61,10 @@ export default async function HistorialPage({
             acciones={<ThemeToggle />}
           />
 
-          <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-zinc-800 shadow-[4px_4px_0px_0px_#09090b] overflow-hidden">
+          <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:bg-zinc-900 dark:border-zinc-800 shadow-[4px_4px_0px_0px_#09090b] overflow-hidden">
             
             {totalCount === 0 ? (
-              <div className="p-4 bg-zinc-50 dark:bg-zinc-900/40">
+              <div className="p-4 bg-zinc-50 dark:bg-zinc-900">
                 <EstadoVacio
                   icono={Car}
                   titulo="Todavía no tenés viajes registrados"
@@ -73,7 +73,7 @@ export default async function HistorialPage({
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-150">
+                <table className="w-full text-left border-collapse min-w-[600px]" aria-label="Historial de viajes">
                   <thead>
                     <tr className="bg-zinc-100 dark:bg-zinc-900 border-b-2 border-zinc-950 dark:border-zinc-700">
                       <th className="p-4 font-black uppercase text-xs tracking-wider">ID Viaje</th>
@@ -84,11 +84,11 @@ export default async function HistorialPage({
                   </thead>
                   <tbody className="divide-y-2 divide-zinc-100 dark:divide-zinc-800">
                     {viajes.map((viaje) => (
-                      <tr key={viaje.id_viaje} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                      <tr key={viaje.id_viaje} className="hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
                         <td className="p-4 font-mono text-sm font-medium">
                           {viaje.id_viaje.split("-")[0]}...
                         </td>
-                        <td className="p-4 text-sm font-bold text-zinc-600 dark:text-zinc-300">
+                        <td className="p-4 text-sm font-bold text-zinc-700 dark:text-zinc-300">
                           {formatFecha(viaje.creado_en)}
                         </td>
                         <td className="p-4">

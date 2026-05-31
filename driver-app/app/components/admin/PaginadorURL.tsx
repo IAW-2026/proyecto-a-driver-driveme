@@ -65,7 +65,7 @@ export default function PaginadorURL({ paginaActual, totalPaginas }: PaginadorUR
     "border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white shadow-[2px_2px_0px_0px_#09090b] dark:shadow-none hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#09090b]";
 
   const btnDeshabilitado =
-    "border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-400 opacity-50 cursor-not-allowed";
+    "border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-500 opacity-50 cursor-not-allowed";
 
   const btnSiguiente =
     "border-zinc-950 dark:border-brand bg-brand dark:bg-zinc-900 text-zinc-950 dark:text-brand shadow-[2px_2px_0px_0px_#09090b] dark:shadow-[2px_2px_0px_0px_#CFFF04] hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#09090b] dark:hover:shadow-[3px_3px_0px_0px_#CFFF04]";
@@ -73,7 +73,7 @@ export default function PaginadorURL({ paginaActual, totalPaginas }: PaginadorUR
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t-2 border-zinc-950 dark:border-zinc-700 pt-4 mt-4">
       {/* Contador */}
-      <p className="text-[11px] font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+      <p className="text-[11px] font-extrabold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
         Página {paginaActual} de {totalPaginas}
       </p>
 
@@ -97,7 +97,7 @@ export default function PaginadorURL({ paginaActual, totalPaginas }: PaginadorUR
             p === "..." ? (
               <span
                 key={`ellipsis-${i}`}
-                className="w-8 text-center text-xs font-bold text-zinc-400 dark:text-zinc-600"
+                className="w-8 text-center text-xs font-bold text-zinc-500 dark:text-zinc-400"
               >
                 …
               </span>
@@ -109,7 +109,7 @@ export default function PaginadorURL({ paginaActual, totalPaginas }: PaginadorUR
                 className={`w-8 h-8 flex items-center justify-center rounded-lg border-2 text-xs font-extrabold transition-all duration-150 ${
                   paginaActual === p
                     ? "bg-zinc-950 text-white border-zinc-950 shadow-[2px_2px_0px_0px_#09090b] dark:bg-brand dark:text-zinc-950 dark:border-brand dark:shadow-[2px_2px_0px_0px_#CFFF04]"
-                    : "bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-zinc-950 dark:hover:border-zinc-500 hover:-translate-y-0.5"
+                    : "bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-zinc-950 dark:hover:border-zinc-500 hover:-translate-y-0.5"
                 }`}
               >
                 {p}

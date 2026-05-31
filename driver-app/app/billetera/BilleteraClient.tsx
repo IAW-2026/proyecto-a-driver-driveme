@@ -92,7 +92,7 @@ export default function BilleteraClient({
                     Cierre: Domingo 23:59hs
                   </p>
                 </div>
-                <Clock className="w-6 h-6 text-zinc-950 shrink-0" strokeWidth={3} />
+                <Clock className="w-6 h-6 text-zinc-950 shrink-0" strokeWidth={3} aria-hidden="true" />
               </div>
               <p className="text-3xl md:text-5xl font-black text-zinc-950 tracking-tighter">
                 {formatARS(billetera?.montoPendiente ?? 0)}
@@ -111,14 +111,14 @@ export default function BilleteraClient({
             <div className="relative overflow-hidden rounded-2xl border-4 border-zinc-950 bg-white dark:bg-zinc-900 dark:border-white shadow-[8px_8px_0px_0px_#09090b] dark:shadow-[8px_8px_0px_0px_#ffffff] p-5 md:p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-700 dark:text-zinc-300">
                     Histórico Total
                   </p>
-                  <p className="text-[10px] font-bold text-zinc-400 mt-1 uppercase">
+                  <p className="text-[10px] font-bold text-zinc-600 dark:text-zinc-300 mt-1 uppercase">
                     Ganancias acumuladas
                   </p>
                 </div>
-                <TrendingUp className="w-6 h-6 text-info shrink-0" strokeWidth={3} />
+                <TrendingUp className="w-6 h-6 text-info shrink-0" strokeWidth={3} aria-hidden="true" />
               </div>
               <p className="text-3xl md:text-5xl font-black tracking-tighter">
                 {formatARS(billetera?.montoLiquidado ?? 0)}
@@ -129,7 +129,7 @@ export default function BilleteraClient({
           {/* ── Historial de Liquidaciones ─────────────────────────────────────── */}
           <section className="space-y-4">
             <div className="flex items-center gap-2">
-              <ArrowDownToLine className="w-5 h-5 shrink-0" strokeWidth={3} />
+              <ArrowDownToLine className="w-5 h-5 shrink-0" strokeWidth={3} aria-hidden="true" />
               <h2 className="text-lg md:text-xl font-black uppercase tracking-tight">
                 Historial de Liquidaciones
               </h2>
@@ -150,7 +150,7 @@ export default function BilleteraClient({
                   >
                     {/* Icono */}
                     <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border-2 border-zinc-950 bg-zinc-950 dark:bg-zinc-700">
-                      <CheckCircle className="w-5 h-5 text-brand" strokeWidth={2.5} />
+                      <CheckCircle className="w-5 h-5 text-brand" strokeWidth={2.5} aria-hidden="true" />
                     </div>
 
                     {/* Info */}
@@ -163,8 +163,8 @@ export default function BilleteraClient({
                           {liq.estado}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 mt-1 text-xs font-bold text-zinc-500 uppercase">
-                        <CalendarDays className="w-3 h-3" />
+                      <div className="flex items-center gap-1 mt-1 text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase">
+                        <CalendarDays className="w-3 h-3" aria-hidden="true" />
                         <span>{formatFecha(liq.fechaEjecutada)}</span>
                       </div>
                     </div>
@@ -183,7 +183,7 @@ export default function BilleteraClient({
           <section className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Receipt className="w-5 h-5 shrink-0" strokeWidth={3} />
+                <Receipt className="w-5 h-5 shrink-0" strokeWidth={3} aria-hidden="true" />
                 <h2 className="text-lg md:text-xl font-black uppercase tracking-tight">
                   Movimientos
                 </h2>
@@ -198,7 +198,7 @@ export default function BilleteraClient({
                     className={`flex-1 sm:flex-none text-center text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-lg transition-all ${
                       currentFiltro === f
                         ? "bg-brand text-zinc-950 shadow-[2px_2px_0px_0px_#09090b]"
-                        : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                        : "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
                     }`}
                   >
                     {f}
@@ -228,9 +228,9 @@ export default function BilleteraClient({
                       }`}
                     >
                       {txn.metodoPago === "EFECTIVO" ? (
-                        <Banknote className="w-5 h-5 text-zinc-950" />
+                        <Banknote className="w-5 h-5 text-zinc-950" aria-hidden="true" />
                       ) : (
-                        <Smartphone className="w-5 h-5 text-white" />
+                        <Smartphone className="w-5 h-5 text-white" aria-hidden="true" />
                       )}
                     </div>
 
@@ -242,7 +242,7 @@ export default function BilleteraClient({
                         </span>
                         <StatusBadge estado={txn.estadoLiquidacion} size="sm" />
                       </div>
-                      <p className="text-xs font-bold text-zinc-500 mt-1 uppercase truncate">
+                      <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300 mt-1 uppercase truncate">
                         Viaje: {txn.idViaje.slice(0, 8)}… • {formatFecha(txn.fechaCreacion)}
                       </p>
                     </div>
@@ -253,8 +253,9 @@ export default function BilleteraClient({
                         {formatARS(parseFloat(txn.monto))}
                       </p>
                       <ChevronRight
-                        className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform shrink-0"
+                        className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:translate-x-1 transition-transform shrink-0"
                         strokeWidth={3}
+                        aria-hidden="true"
                       />
                     </div>
                   </div>
