@@ -101,6 +101,7 @@ const obtenerSugerenciasCacheadas = async (conductorId: string) => {
           model: "llama-3.1-8b-instant", // Modelo actualizado (llama3-8b-8192 fue descontinuado)
           messages: [{ role: "user", content: prompt }],
           temperature: 0.7,
+          response_format: { type: "json_object" }
         }),
       });
 
@@ -111,7 +112,15 @@ const obtenerSugerenciasCacheadas = async (conductorId: string) => {
       }
 
       const data = await response.json();
-      const llmOutput = data.choices[0].message.content;
+      let llmOutput = data.choices[0].message.content.trim();
+      
+      // Limpiar posibles bloques de markdown
+      if (llmOutput.startsWith('```')) {
+        const match = llmOutput.match(/```(?:json)?\n?([\s\S]*?)```/);
+        if (match && match[1]) {
+          llmOutput = match[1].trim();
+        }
+      }
 
       // E. Validación de esquema con Zod
       const parsedData = JSON.parse(llmOutput);

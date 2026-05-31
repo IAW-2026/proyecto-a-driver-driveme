@@ -14,6 +14,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import NeonTextarea from "@/app/components/NeonTextarea";
+import { enviarResenaAction } from "@/app/actions/conductor/enviarResena";
 
 interface CalificarPasajeroClientProps {
   idViaje: string;
@@ -44,21 +45,16 @@ export default function CalificarPasajeroClient({
     setError(null);
 
     try {
-      const res = await fetch(`/api/resenas`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_viaje: idViaje,
-          id_emisor: idConductor,
-          id_receptor: idPasajero,
-          puntaje,
-          comentario: comentario.trim() || "Sin comentario.",
-        }),
+      const result = await enviarResenaAction({
+        id_viaje: idViaje,
+        id_emisor: idConductor,
+        id_receptor: idPasajero,
+        puntaje,
+        comentario: comentario.trim() || "Sin comentario.",
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Error al enviar la calificación. Intentá de nuevo.");
+      if (!result.success) {
+        setError(result.error ?? "Error al enviar la calificación. Intentá de nuevo.");
         setEnviando(false);
         return;
       }
@@ -113,7 +109,7 @@ export default function CalificarPasajeroClient({
                   onMouseLeave={() => setHover(0)}
                   aria-label={`${n} estrella${n > 1 ? "s" : ""} — ${etiquetaEstrellas[n]}`}
                   aria-pressed={puntaje === n}
-                  className="min-w-[52px] min-h-[52px] text-4xl transition-transform active:scale-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] rounded-xl"
+                  className="min-w-13 min-h-13 text-4xl transition-transform active:scale-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] rounded-xl"
                   style={{
                     color: n <= (hover || puntaje) ? colorActivo : "var(--border)",
                     filter: n <= (hover || puntaje) ? "drop-shadow(0 0 6px rgba(236,201,75,0.6))" : "none",
@@ -168,7 +164,7 @@ export default function CalificarPasajeroClient({
               onClick={handleEnviar}
               disabled={enviando || puntaje === 0}
               aria-label="Enviar calificación del pasajero"
-              className="w-full min-h-[60px] rounded-2xl border-2 border-zinc-950 bg-brand text-zinc-950 font-extrabold text-lg transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-50"
+              className="w-full min-h-15 rounded-2xl border-2 border-zinc-950 bg-brand text-zinc-950 font-extrabold text-lg transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-50"
             >
               {enviando ? (
                 <span className="flex items-center justify-center gap-2">
@@ -183,7 +179,7 @@ export default function CalificarPasajeroClient({
             <button
               onClick={handleOmitir}
               disabled={enviando}
-              className="w-full min-h-[60px] rounded-2xl border-2 border-zinc-950 bg-[rgba(207,255,4,0.08)] text-[var(--foreground)] font-bold transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:bg-zinc-950 dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-50"
+              className="w-full min-h-15 rounded-2xl border-2 border-zinc-950 bg-[rgba(207,255,4,0.08)] text-[var(--foreground)] font-bold transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:bg-zinc-950 dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-50"
               aria-label="Omitir calificación e ir al historial"
             >
               Omitir por ahora

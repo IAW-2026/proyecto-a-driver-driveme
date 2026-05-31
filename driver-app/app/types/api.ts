@@ -137,16 +137,6 @@ export interface SincronizarViajeRiderResponse {
   };
 }
 
-// GET /api/pasajeros/{id_pasajero}/viajes/activos
-export interface ViajeActivoPasajeroResponse {
-  id_pasajero: string;
-  viaje_activo: {
-    id_viaje: string;
-    id_solicitud: string;
-    estado_actual: EstadoViaje;
-    id_conductor: string;
-  } | null;
-}
 
 // POST /api/notificaciones/viajes/{id_viaje}/estado
 export interface NotificarEstadoViajeRequest {
