@@ -23,12 +23,11 @@ function validateM2M(request: Request): boolean {
 }
 
 const reputacionSchema = z.object({
-  id_conductor: z.string().min(1),
   puntaje: z.number().min(1).max(5),
   comentario_promedio: z.string().nullable().optional(),
 });
 
-// ── POST /api/conductor/reputacion ────────────────────────────────────────────
+// ── PATCH /api/conductores/[id_conductor]/reputacion ──────────────────────────
 // [M2M] Consumidor: Feedback App
 // Recibe el nuevo puntaje y recalcula el promedio acumulado del conductor.
 //
@@ -37,8 +36,13 @@ const reputacionSchema = z.object({
 // Se usa la fórmula de promedio móvil incremental:
 //   nuevo_promedio = (promedio_actual * total_viajes_finalizados + puntaje) / (total_viajes_finalizados + 1)
 // Esto evita pisar el histórico con un solo valor.
-export async function POST(request: Request) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id_conductor: string }> }
+) {
   try {
+    const { id_conductor } = await params;
+
     if (!validateM2M(request)) {
       return NextResponse.json({ error: 'Unauthorized M2M access' }, { status: 403 });
     }
@@ -47,7 +51,7 @@ export async function POST(request: Request) {
     const parsed = reputacionSchema.parse(body);
 
     const conductor = await prisma.conductor.findUnique({
-      where: { id_conductor: parsed.id_conductor },
+      where: { id_conductor },
       select: {
         id_conductor: true,
         calificacion_promedio: true,
@@ -73,7 +77,7 @@ export async function POST(request: Request) {
         : (promedioActual * totalViajes + parsed.puntaje) / (totalViajes + 1);
 
     const updated = await prisma.conductor.update({
-      where: { id_conductor: parsed.id_conductor },
+      where: { id_conductor },
       data: {
         calificacion_promedio: Math.round(nuevaCalificacion * 100) / 100, // 2 decimales
       },

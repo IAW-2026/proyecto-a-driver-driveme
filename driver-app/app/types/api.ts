@@ -50,10 +50,10 @@ export interface VerificarEstadoViajeResponse {
   tiempo_completado?: string;
 }
 
-// POST /api/conductor/reputacion
+// PATCH /api/conductores/[id_conductor]/reputacion
 export interface ActualizarReputacionConductorRequest {
-  id_conductor: string;
   puntaje: number;
+  comentario_promedio?: string | null;
 }
 
 // POST /api/viajes (Conductor acepta solicitud)
