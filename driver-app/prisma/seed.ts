@@ -26,13 +26,13 @@ async function main() {
       id_conductor: EVALUADOR_CLERK_ID,
       nombre: 'Evaluador',
       apellido: 'IAW',
-      licencia: 'LIC-EVALUADOR',
+      licencia: '20345678',
       estado: 'ONLINE',
       comentario_promedio: '¡Excelente conductor! Dashboard de prueba listo.',
       meta_diaria: 35000,
       fecha_ultima_liquidacion: new Date(Date.now() - (86400000 * 5)), // Hace 5 días
       vehiculos: {
-        create: { patente: 'IAW-2026', numero_poliza: 'POL-IAW-2026', marca: 'Peugeot', modelo: '208', anio: 2024, color: 'Blanco' }
+        create: { patente: 'AF123BC', numero_poliza: 'POL-AF123BC-01', marca: 'Peugeot', modelo: '208', anio: 2024, color: 'Blanco' }
       }
     },
     include: { vehiculos: true }
@@ -44,15 +44,15 @@ async function main() {
       id_conductor: 'user_sofi_888',
       nombre: 'Sofía',
       apellido: 'Gómez',
-      licencia: 'LIC-SOFIA',
+      licencia: '28555666',
       estado: 'ONLINE',
       comentario_promedio: 'Maneja muy bien de noche, super recomendable y segura.',
       meta_diaria: 50000,
       fecha_ultima_liquidacion: new Date(Date.now() - (86400000 * 2)),
       vehiculos: {
         create: [
-          { patente: 'PKR-777', numero_poliza: 'POL-PKR-777', marca: 'Volkswagen', modelo: 'Golf', anio: 2021, color: 'Gris' },
-          { patente: 'CAT-007', numero_poliza: 'POL-CAT-007', marca: 'Renault', modelo: 'Kangoo', anio: 2018, color: 'Blanco' }
+          { patente: 'PKR777', numero_poliza: 'POL-PKR777-01', marca: 'Volkswagen', modelo: 'Golf', anio: 2021, color: 'Gris' },
+          { patente: 'AA007ZZ', numero_poliza: 'POL-AA007ZZ-01', marca: 'Renault', modelo: 'Kangoo', anio: 2018, color: 'Blanco' }
         ]
       }
     },
@@ -65,11 +65,11 @@ async function main() {
       id_conductor: 'user_leo_321',
       nombre: 'Leonardo',
       apellido: 'Paz',
-      licencia: 'LIC-LEO',
+      licencia: '35123456',
       estado: 'OFFLINE',
       meta_diaria: 15000,
       vehiculos: {
-        create: { patente: 'NEW-999', numero_poliza: 'POL-NEW-999', marca: 'Chevrolet', modelo: 'Onix', anio: 2023, color: 'Azul' }
+        create: { patente: 'AE999XX', numero_poliza: 'POL-AE999XX-01', marca: 'Chevrolet', modelo: 'Onix', anio: 2023, color: 'Azul' }
       }
     },
     include: { vehiculos: true }
@@ -81,11 +81,11 @@ async function main() {
       id_conductor: 'user_lucas_404',
       nombre: 'Lucas',
       apellido: 'Testing',
-      licencia: 'LIC-LUCAS',
+      licencia: '38999000',
       estado: 'OFFLINE',
       isActive: false,
       vehiculos: {
-        create: { patente: 'OLD-111', numero_poliza: 'POL-OLD-111', marca: 'Toyota', modelo: 'Etios', anio: 2015, color: 'Gris', isActive: false }
+        create: { patente: 'OLD111', numero_poliza: 'POL-OLD111-01', marca: 'Toyota', modelo: 'Etios', anio: 2015, color: 'Gris', isActive: false }
       }
     },
     include: { vehiculos: true }
@@ -97,11 +97,11 @@ async function main() {
       id_conductor: 'user_marcos_777',
       nombre: 'Marcos',
       apellido: 'Ruiz',
-      licencia: 'LIC-MARCOS',
+      licencia: '31444777',
       estado: 'ONLINE',
       meta_diaria: 40000,
       vehiculos: {
-        create: { patente: 'INT-404', numero_poliza: 'POL-INT-404', marca: 'Fiat', modelo: 'Cronos', anio: 2022, color: 'Rojo' }
+        create: { patente: 'AG404YY', numero_poliza: 'POL-AG404YY-01', marca: 'Fiat', modelo: 'Cronos', anio: 2022, color: 'Rojo' }
       }
     },
     include: { vehiculos: true }
