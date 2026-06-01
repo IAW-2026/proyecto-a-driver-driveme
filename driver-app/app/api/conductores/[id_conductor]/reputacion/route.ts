@@ -80,10 +80,12 @@ export async function PATCH(
       where: { id_conductor },
       data: {
         calificacion_promedio: Math.round(nuevaCalificacion * 100) / 100, // 2 decimales
+        ...(parsed.comentario_promedio !== undefined && { comentario_promedio: parsed.comentario_promedio }),
       },
       select: {
         id_conductor: true,
         calificacion_promedio: true,
+        comentario_promedio: true,
       },
     });
 

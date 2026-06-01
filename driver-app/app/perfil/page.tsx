@@ -12,6 +12,7 @@ import type { HistorialCalificacionesResponse } from "@/app/types/api";
 import EditarMeta from "@/app/components/EditarMeta";
 import PaginadorURL from "@/app/components/admin/PaginadorURL";
 import BotonBaja from "@/app/components/BotonBaja";
+import SimularWebhookBoton from "@/app/components/SimularWebhookBoton";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -147,6 +148,18 @@ export default async function PerfilPage({
               Calificaciones recibidas
             </h2>
 
+            {conductorData?.comentario_promedio && (
+              <div className="bg-brand dark:bg-brand border-2 border-brand dark:border-brand p-4 rounded-xl shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#CFFF04] mb-6">
+                <p className="text-sm font-bold text-zinc-950 dark:text-zinc-950 uppercase tracking-wider mb-1">
+                  Comentario Promedio
+                </p>
+                <p className="text-zinc-950 dark:text-zinc-950 font-medium italic">
+                  &ldquo;{conductorData.comentario_promedio}&rdquo;
+                </p>
+              </div>
+            )}
+
+
             {!calificaciones || totalReviews === 0 ? (
               <EstadoVacio
                 icono={StarOff}
@@ -176,15 +189,17 @@ export default async function PerfilPage({
                 {/* Controles de Paginación */}
                 {totalPages > 1 && (
                   <div className="mt-6 flex justify-center">
-                    <PaginadorURL 
-                      paginaActual={currentPage} 
-                      totalPaginas={totalPages} 
+                    <PaginadorURL
+                      paginaActual={currentPage}
+                      totalPaginas={totalPages}
                     />
                   </div>
                 )}
               </div>
             )}
           </section>
+
+          <SimularWebhookBoton idConductor={userId} />
 
           <BotonBaja />
         </div>

@@ -28,7 +28,7 @@ export async function iniciarViaje(id_viaje: string) {
         `${process.env.RIDER_APP_URL}/api/notificaciones/viajes/${id_viaje}/estado`,
         {
           method: "POST",
-          headers: m2mHeaders(),
+          headers: m2mHeaders("rider"),
           body: JSON.stringify({
             id_viaje,
             id_pasajero: viaje.id_pasajero,

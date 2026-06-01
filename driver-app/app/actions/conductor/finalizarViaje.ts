@@ -44,7 +44,7 @@ export async function finalizarViaje(id_viaje: string) {
     try {
       const pagoRes = await fetch(`${process.env.PAYMENTS_APP_URL}/api/pagos/transacciones`, {
         method: "PUT",
-        headers: m2mHeaders(),
+        headers: m2mHeaders("payments"),
         body: JSON.stringify({
           id_transaccion: id_viaje,
         }),
@@ -61,7 +61,7 @@ export async function finalizarViaje(id_viaje: string) {
         `${process.env.RIDER_APP_URL}/api/notificaciones/viajes/${id_viaje}/estado`,
         {
           method: "POST",
-          headers: m2mHeaders(),
+          headers: m2mHeaders("rider"),
           body: JSON.stringify({
             id_viaje,
             id_pasajero: viaje.id_pasajero,

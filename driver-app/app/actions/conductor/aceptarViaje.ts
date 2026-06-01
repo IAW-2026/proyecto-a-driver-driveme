@@ -5,6 +5,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { prisma, TransactionClient } from "@/lib/prisma";
+import { m2mHeaders } from "@/lib/m2m";
 import { z } from "zod";
 
 const aceptarViajeSchema = z.object({
@@ -104,20 +105,10 @@ export async function aceptarViaje(
   });
 
   // 6. Sincronización M2M → Rider App (idéntica al route.ts)
-  const internalApiKey = process.env.INTERNAL_API_KEY;
-  if (!internalApiKey) {
-    console.error(
-      "[ERROR] INTERNAL_API_KEY no definida. Sincronización M2M imposible."
-    );
-  }
-
   try {
     const riderResponse = await fetch(`${process.env.RIDER_APP_URL}/api/viajes`, {
       method:  "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(internalApiKey ? { "x-api-key": internalApiKey } : {}),
-      },
+      headers: m2mHeaders("rider"),
       body: JSON.stringify({
         id_solicitud:    viaje.id_solicitud,
         id_conductor:    viaje.id_conductor,

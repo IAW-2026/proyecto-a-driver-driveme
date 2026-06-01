@@ -26,6 +26,7 @@ async function main() {
       apellido: 'González',
       licencia: 'LIC-LUCIANA',
       estado: 'ONLINE',
+      comentario_promedio: '¡Excelente conductora! Siempre llega a tiempo y el auto huele muy bien.',
       meta_diaria: 35000,
       fecha_ultima_liquidacion: new Date(Date.now() - (86400000 * 10)), // Hace 10 días (Puede liquidar)
       vehiculos: {
@@ -43,6 +44,7 @@ async function main() {
       apellido: 'Gómez',
       licencia: 'LIC-SOFIA',
       estado: 'ONLINE',
+      comentario_promedio: 'Maneja muy bien de noche, super recomendable y segura.',
       meta_diaria: 50000,
       fecha_ultima_liquidacion: new Date(Date.now() - (86400000 * 2)), // Hace 2 días (Bloqueada por límite de 7 días)
       vehiculos: {

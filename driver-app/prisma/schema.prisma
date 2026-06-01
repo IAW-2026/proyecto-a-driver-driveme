@@ -45,6 +45,7 @@ model Conductor {
   latitud_actual        Float?
   longitud_actual       Float?
   calificacion_promedio Float           @default(5.0)
+  comentario_promedio   String?
   isActive              Boolean         @default(true)
   meta_diaria        Int                 @default(30000) 
   fecha_ultima_liquidacion DateTime?
