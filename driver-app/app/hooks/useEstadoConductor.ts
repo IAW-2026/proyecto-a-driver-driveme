@@ -16,7 +16,7 @@ export function useEstadoConductor({ conductorId, estadoInicial, mostrarToast, o
   // useOptimistic maneja el rollback automáticamente al terminar la transition
   const [isOnline, setIsOnlineOptimistic] = useOptimistic(isOnlineReal);
 
-  const toggleEstado = () => {
+  const toggleEstado = (vehiculoId?: string) => {
     const nuevoEstado = !isOnline;
 
     if (!nuevoEstado) onApagar();
@@ -28,7 +28,7 @@ export function useEstadoConductor({ conductorId, estadoInicial, mostrarToast, o
     startTransition(async () => {
       setIsOnlineOptimistic(nuevoEstado); // ✅ se revierte solo si la transition falla
 
-      const result = await toggleConductorStatus(conductorId, nuevoEstado);
+      const result = await toggleConductorStatus(conductorId, nuevoEstado, vehiculoId);
 
       if (!result.success) {
         mostrarToast("Error al cambiar estado. Intentá de nuevo.", "error");

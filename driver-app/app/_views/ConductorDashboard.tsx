@@ -1,7 +1,7 @@
 "use client";
 
 import { Prisma } from "@/app/generated/prisma/client";
-import { Car, Clock, DollarSign, Target, Zap, Star, LayoutDashboard } from "lucide-react";
+import { Car, Clock, DollarSign, Target, Zap, Star, LayoutDashboard, ChevronDown } from "lucide-react";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import Toast from "@/app/components/Toast";
@@ -20,7 +20,13 @@ interface ConductorDashboardProps {
 }
 
 export default function ConductorDashboard({ conductorData, metricasHoy }: ConductorDashboardProps) {
-  const vehiculo = conductorData.vehiculos[0];
+  const vehiculosActivos = conductorData.vehiculos.filter(v => v.isActive);
+  const [selectedVehiculoId, setSelectedVehiculoId] = useState<string>(
+    conductorData.vehiculo_activo_id || (vehiculosActivos.length > 0 ? vehiculosActivos[0].id_vehiculo : "")
+  );
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
+
+  const vehiculo = vehiculosActivos.find(v => v.id_vehiculo === selectedVehiculoId) || vehiculosActivos[0];
 
   // 1. Hook de Notificaciones
   const { toast, mostrarToast, ocultarToast } = useToast();
@@ -45,6 +51,10 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
     mostrarToast,
     onApagar: limpiarSolicitud
   });
+
+  const handleToggleEstado = () => {
+    toggleEstado(selectedVehiculoId);
+  };
 
   // 4. Hook de Sugerencias IA
   const [sugerencias, setSugerencias] = useState<SugerenciaIA | null>(null);
@@ -142,15 +152,62 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
         </div>
       </div>
 
-      {/* BOTÓN ONLINE/OFFLINE */}
-      <button
-        onClick={toggleEstado}
-        disabled={isPending}
-        className={`w-full min-h-[72px] rounded-2xl border-2 px-6 py-4 font-extrabold text-xl tracking-wide transition-transform duration-200 focus:outline-none shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] active:scale-[0.98] disabled:opacity-60 ${isOnline ? "border-zinc-950 bg-brand text-zinc-950" : "border-zinc-950 bg-[rgba(207,255,4,0.08)] text-zinc-950 dark:text-white dark:bg-zinc-950"
-          }`}
-      >
-        {isPending ? "Actualizando..." : isOnline ? "CONECTADO — Tocá para desconectarte" : "CONECTARME AHORA"}
-      </button>
+      {/* SELECCIÓN DE VEHÍCULO Y BOTÓN ONLINE/OFFLINE */}
+      <div className="space-y-3">
+        {vehiculosActivos.length > 0 && (
+          <div className="flex flex-col gap-1.5 relative">
+            <label className="text-sm font-extrabold uppercase tracking-widest px-2 text-zinc-950 dark:text-white">
+              Vehículo Activo
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => !isOnline && !isPending && setIsSelectOpen(!isSelectOpen)}
+                disabled={isOnline || isPending}
+                className="w-full text-left p-4 pr-12 rounded-xl border-2 border-zinc-950 bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white font-bold text-lg shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#ffffff] focus:outline-none focus:ring-4 focus:ring-brand/30 transition-shadow disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed flex items-center justify-between"
+              >
+                <span>{vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.patente})` : "Seleccionar..."}</span>
+                <ChevronDown className="w-6 h-6 stroke-[3] text-zinc-950 dark:text-white absolute right-4" />
+              </button>
+              
+              {isSelectOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsSelectOpen(false)} 
+                  />
+                  <div className="absolute z-50 mt-2 w-full rounded-xl border-2 border-zinc-950 bg-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] overflow-hidden flex flex-col">
+                    {vehiculosActivos.map((v) => (
+                      <button
+                        key={v.id_vehiculo}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVehiculoId(v.id_vehiculo);
+                          setIsSelectOpen(false);
+                        }}
+                        className={`w-full text-left p-4 font-bold text-lg border-b-2 border-zinc-950 last:border-b-0 hover:bg-brand hover:text-zinc-950 dark:hover:bg-brand dark:hover:text-zinc-950 transition-colors ${
+                          selectedVehiculoId === v.id_vehiculo ? "bg-brand/20 dark:bg-brand/10" : "bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white"
+                        }`}
+                      >
+                        {v.marca} {v.modelo} ({v.patente})
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={handleToggleEstado}
+          disabled={isPending || vehiculosActivos.length === 0}
+          className={`w-full min-h-[72px] rounded-2xl border-2 px-6 py-4 font-extrabold text-xl tracking-wide transition-transform duration-200 focus:outline-none shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] active:scale-[0.98] disabled:opacity-60 ${isOnline ? "border-zinc-950 bg-brand text-zinc-950" : "border-zinc-950 bg-[rgba(207,255,4,0.08)] text-zinc-950 dark:text-white dark:bg-zinc-950"
+            }`}
+        >
+          {isPending ? "Actualizando..." : isOnline ? "CONECTADO — Tocá para desconectarte" : vehiculosActivos.length === 0 ? "NO TIENES VEHÍCULOS ACTIVOS" : "CONECTARME AHORA"}
+        </button>
+      </div>
 
       {/* MÉTRICAS HOY */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -76,7 +76,8 @@ Given('un conductor autenticado con ID {string}', async (id_conductor: string) =
       id_vehiculo: testData.id_vehiculo,
       id_conductor: id_conductor,
       patente: 'TEST-000',
-      marca: 'Test',
+      numero_poliza: 'POL-TEST-000',
+      marca: 'TestMarca',
       modelo: 'Auto',
       anio: 2024,
       color: 'Gris'

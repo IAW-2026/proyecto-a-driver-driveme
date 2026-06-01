@@ -49,6 +49,7 @@ model Conductor {
   isActive              Boolean         @default(true)
   meta_diaria        Int                 @default(30000) 
   fecha_ultima_liquidacion DateTime?
+  vehiculo_activo_id String?
   historial_conexion HistorialConexion[]
 
   // Relaciones
@@ -57,10 +58,11 @@ model Conductor {
 }
 
 model Vehiculo {
-  id_vehiculo  String    @id @default(uuid())
-  patente      String    @unique
-  marca        String
-  modelo       String
+  id_vehiculo   String    @id @default(uuid())
+  patente       String    @unique
+  numero_poliza String    @unique
+  marca         String
+  modelo        String
   anio         Int
   id_conductor String
   fecha_baja   DateTime?

@@ -14,6 +14,7 @@ import PaginadorURL from "@/app/components/admin/PaginadorURL";
 import BotonBaja from "@/app/components/BotonBaja";
 import SimularWebhookBoton from "@/app/components/SimularWebhookBoton";
 import BotonReportarCalificacion from "@/app/components/BotonReportarCalificacion";
+import GestorVehiculos from "@/app/components/GestorVehiculos";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -61,7 +62,7 @@ export default async function PerfilPage({
   if (rol === "ADMIN") redirect("/");
 
   const calificaciones = conductorData ? await fetchCalificaciones(userId) : null;
-  const vehiculoPrincipal = conductorData?.vehiculos[0];
+  const vehiculosActivos = conductorData?.vehiculos.filter(v => v.isActive) || [];
 
   const resolvedParams = await searchParams;
   const currentPage = Number(resolvedParams.page) || 1;
@@ -122,19 +123,7 @@ export default async function PerfilPage({
               </div>
             </div>
 
-            {vehiculoPrincipal && (
-              <div className="px-6 py-4 flex items-center gap-4 border-t-2 border-zinc-950 dark:border-zinc-800">
-                <Car className="w-8 h-8 text-zinc-950 dark:text-white" strokeWidth={2.5} aria-hidden />
-                <div>
-                  <p className="font-bold text-lg text-zinc-950 dark:text-white uppercase tracking-wide">
-                    {vehiculoPrincipal.marca} {vehiculoPrincipal.modelo} {vehiculoPrincipal.anio}
-                  </p>
-                  <p className="text-sm font-mono font-medium text-zinc-600 dark:text-zinc-300">
-                    {vehiculoPrincipal.patente} · {vehiculoPrincipal.color}
-                  </p>
-                </div>
-              </div>
-            )}
+            <GestorVehiculos vehiculos={vehiculosActivos} />
           </div>
 
           {conductorData && (

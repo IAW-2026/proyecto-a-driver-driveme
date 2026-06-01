@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 
-export async function toggleConductorStatus(conductorId: string, nuevoEstado: boolean) {
+export async function toggleConductorStatus(conductorId: string, nuevoEstado: boolean, vehiculoId?: string) {
   const { userId } = await auth();
   if (!userId || userId !== conductorId) return { success: false, error: "No autorizado" };
 
@@ -13,7 +13,10 @@ export async function toggleConductorStatus(conductorId: string, nuevoEstado: bo
 
     await prisma.conductor.update({
       where: { id_conductor: conductorId },
-      data: { estado: estadoStr },
+      data: { 
+        estado: estadoStr,
+        vehiculo_activo_id: nuevoEstado ? (vehiculoId || null) : null
+      },
     });
 
     await prisma.historialConexion.create({

@@ -148,6 +148,8 @@ export default function RegistroConductor() {
               required
               type="text"
               name="licencia"
+              pattern="^\d{7,8}$"
+              title="Debe ingresar 7 u 8 dígitos numéricos (DNI)"
               className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
               style={{ color: "var(--foreground)" }}
             />
@@ -160,18 +162,37 @@ export default function RegistroConductor() {
             Datos del vehículo
           </legend>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="patente" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
-                Patente
-              </label>
-              <input
-                id="patente"
-                required
-                type="text"
-                name="patente"
-                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 uppercase tracking-widest focus:outline-none focus:ring-0"
-                style={{ color: "var(--foreground)" }}
-              />
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <div>
+                <label htmlFor="patente" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+                  Patente
+                </label>
+                <input
+                  id="patente"
+                  required
+                  type="text"
+                  name="patente"
+                  pattern="^([a-zA-Z]{3}\d{3}|[a-zA-Z]{2}\d{3}[a-zA-Z]{2})$"
+                  title="Debe tener formato argentino (ej: AAA123 o AA123AA)"
+                  className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 uppercase tracking-widest focus:outline-none focus:ring-0"
+                  style={{ color: "var(--foreground)" }}
+                />
+              </div>
+              <div>
+                <label htmlFor="numero_poliza" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+                  Número de Póliza
+                </label>
+                <input
+                  id="numero_poliza"
+                  required
+                  type="text"
+                  name="numero_poliza"
+                  pattern="^[a-zA-Z0-9\-]{6,25}$"
+                  title="Entre 6 y 25 caracteres alfanuméricos o guiones"
+                  className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 uppercase tracking-widest focus:outline-none focus:ring-0"
+                  style={{ color: "var(--foreground)" }}
+                />
+              </div>
             </div>
             <div>
               <label htmlFor="anio" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
