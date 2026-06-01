@@ -53,9 +53,9 @@ export default function GestorVehiculos({ vehiculos }: { vehiculos: Vehiculo[] }
   return (
     <div className="border-t-2 border-zinc-950 dark:border-zinc-800">
       <div className="px-6 py-4 flex items-center justify-between border-b-2 border-zinc-950 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800">
-        <h3 className="font-extrabold text-lg uppercase tracking-wide text-zinc-950 dark:text-white">
+        <h2 className="font-extrabold text-lg uppercase tracking-wide text-zinc-950 dark:text-white">
           Tus Vehículos
-        </h3>
+        </h2>
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-zinc-950 bg-brand text-zinc-950 font-bold text-sm shadow-[2px_2px_0px_0px_#09090b] hover:-translate-y-0.5 transition-transform"
@@ -101,7 +101,7 @@ export default function GestorVehiculos({ vehiculos }: { vehiculos: Vehiculo[] }
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white dark:bg-zinc-900 border-2 border-zinc-950 rounded-2xl shadow-[8px_8px_0px_0px_#09090b] dark:shadow-[8px_8px_0px_0px_#CFFF04] overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b-2 border-zinc-950 dark:border-zinc-800">
-              <h3 className="font-extrabold text-xl text-zinc-950 dark:text-white">Agregar Vehículo</h3>
+              <h2 className="font-extrabold text-xl text-zinc-950 dark:text-white">Agregar Vehículo</h2>
               <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md">
                 <X className="w-6 h-6 text-zinc-950 dark:text-white" />
               </button>
@@ -162,9 +162,9 @@ export default function GestorVehiculos({ vehiculos }: { vehiculos: Vehiculo[] }
       {vehiculoABorrar && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm">
           <div className="w-full max-w-sm bg-white dark:bg-zinc-900 border-2 border-zinc-950 rounded-2xl shadow-[8px_8px_0px_0px_#09090b] dark:shadow-[8px_8px_0px_0px_#CFFF04] p-6 space-y-6">
-            <h3 className="font-extrabold text-xl text-zinc-950 dark:text-white uppercase tracking-wide">
+            <h2 className="font-extrabold text-xl text-zinc-950 dark:text-white uppercase tracking-wide">
               ¿Dar de baja vehículo?
-            </h3>
+            </h2>
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
               ¿Estás seguro de que deseas dar de baja este vehículo? Ya no podrás recibir viajes en él.
             </p>
