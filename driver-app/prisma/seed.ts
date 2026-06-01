@@ -9,7 +9,7 @@ const adapter = new PrismaPg(pool)
 
 const prisma = new PrismaClient({ adapter })
 
-const EVALUADOR_CLERK_ID = 'user_3EXZNT7fvqJ8A6bBXzyIagBH2s0K';
+const EVALUADOR_CLERK_ID = 'user_3EXZNT7fvqJ8A6bBXzyIagBH2s0';
 
 async function main() {
   console.log('🌱 Destruyendo ecosistema anterior (incluyendo historiales)...')

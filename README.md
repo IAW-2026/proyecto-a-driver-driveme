@@ -14,10 +14,12 @@ Para facilitar la corrección, pueden utilizar los siguientes usuarios de prueba
 - **Rol Conductor:**
   - **Email:** `driver+clerktest@iaw.com`
   - **Contraseña:** `iawuser#`
+  - **Código verificación:** `424242`
 
 - **Rol Administrador:**
   - **Email:** `admin+clerktest@iaw.com`
   - **Contraseña:** `iawuser#`
+  - **Código verificación:** `424242`
 
 ## Instrucciones de uso
 Inicie sesión con las credenciales provistas. Como conductor, podrá ponerse en línea, aceptar o rechazar solicitudes de viaje, registrar el inicio y fin de un recorrido, y visualizar su rendimiento diario (metas, ingresos y estadísticas). Como administrador tendrá acceso a funciones de gestión del sistema. 
