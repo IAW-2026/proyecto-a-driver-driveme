@@ -9,6 +9,8 @@ const adapter = new PrismaPg(pool)
 
 const prisma = new PrismaClient({ adapter })
 
+const EVALUADOR_CLERK_ID = 'user_3EXZNT7fvqJ8A6bBXzyIagBH2s0K';
+
 async function main() {
   console.log('🌱 Destruyendo ecosistema anterior (incluyendo historiales)...')
   await prisma.historialConexion.deleteMany()
@@ -18,19 +20,19 @@ async function main() {
 
   console.log('🌱 Sembrando la nueva flota de datos...')
 
-  // Caso A: Luciana - Activa, meta estándar.
-  const conductorLuciana = await prisma.conductor.create({
+  // Caso Evaluador - Activo, con muchísimos datos para probar
+  const conductorEvaluador = await prisma.conductor.create({
     data: {
-      id_conductor: 'user_luciana_456',
-      nombre: 'Luciana',
-      apellido: 'González',
-      licencia: 'LIC-LUCIANA',
+      id_conductor: EVALUADOR_CLERK_ID,
+      nombre: 'Evaluador',
+      apellido: 'IAW',
+      licencia: 'LIC-EVALUADOR',
       estado: 'ONLINE',
-      comentario_promedio: '¡Excelente conductora! Siempre llega a tiempo y el auto huele muy bien.',
+      comentario_promedio: '¡Excelente conductor! Dashboard de prueba listo.',
       meta_diaria: 35000,
-      fecha_ultima_liquidacion: new Date(Date.now() - (86400000 * 10)), // Hace 10 días (Puede liquidar)
+      fecha_ultima_liquidacion: new Date(Date.now() - (86400000 * 5)), // Hace 5 días
       vehiculos: {
-        create: { patente: 'AGL-001', marca: 'Peugeot', modelo: '208', anio: 2024, color: 'Blanco' }
+        create: { patente: 'IAW-2026', numero_poliza: 'POL-IAW-2026', marca: 'Peugeot', modelo: '208', anio: 2024, color: 'Blanco' }
       }
     },
     include: { vehiculos: true }
@@ -46,11 +48,11 @@ async function main() {
       estado: 'ONLINE',
       comentario_promedio: 'Maneja muy bien de noche, super recomendable y segura.',
       meta_diaria: 50000,
-      fecha_ultima_liquidacion: new Date(Date.now() - (86400000 * 2)), // Hace 2 días (Bloqueada por límite de 7 días)
+      fecha_ultima_liquidacion: new Date(Date.now() - (86400000 * 2)),
       vehiculos: {
         create: [
-          { patente: 'PKR-777', marca: 'Volkswagen', modelo: 'Golf', anio: 2021, color: 'Gris' },
-          { patente: 'CAT-007', marca: 'Renault', modelo: 'Kangoo', anio: 2018, color: 'Blanco' }
+          { patente: 'PKR-777', numero_poliza: 'POL-PKR-777', marca: 'Volkswagen', modelo: 'Golf', anio: 2021, color: 'Gris' },
+          { patente: 'CAT-007', numero_poliza: 'POL-CAT-007', marca: 'Renault', modelo: 'Kangoo', anio: 2018, color: 'Blanco' }
         ]
       }
     },
@@ -67,7 +69,7 @@ async function main() {
       estado: 'OFFLINE',
       meta_diaria: 15000,
       vehiculos: {
-        create: { patente: 'NEW-999', marca: 'Chevrolet', modelo: 'Onix', anio: 2023, color: 'Azul' }
+        create: { patente: 'NEW-999', numero_poliza: 'POL-NEW-999', marca: 'Chevrolet', modelo: 'Onix', anio: 2023, color: 'Azul' }
       }
     },
     include: { vehiculos: true }
@@ -83,7 +85,7 @@ async function main() {
       estado: 'OFFLINE',
       isActive: false,
       vehiculos: {
-        create: { patente: 'OLD-111', marca: 'Toyota', modelo: 'Etios', anio: 2015, color: 'Gris', isActive: false }
+        create: { patente: 'OLD-111', numero_poliza: 'POL-OLD-111', marca: 'Toyota', modelo: 'Etios', anio: 2015, color: 'Gris', isActive: false }
       }
     },
     include: { vehiculos: true }
@@ -99,126 +101,116 @@ async function main() {
       estado: 'ONLINE',
       meta_diaria: 40000,
       vehiculos: {
-        create: { patente: 'INT-404', marca: 'Fiat', modelo: 'Cronos', anio: 2022, color: 'Rojo' }
+        create: { patente: 'INT-404', numero_poliza: 'POL-INT-404', marca: 'Fiat', modelo: 'Cronos', anio: 2022, color: 'Rojo' }
       }
     },
     include: { vehiculos: true }
   })
 
-  // Caso F: Valentina - VIP Alta Gama (Para reventar la meta de ingresos hoy)
-  const conductorValentina = await prisma.conductor.create({
-    data: {
-      id_conductor: 'user_vale_999',
-      nombre: 'Valentina',
-      apellido: 'Vip',
-      licencia: 'LIC-VALE',
-      estado: 'ONLINE',
-      meta_diaria: 80000,
-      vehiculos: {
-        create: { patente: 'VIP-001', marca: 'Audi', modelo: 'A4', anio: 2025, color: 'Negro' }
-      }
-    },
-    include: { vehiculos: true }
-  })
-
-  console.log('⏱️  Generando historiales de conexión (Horas Online de hoy)...')
+  console.log('⏱️  Generando historiales de conexión (Horas Online)...')
 
   const ahora = Date.now();
   const unDia = 86400000;
   const unaHora = 3600000;
-  const unMinuto = 60000; // Agregado para simular duraciones de viaje reales
+  const unMinuto = 60000;
 
   await prisma.historialConexion.createMany({
     data: [
-      { id_conductor: conductorLuciana.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 4)) },
+      { id_conductor: conductorEvaluador.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 5)) },
+      { id_conductor: conductorEvaluador.id_conductor, estado: 'OFFLINE', timestamp: new Date(ahora - (unaHora * 1)) },
+      { id_conductor: conductorEvaluador.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unMinuto * 30)) },
       { id_conductor: conductorSofia.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 7)) },
       { id_conductor: conductorMarcos.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 6)) },
       { id_conductor: conductorMarcos.id_conductor, estado: 'OFFLINE', timestamp: new Date(ahora - (unaHora * 4)) },
-      { id_conductor: conductorMarcos.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 1)) },
-      { id_conductor: conductorValentina.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 2)) }
+      { id_conductor: conductorMarcos.id_conductor, estado: 'ONLINE', timestamp: new Date(ahora - (unaHora * 1)) }
     ]
   });
 
-  console.log('🚗 Generando historial de viajes complejo y detallado...')
+  console.log('🚗 Generando historial masivo de viajes...')
 
-  // Viajes de Luciana
-  await prisma.viaje.createMany({
-    data: [
-      { 
-        id_solicitud: 'sol_1', id_pasajero: 'pas_1', pasajero_nombre: 'Ignacio Romero', 
-        metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 4500.00, precio_final: 4500.00, 
-        id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, 
-        origen_direccion: 'Plaza Rivadavia, Bahía Blanca', origen_latitud: -38.7183, origen_longitud: -62.2663,
-        destino_direccion: 'Terminal de Ómnibus, Bahía Blanca', destino_latitud: -38.7436, destino_longitud: -62.2475,
-        tiempo_aceptado: new Date(ahora - unDia * 5),
-        tiempo_comienzo: new Date(ahora - unDia * 5 + unMinuto * 4), // Empieza 4 mins después
-        tiempo_completado: new Date(ahora - unDia * 5 + unMinuto * 22) // Tarda 18 mins de viaje
-      },
-      { 
-        id_solicitud: 'sol_2', id_pasajero: 'pas_2', pasajero_nombre: 'Camila Sosa',
-        metodo_pago: 'MERCADO_PAGO', estado_actual: 'FINALIZADO', precio: 3200.50, precio_final: 3200.50, 
-        id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, 
-        origen_direccion: 'Parque de Mayo, Bahía Blanca', origen_latitud: -38.7025, origen_longitud: -62.2685,
-        destino_direccion: 'UNS Av. Alem, Bahía Blanca', destino_latitud: -38.7058, destino_longitud: -62.2711,
-        tiempo_aceptado: new Date(ahora - unDia * 2),
-        tiempo_comienzo: new Date(ahora - unDia * 2 + unMinuto * 2),
-        tiempo_completado: new Date(ahora - unDia * 2 + unMinuto * 10)
-      },
-      { 
-        id_solicitud: 'sol_3', id_pasajero: 'pas_3', pasajero_nombre: 'Tomás Castro',
-        metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 18900.00, precio_final: 18900.00, 
-        id_conductor: conductorLuciana.id_conductor, id_vehiculo: conductorLuciana.vehiculos[0].id_vehiculo, 
-        origen_direccion: 'Hospital Penna, Bahía Blanca', origen_latitud: -38.7112, origen_longitud: -62.2355,
-        destino_direccion: 'Aeropuerto Comandante Espora, Bahía Blanca', destino_latitud: -38.7230, destino_longitud: -62.1550,
-        tiempo_aceptado: new Date(ahora - (unaHora * 2)),
-        tiempo_comienzo: new Date(ahora - (unaHora * 2) + unMinuto * 5),
-        tiempo_completado: new Date(ahora - (unaHora * 2) + unMinuto * 35)
-      },
-    ]
-  })
+  // Arrays de datos aleatorios para la generación masiva
+  const pasajerosNombres = ['Ignacio Romero', 'Camila Sosa', 'Tomás Castro', 'Laura Díaz', 'Esteban M.', 'Julieta Silva', 'Diego Fernández', 'Martina Gómez', 'Facundo Herrera', 'Valentina Ruiz'];
+  const ubicaciones = [
+    { dir: 'Plaza Rivadavia, Bahía Blanca', lat: -38.7183, lng: -62.2663 },
+    { dir: 'Terminal de Ómnibus, Bahía Blanca', lat: -38.7436, lng: -62.2475 },
+    { dir: 'Parque de Mayo, Bahía Blanca', lat: -38.7025, lng: -62.2685 },
+    { dir: 'UNS Av. Alem, Bahía Blanca', lat: -38.7058, lng: -62.2711 },
+    { dir: 'Hospital Penna, Bahía Blanca', lat: -38.7112, lng: -62.2355 },
+    { dir: 'Aeropuerto Comandante Espora, Bahía Blanca', lat: -38.7230, lng: -62.1550 },
+    { dir: 'Teatro Municipal, Bahía Blanca', lat: -38.7155, lng: -62.2635 },
+    { dir: 'Barrio Patagonia, Bahía Blanca', lat: -38.6920, lng: -62.2250 },
+    { dir: 'Shopping Nine, Bahía Blanca', lat: -38.7010, lng: -62.2850 }
+  ];
 
-  // Viajes de Sofía
-  await prisma.viaje.createMany({
-    data: [
-      { 
-        id_solicitud: 'sol_4', id_pasajero: 'pas_4', pasajero_nombre: 'Laura Díaz',
-        metodo_pago: 'MERCADO_PAGO', estado_actual: 'FINALIZADO', precio: 12000.00, precio_final: 12000.00, 
-        id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[0].id_vehiculo, 
-        origen_direccion: 'Teatro Municipal, Bahía Blanca', origen_latitud: -38.7155, origen_longitud: -62.2635,
-        destino_direccion: 'Barrio Patagonia, Bahía Blanca', destino_latitud: -38.6920, destino_longitud: -62.2250,
-        tiempo_aceptado: new Date(ahora - unDia * 10),
-        tiempo_comienzo: new Date(ahora - unDia * 10 + unMinuto * 3),
-        tiempo_completado: new Date(ahora - unDia * 10 + unMinuto * 25)
-      },
-      { 
-        // Este está cancelado, por lo que no tiene tiempo de finalización.
-        id_solicitud: 'sol_5', id_pasajero: 'pas_5', pasajero_nombre: 'Esteban M.',
-        metodo_pago: 'EFECTIVO', estado_actual: 'CANCELADO_POR_CONDUCTOR', precio: 0, precio_final: 0, 
-        id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[1].id_vehiculo, 
-        origen_direccion: 'Paseo de las Esculturas, Bahía Blanca', origen_latitud: -38.7060, origen_longitud: -62.2590,
-        destino_direccion: 'Plaza Rivadavia, Bahía Blanca', destino_latitud: -38.7183, destino_longitud: -62.2663,
-        tiempo_aceptado: new Date(ahora - unaHora),
-        tiempo_comienzo: null, // Lo canceló antes de buscar al pasajero
-        tiempo_completado: null
-      },
-      { 
-        // Este está en curso, tiene inicio pero no final.
-        id_solicitud: 'sol_6', id_pasajero: 'pas_6', pasajero_nombre: 'Julieta Silva',
-        metodo_pago: 'MERCADO_PAGO', estado_actual: 'EN_CURSO', precio: 5600.00, precio_final: 5600.00, 
-        id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[0].id_vehiculo, 
-        origen_direccion: 'UNS Campus Palihue, Bahía Blanca', origen_latitud: -38.6912, origen_longitud: -62.2465,
-        destino_direccion: 'Centro, Bahía Blanca', destino_latitud: -38.7170, destino_longitud: -62.2650,
-        tiempo_aceptado: new Date(ahora - unMinuto * 12),
-        tiempo_comienzo: new Date(ahora - unMinuto * 8),
-        tiempo_completado: null 
-      },
-    ]
-  })
+  const viajesMasivos: any[] = [];
 
-  // Viaje de Lucas (Historial viejo)
-  await prisma.viaje.create({
-    data: {
-      id_solicitud: 'sol_7', id_pasajero: 'pas_7', pasajero_nombre: 'Diego Fernández',
+  // Generar 25 viajes aleatorios finalizados para el Evaluador a lo largo de los últimos 7 días
+  for (let i = 0; i < 25; i++) {
+    const origen = ubicaciones[Math.floor(Math.random() * ubicaciones.length)];
+    let destino = ubicaciones[Math.floor(Math.random() * ubicaciones.length)];
+    while (destino.dir === origen.dir) {
+      destino = ubicaciones[Math.floor(Math.random() * ubicaciones.length)];
+    }
+
+    const diasAtras = Math.floor(Math.random() * 7); // Entre 0 y 6 días atrás
+    const horasAtras = Math.floor(Math.random() * 24);
+    const fechaAceptado = new Date(ahora - (diasAtras * unDia) - (horasAtras * unaHora));
+    const fechaComienzo = new Date(fechaAceptado.getTime() + (Math.floor(Math.random() * 5 + 1) * unMinuto)); // 1 a 6 mins despues
+    const duracionViaje = Math.floor(Math.random() * 25 + 10); // 10 a 35 mins de viaje
+    const fechaCompletado = new Date(fechaComienzo.getTime() + (duracionViaje * unMinuto));
+    const precio = Math.floor(Math.random() * 15000 + 3000); // Entre 3000 y 18000
+
+    viajesMasivos.push({
+      id_solicitud: `sol_eval_${i}`,
+      id_pasajero: `pas_${Math.floor(Math.random() * 100)}`,
+      pasajero_nombre: pasajerosNombres[Math.floor(Math.random() * pasajerosNombres.length)],
+      metodo_pago: Math.random() > 0.5 ? 'EFECTIVO' : 'MERCADO_PAGO',
+      estado_actual: 'FINALIZADO',
+      precio: precio,
+      precio_final: precio,
+      id_conductor: conductorEvaluador.id_conductor,
+      id_vehiculo: conductorEvaluador.vehiculos[0].id_vehiculo,
+      origen_direccion: origen.dir, origen_latitud: origen.lat, origen_longitud: origen.lng,
+      destino_direccion: destino.dir, destino_latitud: destino.lat, destino_longitud: destino.lng,
+      tiempo_aceptado: fechaAceptado,
+      tiempo_comienzo: fechaComienzo,
+      tiempo_completado: fechaCompletado
+    });
+  }
+
+  // Agrego un par de viajes de evaluador en curso y cancelados para mostrar todos los estados
+  viajesMasivos.push({
+    id_solicitud: 'sol_eval_cancelado', id_pasajero: 'pas_xx', pasajero_nombre: 'Martina Gómez',
+    metodo_pago: 'EFECTIVO', estado_actual: 'CANCELADO_POR_CONDUCTOR', precio: 0, precio_final: 0,
+    id_conductor: conductorEvaluador.id_conductor, id_vehiculo: conductorEvaluador.vehiculos[0].id_vehiculo,
+    origen_direccion: 'Plaza Rivadavia', origen_latitud: -38.7183, origen_longitud: -62.2663,
+    destino_direccion: 'Terminal', destino_latitud: -38.7436, destino_longitud: -62.2475,
+    tiempo_aceptado: new Date(ahora - (unaHora * 2)), tiempo_comienzo: null, tiempo_completado: null
+  });
+
+  viajesMasivos.push({
+    id_solicitud: 'sol_eval_curso', id_pasajero: 'pas_yy', pasajero_nombre: 'Facundo Herrera',
+    metodo_pago: 'MERCADO_PAGO', estado_actual: 'EN_CURSO', precio: 8500.0, precio_final: 8500.0,
+    id_conductor: conductorEvaluador.id_conductor, id_vehiculo: conductorEvaluador.vehiculos[0].id_vehiculo,
+    origen_direccion: 'Parque de Mayo', origen_latitud: -38.7025, origen_longitud: -62.2685,
+    destino_direccion: 'Hospital Penna', destino_latitud: -38.7112, destino_longitud: -62.2355,
+    tiempo_aceptado: new Date(ahora - unMinuto * 15), tiempo_comienzo: new Date(ahora - unMinuto * 10), tiempo_completado: null
+  });
+
+  // Viajes de Sofía y otros para rellenar la tabla administrativa
+  viajesMasivos.push(
+    {
+      id_solicitud: 'sol_sofia_1', id_pasajero: 'pas_4', pasajero_nombre: 'Laura Díaz',
+      metodo_pago: 'MERCADO_PAGO', estado_actual: 'FINALIZADO', precio: 12000.00, precio_final: 12000.00,
+      id_conductor: conductorSofia.id_conductor, id_vehiculo: conductorSofia.vehiculos[0].id_vehiculo,
+      origen_direccion: 'Teatro Municipal, Bahía Blanca', origen_latitud: -38.7155, origen_longitud: -62.2635,
+      destino_direccion: 'Barrio Patagonia, Bahía Blanca', destino_latitud: -38.6920, destino_longitud: -62.2250,
+      tiempo_aceptado: new Date(ahora - unDia * 10),
+      tiempo_comienzo: new Date(ahora - unDia * 10 + unMinuto * 3),
+      tiempo_completado: new Date(ahora - unDia * 10 + unMinuto * 25)
+    },
+    {
+      id_solicitud: 'sol_lucas_1', id_pasajero: 'pas_7', pasajero_nombre: 'Diego Fernández',
       metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 15500.00, precio_final: 15500.00,
       id_conductor: conductorLucas.id_conductor, id_vehiculo: conductorLucas.vehiculos[0].id_vehiculo,
       origen_direccion: 'Av. Colón 1500, Bahía Blanca', origen_latitud: -38.7290, origen_longitud: -62.2610,
@@ -227,35 +219,12 @@ async function main() {
       tiempo_comienzo: new Date('2025-10-01T10:05:00Z'),
       tiempo_completado: new Date('2025-10-01T10:25:00Z')
     }
-  })
+  );
 
-  // Viajes VIP de Valentina de HOY (Para llenar la meta diaria)
-  await prisma.viaje.createMany({
-    data: [
-      { 
-        id_solicitud: 'sol_8', id_pasajero: 'pas_8', pasajero_nombre: 'CEO Empresa X',
-        metodo_pago: 'MERCADO_PAGO', estado_actual: 'FINALIZADO', precio: 35000.00, precio_final: 35000.00, 
-        id_conductor: conductorValentina.id_conductor, id_vehiculo: conductorValentina.vehiculos[0].id_vehiculo, 
-        origen_direccion: 'Hotel Argos, Bahía Blanca', origen_latitud: -38.7175, origen_longitud: -62.2615,
-        destino_direccion: 'Parque Industrial, Bahía Blanca', destino_latitud: -38.7910, destino_longitud: -62.2840,
-        tiempo_aceptado: new Date(ahora - (unaHora * 1.5)),
-        tiempo_comienzo: new Date(ahora - (unaHora * 1.5) + unMinuto * 2),
-        tiempo_completado: new Date(ahora - (unaHora * 1.5) + unMinuto * 40)
-      },
-      { 
-        id_solicitud: 'sol_9', id_pasajero: 'pas_9', pasajero_nombre: 'Directorio Y',
-        metodo_pago: 'EFECTIVO', estado_actual: 'FINALIZADO', precio: 42000.00, precio_final: 42000.00, 
-        id_conductor: conductorValentina.id_conductor, id_vehiculo: conductorValentina.vehiculos[0].id_vehiculo, 
-        origen_direccion: 'Parque Industrial, Bahía Blanca', origen_latitud: -38.7910, origen_longitud: -62.2840,
-        destino_direccion: 'Aeropuerto Comandante Espora, Bahía Blanca', destino_latitud: -38.7230, destino_longitud: -62.1550,
-        tiempo_aceptado: new Date(ahora - (unaHora * 0.5)),
-        tiempo_comienzo: new Date(ahora - (unaHora * 0.5) + unMinuto * 3),
-        tiempo_completado: new Date(ahora - (unaHora * 0.5) + unMinuto * 25)
-      }
-    ]
-  })
+  // Insertar todos los viajes generados
+  await prisma.viaje.createMany({ data: viajesMasivos });
 
-  console.log('✅ Base de datos sembrada y lista con datos completos. ¡A probar esos Dashboards y Modales!')
+  console.log('✅ Base de datos sembrada y lista con datos masivos. ¡A probar esos Dashboards y Modales!')
 }
 
 main()
