@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────────
+// Nota: la BD actual usa TEXT para "estado" en Viaje (no un enum de Postgres).
+// Se definen aquí para validación en el cliente de Prisma.
+
+enum EstadoConductor {
+  OFFLINE
+  ONLINE
+  OCUPADO
+}
+
+enum EstadoViaje {
+  ACEPTADO
+  EN_CURSO
+  FINALIZADO
+  CANCELADO_POR_CONDUCTOR
+}
+
+enum MetodoPago {
+  EFECTIVO
+  MERCADO_PAGO
+}
+
+// ── Modelos ───────────────────────────────────────────────────────────────────
+// IMPORTANTE: los nombres de campo coinciden con la BD real (migration.sql).
+// La PK del Conductor es `id_conductor` (= clerk_user_id).
+
+model Conductor {
+  id_conductor   String   @id             // PK = clerk_user_id
+  nombre         String
+  apellido       String
+  licencia       String   @unique
+  fecha_alta     DateTime @default(now())
+  fecha_baja     DateTime?
+  motivoBaja     String?
+  estado                EstadoConductor @default(OFFLINE)
+  latitud_actual        Float?
+  longitud_actual       Float?
+  calificacion_promedio Float           @default(5.0)
+  comentario_promedio   String?
+  isActive              Boolean         @default(true)
+  meta_diaria        Int                 @default(30000) 
+  fecha_ultima_liquidacion DateTime?
+  vehiculo_activo_id String?
+  historial_conexion HistorialConexion[]
+
+  // Relaciones
+  vehiculos  Vehiculo[]
+  viajes     Viaje[]
+}
+
+model Vehiculo {
+  id_vehiculo   String    @id @default(uuid())
+  patente       String    @unique
+  numero_poliza String    @unique
+  marca         String
+  modelo        String
+  anio         Int
+  id_conductor String
+  fecha_baja   DateTime?
+
+  // Campos extendidos
+  color    String   @default("No especificado")
+  isActive Boolean  @default(true)
+
+  // Relaciones
+  conductor Conductor @relation(fields: [id_conductor], references: [id_conductor], onUpdate: Cascade)
+  viajes    Viaje[]
+}
+
+model Viaje {
+  id_viaje     String   @id @default(uuid())
+  estado       String   @default("ACEPTADO")   // TEXT en la BD (no enum)
+  precio       Float
+  id_conductor String
+  id_vehiculo  String
+  creado_en    DateTime @default(now())
+
+  // Campos extendidos
+  id_solicitud      String?  @unique
+  id_pasajero       String?
+  estado_actual     EstadoViaje @default(ACEPTADO)
+  tiempo_aceptado   DateTime    @default(now())
+  tiempo_comienzo   DateTime?
+  tiempo_completado DateTime?
+  metodo_pago       MetodoPago  @default(EFECTIVO)
+  precio_final      Float       @default(0)
+
+  // Coordenadas y direcciones persistidas
+  origen_direccion  String?
+  origen_latitud    Float?
+  origen_longitud   Float?
+  destino_direccion String?
+  destino_latitud   Float?
+  destino_longitud  Float?
+  pasajero_nombre   String?
+
+  // Relaciones
+  conductor Conductor @relation(fields: [id_conductor], references: [id_conductor], onUpdate: Cascade)
+  vehiculo  Vehiculo  @relation(fields: [id_vehiculo], references: [id_vehiculo])
+}
+
+model HistorialConexion {
+  id_conexion  String   @id @default(uuid())
+  id_conductor String
+  estado       String   // Guardará "ONLINE" u "OFFLINE"
+  timestamp    DateTime @default(now())
+
+  conductor    Conductor @relation(fields: [id_conductor], references: [id_conductor], onUpdate: Cascade)
+}
