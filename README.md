@@ -35,8 +35,8 @@ A continuación se detallan las sugerencias comunes de Lighthouse y el motivo po
 - **"Evita encadenar solicitudes críticas" / "Elimina los recursos que bloquean el renderizado":**
   - **Causa: Clerk (Autenticación).** La validación de la sesión y la carga del proveedor de autenticación requieren la descarga e inyección de scripts externos y estilos (CSS) que Clerk maneja de forma segura para prevenir parpadeos en la UI (*flickering*), lo que genera dependencias de red que no podemos diferir.
 
-- **"Reduce el tiempo de ejecución de JavaScript" / "Evita cargas de red enormes":**
-  - **Causa: Mapas (React Leaflet).** Las vistas que incluyen mapas interactivos obligan al navegador a procesar una librería compleja y descargar múltiples imágenes dinámicas (*tiles*) simultáneamente para armar el mapa, penalizando el *Largest Contentful Paint* (LCP).
+- **"Reduce el tiempo de ejecución de JavaScript" / "Minimiza el trabajo del hilo principal":**
+  - **Causa: Evaluación de React y Mapas interactivos.** Al cargar rutas complejas (como el *dashboard* o la vista de *flota*), el navegador debe evaluar todo el ecosistema de React, los componentes de seguridad de Clerk y librerías pesadas como React Leaflet para los mapas. Esto consume milisegundos en el hilo principal (*main thread*), penalizando ligeramente métricas como el *Largest Contentful Paint* (LCP), pero es necesario para brindar una interfaz rica, protegida y dinámica.
 
 - **"Reduce el tiempo de respuesta inicial del servidor" (TTFB):**
   - **Causa: Infraestructura Serverless (Neon / Vercel).** En las páginas renderizadas desde el servidor (SSR), el "arranque en frío" (*cold start*) de las Serverless Functions y la latencia de red al consultar la base de datos externa añaden milisegundos a la generación y entrega del documento HTML inicial.
@@ -46,6 +46,9 @@ A continuación se detallan las sugerencias comunes de Lighthouse y el motivo po
 
 - **"Reduce el código JavaScript sin usar" (Unused JavaScript):**
   - **Causa: Clerk (Autenticación).** Lighthouse detecta que se descargan *scripts* (`ui-common`, `vendors`, `clerk.browser`) desde el dominio de Clerk y no se ejecutan en su totalidad durante la carga inicial. Clerk empaqueta toda la lógica de autenticación (login, registro, perfiles, 2FA) en estos archivos para estar listos ante cualquier interacción del usuario. Al ser *scripts* alojados y controlados por un tercero, no es posible dividirlos (*code-splitting*) ni purgarlos desde nuestro código fuente.
+
+- **"Usa tiempos de almacenamiento en caché eficientes" y "Mejora la entrega de imágenes":**
+  - **Causa: Avatar de Clerk.** Ambas advertencias apuntan directamente a la imagen de perfil del usuario cargada desde `img.clerk.com` (inyectada por el componente `<UserButton />` de Clerk). Dado que esta imagen y el componente de la UI provienen enteramente del proveedor de autenticación, no tenemos control para aplicar políticas de caché (encabezados HTTP) ni forzar a Clerk a que sirva la imagen en formatos de nueva generación (como WebP o AVIF) en lugar de JPEG/PNG.
 
 - **"Utiliza cookies de terceros" (Third-party cookies):**
   - **Causa: Clerk.** Es normal visualizar este aviso en la pestaña *Issues* (Problemas) de las Herramientas para Desarrolladores de Chrome. Ocurre porque el servicio de autenticación de Clerk utiliza cookies desde su propio dominio (ej. `clerk.accounts.dev`) para mantener la sesión activa entre la aplicación y el proveedor. Al no ser el mismo dominio que la aplicación desplegada o local, el navegador lanza esta advertencia preventiva sobre cookies de terceros. No afecta el funcionamiento del sistema.
