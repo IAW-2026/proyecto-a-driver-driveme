@@ -1,0 +1,71 @@
+"use server";
+
+import { auth } from "@clerk/nextjs/server";
+import { z } from "zod";
+
+const reporteSchema = z.object({
+  id_calificacion: z.string(),
+  motivo: z.string(),
+  descripcion: z.string().optional(),
+});
+
+export async function reportarCalificacionAction(data: z.infer<typeof reporteSchema>) {
+  try {
+    const authResult = await auth();
+    const userId = authResult.userId;
+
+    if (!userId) {
+      return { success: false, error: "No autorizado. Inicia sesión." };
+    }
+
+    const parsed = reporteSchema.parse(data);
+
+    const payload = {
+      id_reportante: userId,
+      ...parsed,
+    };
+
+    const feedbackUrl = process.env.FEEDBACK_APP_URL;
+    if (feedbackUrl) {
+      const internalApiKey = process.env.INTERNAL_API_KEY;
+      const res = await fetch(`${feedbackUrl}/api/reportes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(internalApiKey ? { "x-api-key": internalApiKey } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.warn("[WARNING] Feedback App devolvió error:", res.status, errorData);
+        return { success: false, error: "Error al enviar el reporte a la Feedback App" };
+      }
+      
+      const responseData = await res.json().catch(() => ({}));
+      return { success: true, data: responseData };
+    }
+
+    // Mock local: registrar en consola y responder OK
+    console.log(`[REPORTE MOCK] Usuario ${userId} reportó la calificación ${parsed.id_calificacion} por ${parsed.motivo}`);
+    if (parsed.descripcion) {
+      console.log(`  Descripción: "${parsed.descripcion}"`);
+    }
+
+    return {
+      success: true,
+      data: {
+        id_reporte: `rep_mock_${Date.now()}`,
+        estado: "PENDIENTE",
+        timestamp: new Date().toISOString(),
+      },
+    };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: "Datos inválidos", detalles: error.issues };
+    }
+    console.error("[ERROR] reportarCalificacionAction:", error);
+    return { success: false, error: "Error interno inesperado." };
+  }
+}

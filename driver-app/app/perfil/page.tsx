@@ -13,6 +13,7 @@ import EditarMeta from "@/app/components/EditarMeta";
 import PaginadorURL from "@/app/components/admin/PaginadorURL";
 import BotonBaja from "@/app/components/BotonBaja";
 import SimularWebhookBoton from "@/app/components/SimularWebhookBoton";
+import BotonReportarCalificacion from "@/app/components/BotonReportarCalificacion";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -179,9 +180,12 @@ export default async function PerfilPage({
                       </time>
                     </div>
                     {cal.comentario && (
-                      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                        &ldquo;{cal.comentario}&rdquo;
-                      </p>
+                      <div className="flex justify-between items-start gap-4">
+                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                          &ldquo;{cal.comentario}&rdquo;
+                        </p>
+                        <BotonReportarCalificacion idCalificacion={cal.id_calificacion} />
+                      </div>
                     )}
                   </div>
                 ))}
