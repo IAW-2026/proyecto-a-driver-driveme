@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
+import { m2mHeaders } from "@/lib/m2m";
 
 const resenaSchema = z.object({
   id_viaje: z.string(),
@@ -25,13 +26,9 @@ export async function enviarResenaAction(data: z.infer<typeof resenaSchema>) {
     // Si hay una Feedback App configurada, reenviar allá
     const feedbackUrl = process.env.FEEDBACK_APP_URL;
     if (feedbackUrl) {
-      const internalApiKey = process.env.INTERNAL_API_KEY;
       const res = await fetch(`${feedbackUrl}/api/resenas`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(internalApiKey ? { "x-api-key": internalApiKey } : {}),
-        },
+        headers: m2mHeaders('feedback'),
         body: JSON.stringify(parsed),
       });
 

@@ -20,3 +20,20 @@ export function m2mHeaders(targetApp?: 'rider' | 'payments' | 'feedback'): Heade
     ...(token ? { "x-api-key": token } : {}),
   };
 }
+
+export function validateM2M(request: Request): boolean {
+  const apiKey = request.headers.get('x-api-key');
+  const authHeader = request.headers.get('authorization');
+  const expectedKey = process.env.INTERNAL_API_KEY;
+  const feedbackToken = process.env.FEEDBACK_APP_TOKEN;
+
+  if (!expectedKey && !feedbackToken) {
+    console.error('[ERROR] No hay tokens definidos en .env para validar M2M.');
+    return false;
+  }
+
+  return (
+    (!!apiKey && apiKey === expectedKey) ||
+    (!!authHeader && (authHeader === `Bearer ${feedbackToken}` || authHeader === `Bearer ${expectedKey}`))
+  );
+}

@@ -4,22 +4,7 @@ import { handleError } from '@/lib/api-utils';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 
-function validateM2M(request: Request): boolean {
-  const apiKey = request.headers.get('x-api-key');
-  const authHeader = request.headers.get('authorization');
-  const expectedKey = process.env.INTERNAL_API_KEY;
-  const expectedToken = process.env.FEEDBACK_APP_TOKEN;
-
-  if (!expectedKey && !expectedToken) {
-    console.error('[ERROR] INTERNAL_API_KEY y FEEDBACK_APP_TOKEN no están definidas. El endpoint M2M está desprotegido.');
-    return false;
-  }
-
-  return (
-    (!!apiKey && apiKey === expectedKey) ||
-    (!!authHeader && (authHeader === `Bearer ${expectedToken}` || authHeader === `Bearer ${expectedKey}`))
-  );
-}
+import { validateM2M, m2mHeaders } from '@/lib/m2m';
 
 export async function GET(
   request: Request,
@@ -110,18 +95,13 @@ export async function PATCH(
 
     if (parsed.estado_actual === 'FINALIZADO' && viajeActual.metodo_pago === 'EFECTIVO') {
       const paymentsAppUrl = process.env.PAYMENTS_APP_URL;
-      const internalApiKey = process.env.INTERNAL_API_KEY;
-
       if (!paymentsAppUrl) {
         console.error('[ERROR] PAYMENTS_APP_URL no definida. No se pudo notificar el pago en efectivo.');
       } else {
         try {
           const res = await fetch(`${paymentsAppUrl}/api/pagos/transacciones`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(internalApiKey ? { 'x-api-key': internalApiKey } : {}),
-            },
+            headers: m2mHeaders('payments'),
             body: JSON.stringify({
               id_transaccion: id_viaje,
             }),

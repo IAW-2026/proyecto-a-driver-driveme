@@ -3,24 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { handleError } from '@/lib/api-utils';
 import { z } from 'zod';
 
-// ── Helper: validación M2M ────────────────────────────────────────────────────
-// Acepta x-api-key o Authorization: Bearer, según el contrato en 03-apis.md.
-function validateM2M(request: Request): boolean {
-  const apiKey = request.headers.get('x-api-key');
-  const authHeader = request.headers.get('authorization');
-  const expectedKey = process.env.INTERNAL_API_KEY;
-  const expectedToken = process.env.FEEDBACK_APP_TOKEN;
-
-  if (!expectedKey && !expectedToken) {
-    console.error('[ERROR] INTERNAL_API_KEY y FEEDBACK_APP_TOKEN no están definidas. El endpoint M2M está desprotegido.');
-    return false;
-  }
-
-  return (
-    (!!apiKey && apiKey === expectedKey) ||
-    (!!authHeader && (authHeader === `Bearer ${expectedToken}` || authHeader === `Bearer ${expectedKey}`))
-  );
-}
+import { validateM2M } from '@/lib/m2m';
 
 const reputacionSchema = z.object({
   puntaje: z.number().min(1).max(5),

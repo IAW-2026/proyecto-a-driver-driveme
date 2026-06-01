@@ -5,6 +5,7 @@
  * -----------------------------------------------------------------------
  */
 import { NextResponse } from "next/server";
+import { validateM2M } from '@/lib/m2m';
 const ORIGENES = [
   { direccion: "Plaza Rivadavia, Bahía Blanca", latitud: -38.71762, longitud: -62.26549 },
   { direccion: "Teatro Municipal, Bahía Blanca", latitud: -38.71495, longitud: -62.26017 },
@@ -33,11 +34,7 @@ export async function GET(request: Request) {
   }
 
   // REEMPLAZO DE CLERK POR VALIDACIÓN M2M (Contrato 03-apis.md)
-  const apiKey = request.headers.get('x-api-key');
-  const expectedKey = process.env.INTERNAL_API_KEY;
-
-  // Validamos la API Key si está configurada en el .env
-  if (expectedKey && apiKey !== expectedKey) {
+  if (!validateM2M(request)) {
     return NextResponse.json({ error: "Unauthorized M2M access" }, { status: 401 });
   }
 

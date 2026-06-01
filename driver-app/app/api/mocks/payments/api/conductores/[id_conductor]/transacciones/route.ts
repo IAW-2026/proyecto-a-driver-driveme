@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { validateM2M } from '@/lib/m2m';
 
 // ── GET /mocks/payments/api/conductores/[id_conductor]/transacciones ──────────
 // Mock del endpoint de Payments App que lista las transacciones del conductor.
@@ -11,20 +12,9 @@ export async function GET(
     return NextResponse.json({ error: 'Not Found' }, { status: 404 });
   }
 
-  const apiKey = request.headers.get('x-api-key');
-  const authHeader = request.headers.get('authorization');
-  const expectedKey = process.env.INTERNAL_API_KEY;
-
-  if (!apiKey && !authHeader) {
+  if (!validateM2M(request)) {
     return NextResponse.json(
-      { error: 'Unauthorized. Missing x-api-key or Bearer token.' },
-      { status: 401 }
-    );
-  }
-
-  if (expectedKey && apiKey !== expectedKey && authHeader !== `Bearer ${expectedKey}`) {
-    return NextResponse.json(
-      { error: 'Unauthorized. Invalid M2M credentials.' },
+      { error: 'Unauthorized M2M access' },
       { status: 401 }
     );
   }

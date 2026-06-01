@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { handleError } from '@/lib/api-utils';
 import { auth } from '@clerk/nextjs/server';
+import { validateM2M } from '@/lib/m2m';
 
 function getRoleFromSessionClaims(sessionClaims: unknown): string | null {
   if (typeof sessionClaims !== 'object' || sessionClaims === null) {
@@ -30,9 +31,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id_v
     const { id_viaje } = await params;
 
     // 1. Verificación M2M (Para cuando la Rider App u otro servicio consume esto)
-    const apiKey = request.headers.get('x-api-key');
-    const expectedKey = process.env.INTERNAL_API_KEY;
-    const isM2M = apiKey && expectedKey && apiKey === expectedKey;
+    const isM2M = validateM2M(request);
 
     let userId: string | null = null;
     let role: string | null = null;

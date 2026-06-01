@@ -1,30 +1,16 @@
 import { NextResponse } from 'next/server';
+import { validateM2M } from '@/lib/m2m';
 
 export async function POST(request: Request) {
   if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCKS !== 'true') {
     return NextResponse.json({ error: "Not Found" }, { status: 404 });
   }
 
-  // Validación M2M/local: acepta x-api-key o Authorization Bearer.
-  const apiKey = request.headers.get('x-api-key');
-  const authHeader = request.headers.get('authorization');
-  const expectedKey = process.env.INTERNAL_API_KEY;
-
-  if (!apiKey && !authHeader) {
+  if (!validateM2M(request)) {
     return NextResponse.json(
-      { error: "Unauthorized. Missing x-api-key or Bearer token." },
+      { error: "Unauthorized M2M access" },
       { status: 401 }
     );
-  }
-
-  if (expectedKey) {
-    const expectedAuth = `Bearer ${expectedKey}`;
-    if (apiKey !== expectedKey && authHeader !== expectedAuth) {
-      return NextResponse.json(
-        { error: "Unauthorized. Invalid M2M credentials." },
-        { status: 401 }
-      );
-    }
   }
 
   try {

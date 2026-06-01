@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma, TransactionClient } from '@/lib/prisma';
 import { handleError } from '@/lib/api-utils';
 import { auth } from '@clerk/nextjs/server';
+import { m2mHeaders } from '@/lib/m2m';
 import { z } from 'zod';
 
 const createViajeSchema = z.object({
@@ -99,23 +100,10 @@ export async function POST(request: Request) {
       return v;
     });
 
-    // ── Sincronización M2M saliente → Rider App ─────────────────────────────────────
-    const internalApiKey = process.env.INTERNAL_API_KEY;
-    if (!internalApiKey) {
-      console.error(
-        '[ERROR] INTERNAL_API_KEY no está definida en las variables de entorno. ' +
-        'La sincronización M2M con Rider App no puede realizarse de forma segura.'
-      );
-    }
-
     try {
       const riderResponse = await fetch(`${process.env.RIDER_APP_URL}/api/viajes`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // AGREGAMOS EL HEADER M2M REQUERIDO
-          ...(internalApiKey ? { 'x-api-key': internalApiKey } : {}),
-        },
+        headers: m2mHeaders('rider'),
         body: JSON.stringify({
           id_solicitud: viaje.id_solicitud,
           id_conductor: viaje.id_conductor,

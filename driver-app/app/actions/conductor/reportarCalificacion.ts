@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
+import { m2mHeaders } from "@/lib/m2m";
 
 const reporteSchema = z.object({
   id_calificacion: z.string(),
@@ -27,13 +28,9 @@ export async function reportarCalificacionAction(data: z.infer<typeof reporteSch
 
     const feedbackUrl = process.env.FEEDBACK_APP_URL;
     if (feedbackUrl) {
-      const internalApiKey = process.env.INTERNAL_API_KEY;
       const res = await fetch(`${feedbackUrl}/api/reportes`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(internalApiKey ? { "x-api-key": internalApiKey } : {}),
-        },
+        headers: m2mHeaders('feedback'),
         body: JSON.stringify(payload),
       });
 

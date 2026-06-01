@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { m2mHeaders } from '@/lib/m2m';
 
 export async function GET(request: Request) {
   if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCKS !== 'true') {
@@ -17,16 +18,10 @@ export async function GET(request: Request) {
     const targetUrl = `http://127.0.0.1:3000/api/conductores/${idConductor}/reputacion`;
     
     // Necesitamos enviarle los headers M2M para que no nos rechace por "Unauthorized"
-    const internalApiKey = process.env.INTERNAL_API_KEY || '';
-    const feedbackToken = process.env.FEEDBACK_APP_TOKEN || '';
-
+    // Como el mock local corre bajo Driver App, usamos m2mHeaders
     const res = await fetch(targetUrl, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': internalApiKey,
-        'Authorization': `Bearer ${feedbackToken}`
-      },
+      headers: m2mHeaders(),
       body: JSON.stringify({
         puntaje: 5,
         comentario_promedio: "¡Esta es una reseña simulada desde el Mock de Feedback App!"
