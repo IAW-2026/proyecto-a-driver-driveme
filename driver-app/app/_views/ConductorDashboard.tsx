@@ -1,0 +1,290 @@
+"use client";
+
+import { Prisma } from "@/app/generated/prisma/client";
+import { Car, Clock, DollarSign, Target, Zap, Star, LayoutDashboard, ChevronDown } from "lucide-react";
+import ThemeToggle from "@/app/components/ThemeToggle";
+import HeaderModulo from "@/app/components/HeaderModulo";
+import Toast from "@/app/components/Toast";
+import { formatARS } from "@/lib/formatters";
+import { useEffect, useState } from "react";
+import { sugerirZonasAction, type SugerenciaIA } from "@/app/actions/conductor/sugerirZonas";
+import { useToast } from "@/app/hooks/useToast";
+import { useEstadoConductor } from "@/app/hooks/useEstadoConductor";
+import { useRadarViajes } from "@/app/hooks/useRadarViajes";
+
+type ConductorConVehiculos = Prisma.ConductorGetPayload<{ include: { vehiculos: true } }>;
+
+interface ConductorDashboardProps {
+  conductorData: ConductorConVehiculos;
+  metricasHoy: { ganancia: number; viajes: number; horas: string; metaDiaria: number; };
+}
+
+export default function ConductorDashboard({ conductorData, metricasHoy }: ConductorDashboardProps) {
+  const vehiculosActivos = conductorData.vehiculos.filter(v => v.isActive);
+  const [selectedVehiculoId, setSelectedVehiculoId] = useState<string>(
+    conductorData.vehiculo_activo_id || (vehiculosActivos.length > 0 ? vehiculosActivos[0].id_vehiculo : "")
+  );
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
+
+  const vehiculo = vehiculosActivos.find(v => v.id_vehiculo === selectedVehiculoId) || vehiculosActivos[0];
+
+  // 1. Hook de Notificaciones
+  const { toast, mostrarToast, ocultarToast } = useToast();
+
+  // 2. Hook del Radar Operativo
+  const {
+    solicitudActual, timerSegundos, aceptando,
+    handleAceptar, handleRechazar, limpiarSolicitud
+  } = useRadarViajes({
+    isOnline: conductorData.estado === "ONLINE", // Se actualiza mediante el hook de estado
+    conductorId: conductorData.id_conductor,
+    vehiculoId: vehiculo?.id_vehiculo,
+    latitud: conductorData.latitud_actual ?? -38.7183,
+    longitud: conductorData.longitud_actual ?? -62.2664,
+    mostrarToast
+  });
+
+  // 3. Hook de Estado Conductor
+  const { isOnline, isPending, toggleEstado } = useEstadoConductor({
+    conductorId: conductorData.id_conductor,
+    estadoInicial: conductorData.estado === "ONLINE",
+    mostrarToast,
+    onApagar: limpiarSolicitud
+  });
+
+  const handleToggleEstado = () => {
+    toggleEstado(selectedVehiculoId);
+  };
+
+  // 4. Hook de Sugerencias IA
+  const [sugerencias, setSugerencias] = useState<SugerenciaIA | null>(null);
+  const [cargandoSugerencias, setCargandoSugerencias] = useState(true);
+
+  useEffect(() => {
+    async function fetchSugerencias() {
+      try {
+        const res = await sugerirZonasAction();
+        if (res.success && res.data) {
+          setSugerencias(res.data);
+        } else {
+          setSugerencias(null);
+        }
+      } catch (error) {
+        console.error("Error al obtener sugerencias:", error);
+        setSugerencias(null);
+      } finally {
+        setCargandoSugerencias(false);
+      }
+    }
+    fetchSugerencias();
+  }, []);
+
+  // Cálculos Visuales
+  const porcentajeTimer = (timerSegundos / 30) * 100;
+  const colorTimer = timerSegundos > 15 ? "var(--primary)" : timerSegundos > 8 ? "#ECC94B" : "#FF007F";
+  const porcentajeMeta = Math.min(Math.round((metricasHoy.ganancia / metricasHoy.metaDiaria) * 100), 100);
+
+  return (
+    <div className="w-full max-w-5xl mx-auto space-y-6">
+      {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} onClose={ocultarToast} />}
+
+      <HeaderModulo
+        titulo="Dashboard"
+        icono={LayoutDashboard}
+        subtitulo={vehiculo ? <>{vehiculo.marca} {vehiculo.modelo} <span className="text-zinc-950 dark:text-brand font-mono mx-0.5">/</span> {vehiculo.patente}</> : "Sin vehículo asignado"}
+        acciones={
+          <>
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-zinc-950 bg-white shadow-[2px_2px_0px_0px_#09090b] dark:border-zinc-700 dark:bg-zinc-900 dark:shadow-none">
+              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+              <span className="font-extrabold text-sm text-zinc-950 dark:text-white">{conductorData.calificacion_promedio.toFixed(1)}</span>
+            </div>
+            <ThemeToggle />
+          </>
+        }
+      />
+
+      {/* METAS Y RADAR PREDICTIVO */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-zinc-700 dark:bg-zinc-800 p-4 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-none flex flex-col justify-center">
+          <div className="flex justify-between items-end mb-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-brand rounded-lg border-2 border-zinc-950">
+                <Target className="w-5 h-5 text-zinc-950" strokeWidth={3} />
+              </div>
+              <h2 className="font-extrabold uppercase text-zinc-950 dark:text-white text-sm">Meta Diaria</h2>
+            </div>
+            <span className="font-extrabold text-xl text-zinc-950 dark:text-brand">{porcentajeMeta}%</span>
+          </div>
+          <div className="w-full h-4 rounded-full border-2 border-zinc-950 bg-zinc-100 dark:bg-zinc-950 overflow-hidden">
+            <div className="h-full w-full bg-brand transition-transform duration-1000 origin-left" style={{ transform: `scaleX(${porcentajeMeta / 100})` }} />
+          </div>
+          <div className="flex justify-between items-center mt-2 text-xs font-bold text-zinc-700 dark:text-zinc-300">
+            <span>{formatARS(metricasHoy.ganancia)} logrados</span>
+            <span>{formatARS(metricasHoy.metaDiaria)}</span>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border-2 border-zinc-950 bg-alert text-zinc-950 dark:text-white dark:border-alert dark:bg-zinc-900 p-4 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#FF007F] flex flex-col justify-center relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 opacity-20" aria-hidden="true"><Zap className="w-24 h-24" strokeWidth={3} /></div>
+          <div className="relative z-10">
+            <h2 className="font-extrabold uppercase text-sm flex items-center gap-2 mb-1 dark:text-alert">
+              <Zap className="w-4 h-4" strokeWidth={3} aria-hidden="true" /> Radar Predictivo IA
+            </h2>
+            {cargandoSugerencias ? (
+              <p className="text-sm font-bold leading-tight mt-2 animate-pulse">
+                Consultando tendencias...
+              </p>
+            ) : sugerencias?.suggestedZones && sugerencias.suggestedZones.length > 0 ? (
+              <div className="mt-2 flex flex-col gap-2 max-h-32 overflow-y-auto pr-1 pb-1">
+                {sugerencias.suggestedZones.map((zona, idx) => (
+                  <div key={idx} className="bg-white text-zinc-950 dark:bg-white/10 dark:text-white rounded-xl p-3 border-2 border-zinc-950 dark:border-transparent shadow-[2px_2px_0px_0px_#09090b] dark:shadow-none">
+                    <p className="font-extrabold text-sm">{zona.zoneName}</p>
+                    <p className="text-xs mt-1 font-semibold leading-tight text-zinc-800 dark:text-zinc-300">{zona.reason}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-lg font-bold leading-tight mt-1">
+                {isOnline ? "Sin datos recientes. ¡Empezá a recorrer!" : "Conectate para recibir alertas de demanda."}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* SELECCIÓN DE VEHÍCULO Y BOTÓN ONLINE/OFFLINE */}
+      <div className="space-y-3">
+        {vehiculosActivos.length > 0 && (
+          <div className="flex flex-col gap-1.5 relative">
+            <label className="text-sm font-extrabold uppercase tracking-widest px-2 text-zinc-950 dark:text-white">
+              Vehículo Activo
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => !isOnline && !isPending && setIsSelectOpen(!isSelectOpen)}
+                disabled={isOnline || isPending}
+                className="w-full text-left p-4 pr-12 rounded-xl border-2 border-zinc-950 bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white font-bold text-lg shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#ffffff] focus:outline-none focus:ring-4 focus:ring-brand/30 transition-shadow disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed flex items-center justify-between"
+              >
+                <span>{vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.patente})` : "Seleccionar..."}</span>
+                <ChevronDown className="w-6 h-6 stroke-[3] text-zinc-950 dark:text-white absolute right-4" />
+              </button>
+              
+              {isSelectOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsSelectOpen(false)} 
+                  />
+                  <div className="absolute z-50 mt-2 w-full rounded-xl border-2 border-zinc-950 bg-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] overflow-hidden flex flex-col">
+                    {vehiculosActivos.map((v) => (
+                      <button
+                        key={v.id_vehiculo}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVehiculoId(v.id_vehiculo);
+                          setIsSelectOpen(false);
+                        }}
+                        className={`w-full text-left p-4 font-bold text-lg border-b-2 border-zinc-950 last:border-b-0 hover:bg-brand hover:text-zinc-950 dark:hover:bg-brand dark:hover:text-zinc-950 transition-colors ${
+                          selectedVehiculoId === v.id_vehiculo ? "bg-brand/20 dark:bg-brand/10" : "bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white"
+                        }`}
+                      >
+                        {v.marca} {v.modelo} ({v.patente})
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={handleToggleEstado}
+          disabled={isPending || vehiculosActivos.length === 0}
+          className={`w-full min-h-[72px] rounded-2xl border-2 px-6 py-4 font-extrabold text-xl tracking-wide transition-transform duration-200 focus:outline-none shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] active:scale-[0.98] disabled:opacity-60 ${isOnline ? "border-zinc-950 bg-brand text-zinc-950" : "border-zinc-950 bg-[rgba(207,255,4,0.08)] text-zinc-950 dark:text-white dark:bg-zinc-950"
+            }`}
+        >
+          {isPending ? "Actualizando..." : isOnline ? "CONECTADO — Tocá para desconectarte" : vehiculosActivos.length === 0 ? "NO TIENES VEHÍCULOS ACTIVOS" : "CONECTARME AHORA"}
+        </button>
+      </div>
+
+      {/* MÉTRICAS HOY */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[
+          { label: "HORAS ONLINE", valor: metricasHoy.horas, icon: <Clock className="w-8 h-8" strokeWidth={2.5} /> },
+          { label: "ESTIMADO", valor: formatARS(metricasHoy.ganancia), icon: <DollarSign className="w-8 h-8" strokeWidth={2.5} /> },
+          { label: "VIAJES", valor: metricasHoy.viajes.toString(), icon: <Car className="w-8 h-8" strokeWidth={2.5} /> },
+        ].map(({ label, valor, icon }) => (
+          <div key={label} className="p-4 rounded-2xl border-2 border-zinc-950 bg-info text-zinc-950 dark:text-white dark:border-info dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#8B5CF6] flex flex-col justify-between min-h-[100px]">
+            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">{label}</span>
+            <div className="flex justify-between items-end mt-2">
+              <span className="text-3xl font-extrabold uppercase">{valor}</span>
+              <span>{icon}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* TARJETA DE SOLICITUD DE VIAJE */}
+      {isOnline && (
+        <div className="rounded-2xl border-4 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff] overflow-hidden">
+          <div className="px-4 py-3 border-b-2 border-zinc-950 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-950">
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-zinc-950 dark:text-zinc-100">
+              {solicitudActual ? "NUEVA SOLICITUD DE VIAJE" : "Rastreando zona..."}
+            </p>
+          </div>
+
+          {!solicitudActual ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-3 text-zinc-700 dark:text-zinc-300">
+              <div className="w-12 h-12 border-4 border-t-transparent border-brand rounded-full animate-spin" />
+              <p className="text-sm font-semibold">Esperando solicitudes cercanas...</p>
+            </div>
+          ) : (
+            <div className="p-4 flex flex-col gap-4">
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Tiempo para decidir</span>
+                  <span className="text-lg font-extrabold tabular-nums text-zinc-950 dark:text-white">{timerSegundos}s</span>
+                </div>
+                <div className="w-full h-2 rounded-full border border-zinc-950 bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                  <div className="h-full w-full transition-transform duration-1000 ease-linear origin-left" style={{ transform: `scaleX(${porcentajeTimer / 100})`, backgroundColor: colorTimer }} />
+                </div>
+              </div>
+
+              <div className="text-center py-2">
+                <p className="text-5xl md:text-6xl font-extrabold uppercase tracking-tight text-zinc-950 dark:text-white">
+                  {formatARS(solicitudActual.precio_estimado)}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border-2 border-zinc-950 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-950 p-4 space-y-3 text-sm">
+                <div>
+                  <p className="font-bold text-lg">Pasajero</p>
+                  <p className="mt-1 font-medium text-zinc-700 dark:text-zinc-300">{solicitudActual.pasajero.nombre}</p>
+                </div>
+                <div className="border-t-2 border-zinc-950 dark:border-zinc-700 pt-3">
+                  <p className="font-bold text-lg">Origen</p>
+                  <p className="mt-1 font-medium text-zinc-700 dark:text-zinc-300">{solicitudActual.origen.direccion}</p>
+                </div>
+                <div className="border-t-2 border-zinc-950 dark:border-zinc-700 pt-3">
+                  <p className="font-bold text-lg">Destino</p>
+                  <p className="mt-1 font-medium text-zinc-700 dark:text-zinc-300">{solicitudActual.destino.direccion}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button onClick={handleAceptar} disabled={aceptando} className="w-full min-h-[64px] rounded-2xl border-2 border-zinc-950 bg-brand text-zinc-950 font-extrabold text-xl shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] transition-all">
+                  {aceptando ? "Aceptando..." : "✓ ACEPTAR"}
+                </button>
+                <button onClick={handleRechazar} disabled={aceptando} className="w-full min-h-[52px] rounded-2xl border-2 border-zinc-950 bg-white text-zinc-950 dark:bg-zinc-950 dark:text-white font-bold shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:border-brand hover:-translate-y-1 transition-all">
+                  Rechazar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
