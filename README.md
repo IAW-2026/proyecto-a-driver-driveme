@@ -12,12 +12,17 @@
 Para facilitar la corrección, pueden utilizar los siguientes usuarios de prueba pre-configurados:
 
 - **Rol Conductor:**
-  - **Email:** `driver+clerktest@iaw.com`
+  - **Email:** `driver+clerk_test@iaw.com`
   - **Contraseña:** `iawuser#`
   - **Código verificación:** `424242`
 
 - **Rol Administrador:**
-  - **Email:** `admin+clerktest@iaw.com`
+  - **Email:** `admin+clerk_test@iaw.com`
+  - **Contraseña:** `iawuser#`
+  - **Código verificación:** `424242`
+
+- **Rol Conductor Nuevo:**
+  - **Email:** `driver_nuevo+clerk_test@iaw.com`
   - **Contraseña:** `iawuser#`
   - **Código verificación:** `424242`
 
