@@ -16,7 +16,9 @@ export async function GET(request: Request) {
       conductoresOcupados,
       totalViajes,
       ingresosBrutosData,
-      calificacionPromedioGlobalData
+      viajesCancelados,
+      viajesEnCurso,
+      viajesAceptados
     ] = await Promise.all([
       prisma.conductor.count(),
       prisma.conductor.count({ where: { isActive: true } }),
@@ -27,10 +29,9 @@ export async function GET(request: Request) {
         _sum: { precio_final: true },
         where: { estado_actual: "FINALIZADO" }
       }),
-      prisma.conductor.aggregate({
-        _avg: { calificacion_promedio: true },
-        where: { calificacion_promedio: { gt: 0 } }
-      })
+      prisma.viaje.count({ where: { estado_actual: "CANCELADO_POR_CONDUCTOR" } }),
+      prisma.viaje.count({ where: { estado_actual: "EN_CURSO" } }),
+      prisma.viaje.count({ where: { estado_actual: "ACEPTADO" } })
     ]);
 
     const metricas = {
@@ -39,8 +40,10 @@ export async function GET(request: Request) {
       conductoresDisponibles,
       conductoresOcupados,
       totalViajesCompletados: totalViajes,
-      ingresosBrutos: ingresosBrutosData._sum.precio_final || 0,
-      calificacionPromedioGlobal: calificacionPromedioGlobalData._avg.calificacion_promedio || 0
+      viajesCancelados,
+      viajesEnCurso,
+      viajesAceptados,
+      ingresosBrutos: ingresosBrutosData._sum.precio_final || 0
     };
 
     return NextResponse.json({ success: true, metricas }, { status: 200 });
