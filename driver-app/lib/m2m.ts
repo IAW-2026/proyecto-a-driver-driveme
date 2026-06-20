@@ -37,3 +37,22 @@ export function validateM2M(request: Request): boolean {
     (!!authHeader && (authHeader === `Bearer ${feedbackToken}` || authHeader === `Bearer ${expectedKey}`))
   );
 }
+
+export function validateAdminM2M(request: Request, source: 'control-plane' | 'analytics'): boolean {
+  const apiKey = request.headers.get('x-api-key');
+  const authHeader = request.headers.get('authorization');
+  
+  let expectedKey = '';
+  if (source === 'control-plane') expectedKey = process.env.CONTROL_PLANE_SECRET || '';
+  if (source === 'analytics') expectedKey = process.env.ANALYTICS_DASHBOARD_SECRET || '';
+
+  if (!expectedKey) {
+    console.error(`[ERROR] No hay token definido en .env para validar M2M desde ${source}.`);
+    return false;
+  }
+
+  return (
+    (!!apiKey && apiKey === expectedKey) ||
+    (!!authHeader && authHeader === `Bearer ${expectedKey}`)
+  );
+}
