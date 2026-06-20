@@ -5,7 +5,8 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/api/webhooks(.*)',
-  '/api/conductores/(.*)/reputacion'
+  '/api/conductores/(.*)/reputacion',
+  '/api/admin(.*)'
 ])
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
