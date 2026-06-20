@@ -15,8 +15,12 @@ export async function buscarSolicitudes(): Promise<BuscarSolicitudesResult> {
   if (!userId) return { success: false, error: "UNAUTHORIZED" };
 
   try {
-    // En desarrollo apunta al mock local; en producción a la Rider App real.
-    const baseUrl = process.env.RIDER_APP_URL ?? "http://localhost:3000/api/mocks/rider";
+    const baseUrl = process.env.RIDER_APP_URL;
+
+    if (!baseUrl) {
+      console.error("[buscarSolicitudes] RIDER_APP_URL no definida en el entorno.");
+      return { success: false, error: "RIDER_APP_DOWN" };
+    }
 
     const res = await fetch(
       `${baseUrl}/api/solicitudes?estado=BUSCANDO_CONDUCTOR`,

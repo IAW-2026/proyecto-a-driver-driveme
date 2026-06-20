@@ -12,7 +12,7 @@ import type { HistorialCalificacionesResponse } from "@/app/types/api";
 import EditarMeta from "@/app/components/EditarMeta";
 import PaginadorURL from "@/app/components/admin/PaginadorURL";
 import BotonBaja from "@/app/components/BotonBaja";
-import SimularWebhookBoton from "@/app/components/SimularWebhookBoton";
+
 import BotonReportarCalificacion from "@/app/components/BotonReportarCalificacion";
 import GestorVehiculos from "@/app/components/GestorVehiculos";
 
@@ -191,8 +191,6 @@ export default async function PerfilPage({
               </div>
             )}
           </section>
-
-          <SimularWebhookBoton idConductor={userId} />
 
           <BotonBaja />
         </div>
