@@ -21,7 +21,10 @@ export async function PATCH(
 
     const conductor = await prisma.conductor.update({
       where: { id_conductor: id },
-      data: { isActive },
+      data: { 
+        isActive,
+        motivoBaja: isActive ? null : "SUSPENSION_ADMIN"
+      },
     });
 
     return NextResponse.json({ success: true, conductor }, { status: 200 });
