@@ -30,8 +30,8 @@ export async function PATCH(
     const viajeActualizado = await prisma.viaje.update({
       where: { id_viaje: id },
       data: { 
-        estado_actual: "CANCELADO",
-        estado: "CANCELADO" // el campo string base
+        estado_actual: "CANCELADO_POR_CONDUCTOR",
+        estado: "CANCELADO_POR_CONDUCTOR" // el campo string base
       },
     });
 
