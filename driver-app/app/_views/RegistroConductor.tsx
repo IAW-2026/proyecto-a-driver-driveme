@@ -45,7 +45,7 @@ export default function RegistroConductor() {
     });
   }
 
-  const inputClass = "block w-full min-h-[48px] rounded-sharp border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] p-3 text-white font-medium placeholder:text-[#9CA3AF] focus:outline-none focus:border-primary focus:shadow-[0_0_0_1px_#DC2626,0_0_15px_rgba(220,38,38,0.2)] transition-all";
+  const inputClass = "block w-full h-12 rounded-sharp border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 text-white font-medium placeholder:text-[#9CA3AF] focus:outline-none focus:border-primary focus:shadow-[0_0_0_1px_#DC2626,0_0_15px_rgba(220,38,38,0.2)] transition-all";
 
   if (reactivationLicencia) {
     return (
@@ -161,7 +161,7 @@ export default function RegistroConductor() {
             Datos del vehículo
           </legend>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="grid grid-cols-2 gap-4 col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:col-span-2">
               <div>
                 <label htmlFor="patente" className="block text-sm font-bold mb-1 text-[#9CA3AF] uppercase tracking-wider">
                   Patente
