@@ -41,6 +41,11 @@ export async function getSessionData(): Promise<SessionData> {
   if (!user) redirect("/sign-in");
   const clerkRole = String(user?.publicMetadata?.role ?? "").toLowerCase();
 
+  if (clerkRole === "rider") {
+    const riderUrl = process.env.RIDER_APP_URL || "http://localhost:3000";
+    redirect(riderUrl);
+  }
+
   if (clerkRole === "admin") {
     return { userId, rol: "ADMIN", conductorData: null };
   }
