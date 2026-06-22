@@ -63,7 +63,7 @@ function BadgeActividad({ isActive }: { isActive: boolean }) {
       Activo
     </span>
   ) : (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-sharp border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)] text-[#6B7280] text-[9px] font-extrabold uppercase tracking-widest">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-sharp border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)] text-[#9CA3AF] text-[9px] font-extrabold uppercase tracking-widest">
       Inactivo
     </span>
   );
@@ -157,7 +157,7 @@ function GrupoFiltro<T extends string>({
 }: GrupoFiltroProps<T>) {
   return (
     <fieldset>
-      <legend className="text-[10px] font-extrabold uppercase tracking-widest text-[#6B7280] mb-2">
+      <legend className="text-[10px] font-extrabold uppercase tracking-widest text-[#9CA3AF] mb-2">
         {label}
       </legend>
       <div role="group" aria-label={label} className="flex flex-wrap gap-2">
@@ -173,7 +173,7 @@ function GrupoFiltro<T extends string>({
               className={`px-3 py-1.5 rounded-sharp border text-[10px] font-extrabold uppercase tracking-widest transition-all duration-150 disabled:opacity-60
                 ${
                   activo
-                    ? "bg-[rgba(220,38,38,0.15)] border-[rgba(220,38,38,0.4)] text-primary shadow-[0_0_15px_rgba(220,38,38,0.2)]"
+                    ? "bg-[rgba(220,38,38,0.15)] border-[rgba(220,38,38,0.4)] text-red-400 shadow-[0_0_15px_rgba(220,38,38,0.2)]"
                     : "bg-[#141414] text-[#9CA3AF] border-[rgba(255,255,255,0.06)] hover:border-[rgba(220,38,38,0.2)] hover:text-white"
                 }`}
             >
@@ -269,7 +269,7 @@ export default function DriverTable({
           const v = c.vehiculos.find((v) => v.isActive) ?? c.vehiculos[0];
           if (!v)
             return (
-              <span className="text-[#6B7280] italic text-[10px] uppercase tracking-widest">Sin asignar</span>
+              <span className="text-[#9CA3AF] italic text-[10px] uppercase tracking-widest">Sin asignar</span>
             );
           return (
             <div>

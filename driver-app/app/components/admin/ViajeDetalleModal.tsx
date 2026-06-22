@@ -1,7 +1,8 @@
 // app/components/admin/ViajeDetalleModal.tsx
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   MapPin,
@@ -164,6 +165,11 @@ function TimelineRow({
 export default function ViajeDetalleModal({ viaje, onClose }: ViajeDetalleModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close on Escape
   useEffect(() => {
@@ -182,7 +188,7 @@ export default function ViajeDetalleModal({ viaje, onClose }: ViajeDetalleModalP
     };
   }, [viaje, onClose]);
 
-  if (!viaje) return null;
+  if (!viaje || !mounted) return null;
 
   const estadoStyle = ESTADO_STYLES[viaje.estado_actual] ?? ESTADO_STYLES.ACEPTADO;
   const montoFinal = viaje.precio_final > 0 ? viaje.precio_final : viaje.precio;
@@ -192,7 +198,7 @@ export default function ViajeDetalleModal({ viaje, onClose }: ViajeDetalleModalP
     if (e.target === overlayRef.current) onClose();
   };
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
       role="dialog"
@@ -364,22 +370,13 @@ export default function ViajeDetalleModal({ viaje, onClose }: ViajeDetalleModalP
         </div>
 
         {/* ══ Footer ════════════════════════════════════════════════════ */}
-        <div className="shrink-0 px-5 sm:px-6 py-4 border-t border-[rgba(220,38,38,0.2)] bg-[#0A0A0A] flex items-center justify-between gap-3">
+        <div className="shrink-0 px-5 sm:px-6 py-4 border-t border-[rgba(220,38,38,0.2)] bg-[#0A0A0A] flex items-center justify-center gap-3">
           <span className="text-[10px] font-mono font-bold text-[#6B7280] uppercase tracking-widest truncate">
             REF: {shortId(viaje.id_viaje)}
           </span>
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 rounded-sharp border border-[rgba(255,255,255,0.1)]
-              bg-[#1F1F1F] text-[#9CA3AF]
-              text-[10px] font-extrabold uppercase tracking-widest
-              hover:text-white hover:border-[rgba(255,255,255,0.3)] hover:bg-[#2A2A2A]
-              transition-all duration-150 focus:outline-none focus:border-primary"
-          >
-            Cerrar Modal
-          </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -71,7 +71,6 @@ export default async function ReportesPage({
     viajes,
     totalFiltrado,
     viajesHoy,
-    recaudacionHoy,
     conductoresActivos,
   ] = await Promise.all([
     prisma.viaje.findMany({
@@ -83,15 +82,10 @@ export default async function ReportesPage({
     }),
     prisma.viaje.count({ where }),
     prisma.viaje.count({ where: { creado_en: { gte: hoy } } }),
-    prisma.viaje.aggregate({
-      _sum: { precio_final: true },
-      where: { estado_actual: "FINALIZADO", creado_en: { gte: hoy } },
-    }),
     prisma.conductor.count({ where: { isActive: true, estado: "ONLINE" } }),
   ]);
 
   const totalPaginas = Math.max(1, Math.ceil(totalFiltrado / PAGE_SIZE));
-  const recaudacionHoyTotal = recaudacionHoy._sum.precio_final ?? 0;
 
   // ── Serializar para Client Components ──────────────────────────────────────
   const viajesSerializados: ViajeSerializado[] = viajes.map((v) => ({
@@ -136,19 +130,13 @@ export default async function ReportesPage({
   // ── Tarjetas de métricas del día (sin filtros) ──────────────────────────────
   const metricasHoy = [
     {
-      label: "Misiones de Hoy",
+      label: "Viajes de Hoy",
       valor: viajesHoy.toString(),
       icono: <Route className="w-8 h-8" strokeWidth={2.5} />,
       acento: "primary" as const,
     },
     {
-      label: "Recaudación de Hoy",
-      valor: formatARS(recaudacionHoyTotal),
-      icono: <BarChart3 className="w-8 h-8" strokeWidth={2.5} />,
-      acento: "info" as const,
-    },
-    {
-      label: "Operadores Activos",
+      label: "Conductores Activos",
       valor: conductoresActivos.toString(),
       icono: <Users className="w-8 h-8" strokeWidth={2.5} />,
       acento: "success" as const,
@@ -166,7 +154,7 @@ export default async function ReportesPage({
         <div className="w-full max-w-6xl mx-auto space-y-8">
           {/* Encabezado */}
           <HeaderModulo
-            titulo="Reportes y Telemetría"
+            titulo="Reportes"
             icono={DollarSign}
             subtitulo={
               hayFiltros
@@ -182,7 +170,7 @@ export default async function ReportesPage({
           />
 
           {/* Métricas del día (siempre globales, sin filtros) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 overflow-hidden">
             {metricasHoy.map(({ label, valor, icono, acento }) => (
               <AdminMetricaCard
                 key={label}
@@ -198,7 +186,7 @@ export default async function ReportesPage({
           <div className="rounded-modal border border-[rgba(220,38,38,0.15)] bg-[rgba(20,20,20,0.8)] shadow-[0_0_30px_rgba(220,38,38,0.08)] backdrop-blur-sm overflow-hidden">
             <div className="px-5 py-5 border-b border-[rgba(220,38,38,0.15)] bg-[#0A0A0A]">
               <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#9CA3AF]">
-                Log de Misiones
+                Historial de Viajes
               </p>
             </div>
 

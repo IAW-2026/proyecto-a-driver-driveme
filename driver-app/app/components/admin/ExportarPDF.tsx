@@ -56,7 +56,7 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>DriveMe — Log de Telemetría</title>
+  <title>DriveMe — Reporte de Viajes</title>
   <style>
     /* ── Reset ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -189,8 +189,8 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
 <body>
   <div class="report-header">
     <div>
-      <div class="report-title">DriveMe // Telemetría</div>
-      <div class="report-subtitle">Reporte de Operaciones — Flota Completa</div>
+      <div class="report-title">DriveMe // Reporte de Viajes</div>
+      <div class="report-subtitle">Historial de Operaciones — Flota Completa</div>
     </div>
     <div class="report-meta">
       <strong>GENERADO</strong>
@@ -200,15 +200,15 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
 
   <div class="summary">
     <div class="summary-item">
-      <span class="summary-label">Misiones Totales</span>
+      <span class="summary-label">Viajes Totales</span>
       <span class="summary-value">${viajes.length}</span>
     </div>
     <div class="summary-item">
-      <span class="summary-label">Misiones Completadas</span>
+      <span class="summary-label">Viajes Completados</span>
       <span class="summary-value">${viajes.filter((v) => v.estado === "FINALIZADO").length}</span>
     </div>
     <div class="summary-item">
-      <span class="summary-label">Misiones Abortadas</span>
+      <span class="summary-label">Viajes Cancelados</span>
       <span class="summary-value">${viajes.filter((v) => v.estado === "CANCELADO_POR_CONDUCTOR").length}</span>
     </div>
   </div>
@@ -216,12 +216,12 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
   <table>
     <thead>
       <tr>
-        <th>Marca de Tiempo</th>
-        <th>Operador</th>
-        <th>Unidad</th>
+        <th>Fecha / Hora</th>
+        <th>Conductor</th>
+        <th>Vehículo</th>
         <th>Origen</th>
         <th>Destino</th>
-        <th>Sujeto</th>
+        <th>Pasajero</th>
         <th style="text-align:right">Valor</th>
         <th>Estado</th>
       </tr>
@@ -270,10 +270,10 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
       <button
         onClick={handlePrint}
         className="flex items-center gap-2 px-4 py-2 rounded-sharp border border-[rgba(255,255,255,0.1)] bg-gradient-to-b from-[#1F1F1F] to-[#0A0A0A] text-[#9CA3AF] font-bold text-xs uppercase tracking-widest hover:border-primary/40 hover:text-white hover:shadow-[0_0_15px_rgba(220,38,38,0.15)] transition-all duration-150 active:scale-[0.98]"
-        title="Extraer Log de Telemetría (PDF)"
+        title="Descargar Reporte en PDF"
       >
         <FileText className="w-4 h-4" strokeWidth={2.5} />
-        Exportar Log
+        Exportar Reporte
       </button>
 
       <div ref={printRef} className="hidden" aria-hidden="true" />
