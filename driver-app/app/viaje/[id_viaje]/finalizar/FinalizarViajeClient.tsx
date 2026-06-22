@@ -4,15 +4,14 @@
  * app/viaje/[id_viaje]/finalizar/FinalizarViajeClient.tsx
  * -----------------------------------------------------------------------
  * Pantalla de resumen y confirmación de fin de viaje.
- * 1) Muestra resumen del viaje (precio, método de pago, ruta)
- * 2) CTA "CONFIRMAR FINALIZACIÓN" → llama a finalizarViaje Server Action
- * 3) Al éxito → navega a /viaje/[id]/calificar
  * -----------------------------------------------------------------------
  */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { finalizarViaje } from "@/app/actions/conductor/finalizarViaje";
+import { formatARS } from "@/lib/formatters";
+import { Flag, Lightbulb, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 interface FinalizarViajeClientProps {
   idViaje: string;
@@ -57,38 +56,32 @@ export default function FinalizarViajeClient({
   const duracion = formatDuracion(tiempoComienzo);
 
   return (
-    <main
-      className="min-h-screen flex flex-col items-center justify-center p-4 bg-zinc-50 dark:bg-zinc-950"
-    >
-      <div
-        className="w-full max-w-md rounded-3xl border-4 border-zinc-950 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_#09090b] overflow-hidden"
-      >
+    <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#050505]">
+      <div className="w-full max-w-md rounded-modal border border-[rgba(220,38,38,0.15)] bg-[#141414] shadow-[0_0_40px_rgba(220,38,38,0.08)] overflow-hidden">
+        
         {/* ── Encabezado ──────────────────────────────────────── */}
-        <div
-          className="px-6 py-5 border-b-4 border-zinc-950 dark:border-zinc-800 text-center bg-zinc-950 dark:bg-info"
-        >
-          <p className="text-4xl mb-2" aria-hidden>🏁</p>
-          <h1 className="text-xl font-extrabold text-white dark:text-zinc-950">Resumen del viaje</h1>
-          <p className="text-sm font-bold text-zinc-300 dark:text-zinc-950 mt-1">Confirmá la finalización para procesar el cobro</p>
+        <div className="px-6 py-6 border-b border-[rgba(220,38,38,0.15)] text-center bg-gradient-to-b from-[#1A0505] to-[#141414]">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-b from-primary-hover to-primary rounded-full flex items-center justify-center border-2 border-primary-dark shadow-[0_0_20px_rgba(220,38,38,0.3)] mb-4">
+            <Flag size={28} className="text-white" strokeWidth={2.5} />
+          </div>
+          <h1 className="text-2xl font-extrabold text-white uppercase tracking-wide">Resumen del viaje</h1>
+          <p className="text-xs font-bold text-[#9CA3AF] mt-1 uppercase tracking-[0.2em]">Confirmá la finalización para procesar el cobro</p>
         </div>
 
         {/* ── Resumen financiero ───────────────────────────────── */}
-        <div className="px-6 py-6 space-y-4">
+        <div className="px-6 py-8 space-y-6">
           {/* Precio destacado */}
-          <div className="text-center py-4">
-            <p className="text-6xl font-black text-zinc-950 dark:text-white tracking-tight">
-              ${precioFinal.toLocaleString("es-AR")}
+          <div className="text-center bg-[#0A0A0A] p-6 rounded-card border border-[rgba(255,255,255,0.06)] shadow-inner">
+            <p className="text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+              {formatARS(precioFinal)}
             </p>
-            <p className="text-sm mt-2 font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">
+            <p className="text-xs mt-2 font-extrabold text-red-400 uppercase tracking-[0.3em]">
               A cobrar
             </p>
           </div>
 
-          {/* Línea divisoria */}
-          <div className="border-t-2 border-zinc-200 dark:border-zinc-800" />
-
           {/* Detalles */}
-          <dl className="space-y-3">
+          <div className="space-y-4 px-2">
             {[
               { label: "Método de pago", value: metodoPago === "EFECTIVO" ? "💵 Efectivo" : "💳 Tarjeta" },
               { label: "Duración del viaje", value: duracion },
@@ -99,54 +92,59 @@ export default function FinalizarViajeClient({
                   : "—",
               },
             ].map(({ label, value }) => (
-              <div key={label} className="flex justify-between items-center">
-                <dt className="text-sm font-bold text-zinc-600 dark:text-zinc-400">{label}</dt>
-                <dd className="font-black text-sm text-zinc-950 dark:text-white">{value}</dd>
+              <div key={label} className="flex justify-between items-center border-b border-[rgba(255,255,255,0.06)] pb-3 last:border-0 last:pb-0">
+                <span className="text-xs font-bold text-[#9CA3AF] uppercase tracking-wider">{label}</span>
+                <span className="font-extrabold text-sm text-white uppercase tracking-wide">{value}</span>
               </div>
             ))}
-          </dl>
+          </div>
 
           {/* Aviso si es efectivo */}
           {metodoPago === "EFECTIVO" && (
-            <div
-              className="rounded-xl p-3 flex items-start gap-2 text-sm border-2 border-zinc-950 bg-brand text-zinc-950 font-bold shadow-[2px_2px_0px_0px_#09090b] dark:bg-brand dark:text-zinc-950"
-              role="note"
-            >
-              <span className="shrink-0">💡</span>
-              <p>Recordá cobrar el efectivo al pasajero antes de confirmar.</p>
+            <div className="rounded-sharp p-4 flex items-start gap-3 border border-[rgba(234,179,8,0.3)] bg-[rgba(234,179,8,0.1)] text-[#FCD34D] shadow-[0_0_15px_rgba(234,179,8,0.05)]">
+              <Lightbulb size={20} className="shrink-0 text-yellow-500" strokeWidth={2.5} />
+              <p className="text-sm font-bold leading-tight">
+                Recordá cobrar el efectivo al pasajero antes de confirmar.
+              </p>
             </div>
           )}
 
           {/* Error */}
           {error && (
-            <p className="text-sm text-red-500 font-medium text-center" role="alert">{error}</p>
+            <div className="rounded-sharp p-3 flex items-start gap-2 border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-[#EF4444] font-bold text-sm">
+              <AlertTriangle size={18} className="shrink-0" strokeWidth={2.5} />
+              <p>{error}</p>
+            </div>
           )}
 
           {/* ── CTA Principal ──────────────────────────────────── */}
-          <button
-            onClick={handleFinalizar}
-            disabled={procesando}
-            aria-label="Confirmar finalización del viaje y procesar el cobro"
-            className="w-full min-h-[64px] rounded-xl font-black text-xl bg-brand text-zinc-950 border-4 border-zinc-950 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] transition-all active:translate-y-0 active:shadow-none focus:outline-none focus:ring-4 focus:ring-brand/50 disabled:opacity-60 flex items-center justify-center gap-2 mt-6"
-          >
-            {procesando ? (
-              <>
-                <span className="w-5 h-5 border-4 border-t-transparent rounded-full animate-spin border-zinc-950" />
-                PROCESANDO...
-              </>
-            ) : (
-              "✓ CONFIRMAR"
-            )}
-          </button>
+          <div className="space-y-3 pt-2">
+            <button
+              onClick={handleFinalizar}
+              disabled={procesando}
+              className="w-full min-h-[64px] rounded-sharp font-black text-lg tracking-widest uppercase bg-gradient-to-b from-primary-hover to-primary text-white border border-primary-dark shadow-[0_0_20px_rgba(220,38,38,0.2)] hover:translate-y-[-1px] hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {procesando ? (
+                <>
+                  <span className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                  PROCESANDO...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={24} strokeWidth={2.5} />
+                  CONFIRMAR
+                </>
+              )}
+            </button>
 
-          {/* Cancelar (volver sin finalizar) */}
-          <button
-            onClick={() => router.back()}
-            disabled={procesando}
-            className="w-full py-3 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white uppercase tracking-widest transition-colors focus:outline-none"
-          >
-            Volver al mapa
-          </button>
+            <button
+              onClick={() => router.back()}
+              disabled={procesando}
+              className="w-full py-4 text-xs font-bold text-[#9CA3AF] hover:text-white uppercase tracking-[0.2em] transition-colors focus:outline-none"
+            >
+              VOLVER AL MAPA
+            </button>
+          </div>
         </div>
       </div>
     </main>

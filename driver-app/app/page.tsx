@@ -1,5 +1,6 @@
 // app/page.tsx — Orquestador delgado. Solo decide qué vista renderizar.
 import { getSessionData } from "@/lib/getSessionData";
+import { checkActiveRideRedirect } from "@/lib/checkActiveRide";
 import prisma from "@/lib/prisma"; // Importamos Prisma para hacer la consulta a la BD
 import Sidebar from "@/app/components/Nav";
 import AdminDashboard from "@/app/_views/AdminDashboard";
@@ -8,6 +9,7 @@ import RegistroConductor from "@/app/_views/RegistroConductor";
 
 export default async function HomePage() {
   const { rol, conductorData } = await getSessionData();
+  await checkActiveRideRedirect(conductorData);
 
   // ── CÁLCULO DE MÉTRICAS REALES ─────────────────────────
   let metricasHoy = { ganancia: 0, viajes: 0, horas: "0.0", metaDiaria: 30000 };
@@ -61,9 +63,9 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full overflow-x-hidden bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
-      <Sidebar rol={rol} />
-      <main className="flex-1 pt-8 pb-24 md:pb-8 md:pl-72 px-4 md:px-10 overflow-y-auto">
+    <div className="flex min-h-screen w-full overflow-x-hidden font-sans">
+      <Sidebar rol={rol} nombre={conductorData?.nombre} />
+      <main className="flex-1 pt-8 md:pt-28 pb-24 md:pb-8 px-4 md:px-10 overflow-y-auto">
         {rol === "ADMIN" && <AdminDashboard />}
 
         {rol === "CONDUCTOR_ACTIVO" && conductorData && (
@@ -78,12 +80,12 @@ export default async function HomePage() {
 
         {rol === "CONDUCTOR_SUSPENDIDO" && (
           <div className="flex justify-center items-center h-[50vh]">
-            <div className="max-w-md w-full p-8 rounded-2xl border-2 border-alert bg-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#ff007f] text-center">
-              <h1 className="text-2xl font-bold text-alert mb-4">Cuenta Suspendida</h1>
-              <p className="text-zinc-700 dark:text-zinc-300 font-medium">
+            <div className="max-w-md w-full p-8 rounded-modal border border-[rgba(220,38,38,0.4)] bg-[#141414] shadow-[0_0_30px_rgba(220,38,38,0.15)] text-center">
+              <h1 className="text-2xl font-bold text-primary mb-4 uppercase tracking-wide">Cuenta Suspendida</h1>
+              <p className="text-[#9CA3AF] font-medium">
                 Tu cuenta ha sido inhabilitada temporalmente por un administrador debido a infracciones en nuestras políticas.
               </p>
-              <p className="text-zinc-700 dark:text-zinc-300 font-medium mt-4">
+              <p className="text-[#9CA3AF] font-medium mt-4 border-t border-[rgba(220,38,38,0.15)] pt-4">
                 Si creés que esto es un error, por favor contactá a soporte.
               </p>
             </div>

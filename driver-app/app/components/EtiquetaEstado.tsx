@@ -1,4 +1,4 @@
-// app/components/StatusBadge.tsx
+// app/components/EtiquetaEstado.tsx
 
 interface StatusBadgeProps {
   estado: string;
@@ -6,24 +6,20 @@ interface StatusBadgeProps {
 }
 
 export default function StatusBadge({ estado, size = "md" }: StatusBadgeProps) {
-  // Ahora el diccionario devuelve un string con las clases de Tailwind
   const colorMap: Record<string, string> = {
     // Estados de Viajes
-    FINALIZADO: "bg-green-500 text-zinc-950 border-zinc-950",
-    EN_CURSO: "bg-brand text-zinc-950 border-zinc-950",
-    CANCELADO_POR_CONDUCTOR: "bg-info text-zinc-950 border-zinc-950",
-    CANCELADO: "bg-alert text-zinc-950 border-zinc-950",
+    FINALIZADO: "bg-[rgba(5,150,105,0.15)] text-[#34D399] border-[#059669]/50 shadow-[0_0_10px_rgba(5,150,105,0.1)]",
+    EN_CURSO: "bg-[rgba(220,38,38,0.15)] text-[#F87171] border-primary/50 shadow-[0_0_10px_rgba(220,38,38,0.1)]",
+    CANCELADO_POR_CONDUCTOR: "bg-[rgba(217,119,6,0.15)] text-[#FBBF24] border-[#D97706]/50 shadow-[0_0_10px_rgba(217,119,6,0.1)]",
+    CANCELADO: "bg-[rgba(239,68,68,0.15)] text-[#F87171] border-[#EF4444]/50 shadow-[0_0_10px_rgba(239,68,68,0.1)]",
 
     // Estados de Billetera
-    LIQUIDADO: "bg-brand text-zinc-950 border-zinc-950",
-    PENDIENTE: "bg-alert text-zinc-950 border-zinc-950",
+    LIQUIDADO: "bg-[rgba(5,150,105,0.15)] text-[#34D399] border-[#059669]/50 shadow-[0_0_10px_rgba(5,150,105,0.1)]",
+    PENDIENTE: "bg-[rgba(217,119,6,0.15)] text-[#FBBF24] border-[#D97706]/50 shadow-[0_0_10px_rgba(217,119,6,0.1)]",
   };
 
-  // Clases por defecto si llega un estado desconocido
-  const defaultClasses = "bg-zinc-200 text-zinc-800 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700";
+  const defaultClasses = "bg-[#1F1F1F] text-[#9CA3AF] border-[rgba(255,255,255,0.1)]";
   const colorClasses = colorMap[estado] ?? defaultClasses;
-
-  const isBrand = estado === "EN_CURSO" || estado === "LIQUIDADO";
 
   const sizeClasses = size === "sm"
     ? "px-2 py-0.5 text-[10px]"
@@ -32,11 +28,8 @@ export default function StatusBadge({ estado, size = "md" }: StatusBadgeProps) {
   return (
     <span
       className={`
-        inline-flex items-center justify-center rounded-full border-2 
-        uppercase tracking-[0.22em] transition-transform duration-200 
-        shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] 
-        dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04]
-        ${isBrand ? "font-bold" : "font-semibold"} 
+        inline-flex items-center justify-center rounded-sharp border
+        uppercase tracking-[0.2em] font-bold
         ${sizeClasses} 
         ${colorClasses}
       `}

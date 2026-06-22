@@ -3,31 +3,27 @@
 /**
  * app/components/admin/ExportarPDF.tsx
  * Client Component — Genera un reporte PDF profesional usando window.print()
- * con estilos @media print. Sin dependencias externas.
+ * Dark Sci-Fi aesthetic.
  */
 import { useRef, useCallback } from "react";
 import { FileText } from "lucide-react";
 
-// ── Tipos ─────────────────────────────────────────────────────────────────────
-
 export interface ViajeParaPDF {
   id_viaje: string;
-  fecha: string;           // ya formateada con formatFecha()
-  conductor: string;       // "Apellido, Nombre"
+  fecha: string;
+  conductor: string;
   patente: string;
   origen: string;
   destino: string;
   pasajero: string;
-  monto: string;           // ya formateada con formatARS()
+  monto: string;
   estado: string;
 }
 
 interface ExportarPDFProps {
   viajes: ViajeParaPDF[];
-  timestamp: string;       // fecha de generación del reporte
+  timestamp: string;
 }
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
 
 const ETIQUETAS_ESTADO: Record<string, string> = {
   FINALIZADO: "Finalizado",
@@ -36,16 +32,12 @@ const ETIQUETAS_ESTADO: Record<string, string> = {
   CANCELADO_POR_CONDUCTOR: "Cancelado",
 };
 
-// ── Componente ─────────────────────────────────────────────────────────────────
-
 export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
   const printRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useCallback(() => {
     if (!printRef.current) return;
 
-    // Clonar el contenido del reporte en un iframe oculto y llamar a print()
-    // para imprimir sólo ese frame, sin afectar el layout de la app.
     const iframe = document.createElement("iframe");
     iframe.style.position = "fixed";
     iframe.style.right = "0";
@@ -59,20 +51,21 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
     if (!doc) return;
 
     doc.open();
+    // Use a sleek printable format inspired by command logs.
     doc.write(`<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>DriveMe — Reporte de Flota</title>
+  <title>DriveMe — Log de Telemetría</title>
   <style>
     /* ── Reset ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     /* ── Tipografía base ── */
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: 'Courier New', Courier, monospace;
       font-size: 11px;
-      color: #09090b;
+      color: #000;
       background: #fff;
       padding: 32px;
     }
@@ -82,7 +75,7 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      border-bottom: 3px solid #09090b;
+      border-bottom: 2px solid #000;
       padding-bottom: 16px;
       margin-bottom: 24px;
     }
@@ -90,27 +83,27 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
       font-size: 24px;
       font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: -0.5px;
+      letter-spacing: 2px;
     }
     .report-subtitle {
-      font-size: 11px;
-      font-weight: 700;
-      color: #52525b;
+      font-size: 10px;
+      font-weight: bold;
+      color: #333;
       margin-top: 4px;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
     .report-meta {
       text-align: right;
-      font-size: 10px;
-      color: #71717a;
-      font-weight: 600;
+      font-size: 9px;
+      color: #666;
+      font-weight: normal;
     }
     .report-meta strong {
       display: block;
       font-size: 11px;
-      color: #09090b;
-      font-weight: 800;
+      color: #000;
+      font-weight: bold;
       margin-bottom: 2px;
     }
 
@@ -120,8 +113,8 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
       gap: 24px;
       margin-bottom: 24px;
       padding: 12px 16px;
-      border: 2px solid #09090b;
-      background: #f4f4f5;
+      border: 1px solid #000;
+      background: #fcfcfc;
     }
     .summary-item {
       display: flex;
@@ -130,15 +123,15 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
     }
     .summary-label {
       font-size: 9px;
-      font-weight: 800;
+      font-weight: bold;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: #71717a;
+      letter-spacing: 1px;
+      color: #666;
     }
     .summary-value {
       font-size: 18px;
-      font-weight: 900;
-      color: #09090b;
+      font-weight: bold;
+      color: #000;
     }
 
     /* ── Tabla ── */
@@ -148,52 +141,41 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
       font-size: 10px;
     }
     thead {
-      background: #09090b;
-      color: #fff;
+      border-bottom: 2px solid #000;
     }
     th {
       padding: 8px 10px;
       text-align: left;
-      font-weight: 800;
+      font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 1px;
       font-size: 9px;
     }
     td {
-      padding: 7px 10px;
-      border-bottom: 1px solid #e4e4e7;
+      padding: 8px 10px;
+      border-bottom: 1px dotted #ccc;
       vertical-align: top;
     }
-    tr:nth-child(even) td {
-      background: #fafafa;
-    }
-    .driver-name { font-weight: 700; }
-    .plate { font-family: monospace; font-weight: 800; font-size: 11px; }
-    .amount { font-weight: 900; text-align: right; }
+    .driver-name { font-weight: bold; }
+    .plate { font-weight: bold; }
+    .amount { font-weight: bold; text-align: right; }
     .estado-badge {
       display: inline-block;
-      padding: 2px 6px;
-      border: 1.5px solid #09090b;
-      font-size: 8px;
-      font-weight: 800;
+      font-size: 9px;
+      font-weight: bold;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
     }
-    .estado-FINALIZADO    { background: #CFFF04; color: #09090b; }
-    .estado-EN_CURSO      { background: #8B5CF6; color: #fff; }
-    .estado-ACEPTADO      { background: #e4e4e7; color: #52525b; }
-    .estado-CANCELADO     { background: #FF007F; color: #fff; }
 
     /* ── Pie de página ── */
     .report-footer {
       margin-top: 24px;
       padding-top: 12px;
-      border-top: 2px solid #09090b;
+      border-top: 1px solid #000;
       font-size: 9px;
-      color: #71717a;
-      font-weight: 600;
+      color: #666;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
       display: flex;
       justify-content: space-between;
     }
@@ -207,26 +189,26 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
 <body>
   <div class="report-header">
     <div>
-      <div class="report-title">DriveMe</div>
-      <div class="report-subtitle">Reporte de Viajes — Flota Completa</div>
+      <div class="report-title">DriveMe // Telemetría</div>
+      <div class="report-subtitle">Reporte de Operaciones — Flota Completa</div>
     </div>
     <div class="report-meta">
-      <strong>Generado el</strong>
+      <strong>GENERADO</strong>
       ${timestamp}
     </div>
   </div>
 
   <div class="summary">
     <div class="summary-item">
-      <span class="summary-label">Total de viajes</span>
+      <span class="summary-label">Misiones Totales</span>
       <span class="summary-value">${viajes.length}</span>
     </div>
     <div class="summary-item">
-      <span class="summary-label">Viajes finalizados</span>
+      <span class="summary-label">Misiones Completadas</span>
       <span class="summary-value">${viajes.filter((v) => v.estado === "FINALIZADO").length}</span>
     </div>
     <div class="summary-item">
-      <span class="summary-label">Viajes cancelados</span>
+      <span class="summary-label">Misiones Abortadas</span>
       <span class="summary-value">${viajes.filter((v) => v.estado === "CANCELADO_POR_CONDUCTOR").length}</span>
     </div>
   </div>
@@ -234,13 +216,13 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
   <table>
     <thead>
       <tr>
-        <th>Fecha</th>
-        <th>Conductor</th>
-        <th>Patente</th>
+        <th>Marca de Tiempo</th>
+        <th>Operador</th>
+        <th>Unidad</th>
         <th>Origen</th>
         <th>Destino</th>
-        <th>Pasajero</th>
-        <th style="text-align:right">Monto</th>
+        <th>Sujeto</th>
+        <th style="text-align:right">Valor</th>
         <th>Estado</th>
       </tr>
     </thead>
@@ -251,8 +233,7 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
       <tr>
         <td style="white-space:nowrap">${v.fecha}</td>
         <td>
-          <span class="driver-name">${v.conductor}</span><br/>
-          <span class="plate">${v.patente}</span>
+          <span class="driver-name">${v.conductor}</span>
         </td>
         <td class="plate">${v.patente}</td>
         <td style="max-width:120px">${v.origen}</td>
@@ -260,7 +241,7 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
         <td>${v.pasajero}</td>
         <td class="amount">${v.monto}</td>
         <td>
-          <span class="estado-badge estado-${v.estado === "CANCELADO_POR_CONDUCTOR" ? "CANCELADO" : v.estado}">
+          <span class="estado-badge">
             ${ETIQUETAS_ESTADO[v.estado] ?? v.estado}
           </span>
         </td>
@@ -271,8 +252,8 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
   </table>
 
   <div class="report-footer">
-    <span>DriveMe — Sistema de Gestión de Flota</span>
-    <span>Página 1</span>
+    <span>DriveMe — Mando Central v1.0</span>
+    <span>SOPORTE DOCUMENTAL</span>
   </div>
 </body>
 </html>`);
@@ -281,23 +262,20 @@ export default function ExportarPDF({ viajes, timestamp }: ExportarPDFProps) {
     iframe.contentWindow?.focus();
     iframe.contentWindow?.print();
 
-    // Limpieza del iframe tras imprimir
     setTimeout(() => document.body.removeChild(iframe), 1000);
   }, [viajes, timestamp]);
 
   return (
     <>
-      {/* Botón neobrutalist visible en pantalla */}
       <button
         onClick={handlePrint}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-zinc-950 bg-brand text-zinc-950 font-extrabold text-sm uppercase tracking-wide shadow-[3px_3px_0px_0px_#09090b] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#09090b] transition-all duration-150 dark:border-brand dark:shadow-[3px_3px_0px_0px_#CFFF04] dark:hover:shadow-[4px_4px_0px_0px_#CFFF04]"
-        title="Exportar reporte de viajes a PDF"
+        className="flex items-center gap-2 px-4 py-2 rounded-sharp border border-[rgba(255,255,255,0.1)] bg-gradient-to-b from-[#1F1F1F] to-[#0A0A0A] text-[#9CA3AF] font-bold text-xs uppercase tracking-widest hover:border-primary/40 hover:text-white hover:shadow-[0_0_15px_rgba(220,38,38,0.15)] transition-all duration-150 active:scale-[0.98]"
+        title="Extraer Log de Telemetría (PDF)"
       >
         <FileText className="w-4 h-4" strokeWidth={2.5} />
-        Exportar PDF
+        Exportar Log
       </button>
 
-      {/* Contenedor oculto — solo se usa como referencia para ref, no se imprime */}
       <div ref={printRef} className="hidden" aria-hidden="true" />
     </>
   );

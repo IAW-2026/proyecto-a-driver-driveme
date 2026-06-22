@@ -2,8 +2,8 @@
 // Server Component — Perfil del conductor con calificaciones de la Feedback App.
 import { redirect } from "next/navigation";
 import { getSessionData } from "@/lib/getSessionData";
+import { checkActiveRideRedirect } from "@/lib/checkActiveRide";
 import Sidebar from "@/app/components/Nav";
-import ThemeToggle from "@/app/components/ThemeToggle";
 import HeaderModulo from "@/app/components/HeaderModulo";
 import EstadoVacio from "@/app/components/EstadoVacio";
 import { Car, Star, StarOff, ChevronLeft, ChevronRight, User } from "lucide-react";
@@ -43,8 +43,8 @@ function EstrellasSVG({ puntaje }: { puntaje: number }) {
       {[1, 2, 3, 4, 5].map((n) => (
         <Star
           key={n}
-          className={`w-5 h-5 ${n <= puntaje ? "text-yellow-400 fill-yellow-400" : "text-zinc-300 dark:text-zinc-500"}`}
-          strokeWidth={2}
+          className={`w-4 h-4 md:w-5 md:h-5 ${n <= puntaje ? "text-yellow-500 fill-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.6)]" : "text-[rgba(255,255,255,0.1)]"}`}
+          strokeWidth={n <= puntaje ? 0 : 2}
           aria-hidden="true"
         />
       ))}
@@ -58,6 +58,7 @@ export default async function PerfilPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const { userId, rol, conductorData } = await getSessionData();
+  await checkActiveRideRedirect(conductorData);
   if (rol === "CONDUCTOR_NUEVO") redirect("/");
   if (rol === "ADMIN") redirect("/");
 
@@ -75,51 +76,58 @@ export default async function PerfilPage({
   ) || [];
 
   return (
-    <div className="flex min-h-screen w-full bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
-      <Sidebar rol={rol} />
+    <div className="flex min-h-screen w-full font-sans">
+      <Sidebar rol={rol} nombre={conductorData?.nombre} />
 
-      <main className="flex-1 pt-8 pb-24 md:pb-8 md:pl-72 px-4 md:px-8 overflow-y-auto">
-        <div className="max-w-3xl mx-auto space-y-6">
+      <main className="flex-1 pt-8 md:pt-28 pb-24 md:pb-8 px-4 md:px-8 overflow-y-auto">
+        <div className="max-w-3xl mx-auto space-y-8">
 
           <HeaderModulo
-            titulo="Mi Perfil"
-            icono={User}
+            titulo="MI PERFIL"
+            subtitulo="Administrá tu cuenta y tus preferencias"
             acciones={
-              <>
-                <ThemeToggle />
-                <div className="bg-white dark:bg-zinc-900 rounded-full border-2 border-zinc-950 dark:border-brand shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#CFFF04] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] transition-all duration-200 p-0.5">
-                  <UserButton
-                    appearance={{
-                      elements: {
-                        userButtonAvatarBox: "w-8 h-8",
-                      }
-                    }}
-                  />
-                </div>
-              </>
+              <div className="bg-[rgba(20,20,20,0.8)] rounded-full border border-[rgba(220,38,38,0.2)] shadow-[0_0_20px_rgba(220,38,38,0.15)] hover:-translate-y-[1px] hover:shadow-[0_0_30px_rgba(220,38,38,0.25)] transition-all duration-300 p-1.5 backdrop-blur-md">
+                <UserButton
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: "w-9 h-9",
+                    }
+                  }}
+                />
+              </div>
             }
           />
 
-          <div className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-brand dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#CFFF04] overflow-hidden">
-            <div className="px-6 py-5 flex items-center gap-4 bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
-              <div className="w-16 h-16 rounded-xl border-4 border-zinc-950 bg-brand flex items-center justify-center text-3xl font-extrabold text-zinc-950 shrink-0" aria-hidden>
-                {conductorData?.nombre?.[0] ?? "C"}
+          <div className="rounded-modal border border-[rgba(220,38,38,0.25)] bg-[rgba(10,10,10,0.7)] backdrop-blur-md shadow-[0_0_30px_rgba(220,38,38,0.1)] overflow-hidden">
+            <div className="px-6 py-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[rgba(220,38,38,0.25)]">
+              
+              <div className="flex items-center gap-5">
+                <div className="w-20 h-20 rounded-full border border-[rgba(220,38,38,0.4)] bg-[rgba(220,38,38,0.1)] flex items-center justify-center text-3xl font-sci text-primary shadow-[0_0_25px_rgba(220,38,38,0.2)] shrink-0" aria-hidden>
+                  {conductorData?.nombre?.[0] ?? "C"}
+                </div>
+                <div>
+                  <p className="text-xl md:text-2xl font-bold text-white tracking-wide">
+                    {conductorData?.nombre} {conductorData?.apellido}
+                  </p>
+                  <p className="text-sm font-medium text-[#9CA3AF] mt-1 flex items-center gap-2">
+                     <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span>
+                     ID: {conductorData?.licencia ?? "—"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xl font-extrabold text-white dark:text-zinc-950">
-                  {conductorData?.nombre} {conductorData?.apellido}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" aria-hidden="true" />
-                  <span className="font-bold text-white text-lg dark:text-zinc-950">
+
+              <div className="flex flex-col items-start md:items-end gap-2 bg-[rgba(20,20,20,0.5)] p-4 rounded-card border border-[rgba(255,255,255,0.05)]">
+                 <div className="flex items-center gap-2">
+                  <Star className="w-6 h-6 text-yellow-500 fill-yellow-500 drop-shadow-[0_0_10px_rgba(234,179,8,0.6)]" aria-hidden="true" />
+                  <span className="font-sci text-white text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                     {conductorData?.calificacion_promedio.toFixed(1)}
                   </span>
-                  {calificaciones && (
-                    <span className="text-zinc-300 dark:text-zinc-600 text-sm font-medium">
-                      ({totalReviews} reseñas)
-                    </span>
-                  )}
                 </div>
+                {calificaciones && (
+                  <span className="text-[#6B7280] text-[10px] font-sci tracking-[0.2em] uppercase">
+                    RATING PROMEDIO ({totalReviews})
+                  </span>
+                )}
               </div>
             </div>
 
@@ -133,17 +141,17 @@ export default async function PerfilPage({
             />
           )}
 
-          <section className="space-y-3">
-            <h2 className="text-lg font-extrabold text-zinc-950 dark:text-white uppercase tracking-wide">
-              Calificaciones recibidas
+          <section className="space-y-5 rounded-modal border border-[rgba(220,38,38,0.25)] bg-[rgba(10,10,10,0.7)] backdrop-blur-md shadow-[0_0_30px_rgba(220,38,38,0.1)] p-6 md:p-8">
+            <h2 className="text-lg font-sci text-white uppercase tracking-[0.2em] mb-4">
+              Feedback Global
             </h2>
 
             {conductorData?.comentario_promedio && (
-              <div className="bg-brand dark:bg-brand border-2 border-brand dark:border-brand p-4 rounded-xl shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#CFFF04] mb-6">
-                <p className="text-sm font-bold text-zinc-950 dark:text-zinc-950 uppercase tracking-wider mb-1">
-                  Comentario Promedio
+              <div className="bg-[rgba(220,38,38,0.05)] border border-[rgba(220,38,38,0.2)] p-6 rounded-card shadow-[0_0_20px_rgba(220,38,38,0.1)]">
+                <p className="text-[10px] font-sci text-primary tracking-[0.2em] uppercase mb-3">
+                  Análisis IA del Piloto
                 </p>
-                <p className="text-zinc-950 dark:text-zinc-950 font-medium italic">
+                <p className="text-[#E5E7EB] font-medium italic text-base leading-relaxed">
                   &ldquo;{conductorData.comentario_promedio}&rdquo;
                 </p>
               </div>
@@ -153,24 +161,24 @@ export default async function PerfilPage({
             {!calificaciones || totalReviews === 0 ? (
               <EstadoVacio
                 icono={StarOff}
-                titulo="No hay calificaciones disponibles todavía"
-                descripcion="Las opiniones, comentarios y valoraciones numéricas enviadas por los pasajeros se agruparán en este espacio."
+                titulo="No hay registros disponibles"
+                descripcion="Las evaluaciones enviadas por los pasajeros aparecerán en este registro."
               />
             ) : (
               <div className="space-y-4">
                 {paginatedReviews.map((cal) => (
-                  <div key={cal.id_calificacion} className="rounded-2xl border-2 border-zinc-950 bg-white dark:border-zinc-700 dark:bg-zinc-900 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-none p-5 space-y-3">
-                    <div className="flex justify-between items-start gap-3">
+                  <div key={cal.id_calificacion} className="rounded-card border border-[rgba(255,255,255,0.08)] bg-[rgba(20,20,20,0.6)] hover:bg-[rgba(30,30,30,0.8)] transition-all p-5 space-y-4 group">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                       <EstrellasSVG puntaje={cal.puntaje} />
-                      <time className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-300 shrink-0" dateTime={cal.timestamp}>
+                      <time className="text-[10px] font-sci uppercase tracking-[0.2em] text-[#6B7280] group-hover:text-[#9CA3AF] transition-colors" dateTime={cal.timestamp}>
                         {new Date(cal.timestamp).toLocaleDateString("es-AR", {
                           day: "2-digit", month: "short", year: "numeric",
                         })}
                       </time>
                     </div>
                     {cal.comentario && (
-                      <div className="flex justify-between items-start gap-4">
-                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-4 border-t border-[rgba(255,255,255,0.05)] pt-4">
+                        <p className="text-sm font-medium text-[#E5E7EB] leading-relaxed italic">
                           &ldquo;{cal.comentario}&rdquo;
                         </p>
                         <BotonReportarCalificacion idCalificacion={cal.id_calificacion} />
@@ -181,7 +189,7 @@ export default async function PerfilPage({
 
                 {/* Controles de Paginación */}
                 {totalPages > 1 && (
-                  <div className="mt-6 flex justify-center">
+                  <div className="mt-8 flex justify-center border-t border-[rgba(220,38,38,0.25)] pt-6">
                     <PaginadorURL
                       paginaActual={currentPage}
                       totalPaginas={totalPages}

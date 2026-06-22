@@ -3,17 +3,18 @@ import Image from "next/image";
 
 export default function Page() {
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950 p-4 transition-colors duration-300">
+    <main className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 min-h-screen p-4 transition-colors duration-300">
 
       {/* Contenedor del Logo */}
-      <div className="mb-8 flex flex-col items-center gap-3">
-        <div className="p-2 bg-brand rounded-xl border-4 border-zinc-950 shadow-[4px_4px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#CFFF04]">
+      <div className="flex flex-col items-center">
+        <div className="w-48 h-48 md:w-80 md:h-80 rounded-2xl border border-[rgba(220,38,38,0.3)] bg-[rgba(10,10,10,0.5)] flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.2)] relative overflow-hidden p-4">
           <Image
-            src="/images/logo.png"
+            src="/images/logo.jpg"
             alt="DriveMe Logo"
-            width={110}
-            height={110}
+            fill
+            className="object-contain"
             priority
+            unoptimized={true}
           />
         </div>
       </div>
@@ -25,28 +26,31 @@ export default function Page() {
         signUpUrl="/sign-up"
         appearance={{
           variables: {
-            colorPrimary: "#FF007F",
-            colorBackground: "white", // Se ajusta vía elements para modo oscuro
-            colorText: "#09090B",
-            fontFamily: "var(--font-space-grotesk)",
-            borderRadius: "12px",
+            colorPrimary: "#DC2626",
+            colorBackground: "rgba(10,10,10,0.85)",
+            colorText: "#FFFFFF",
+            fontFamily: "var(--font-michroma)",
+            borderRadius: "24px",
+            colorInputBackground: "rgba(255,255,255,0.03)",
+            colorInputText: "#FFFFFF",
+            colorTextSecondary: "#9CA3AF"
           },
           elements: {
-            card: "border-4 border-zinc-950 shadow-[8px_8px_0px_0px_#09090b] dark:border-brand dark:shadow-[8px_8px_0px_0px_#CFFF04] bg-white",
-            headerTitle: "font-extrabold uppercase tracking-tight text-2xl !text-zinc-950 dark:!text-zinc-950",
-            headerSubtitle: "font-medium !text-zinc-600 dark:!text-zinc-800",
-            socialButtonsBlockButton: "border-2 border-zinc-950 shadow-[3px_3px_0px_0px_#09090b] hover:translate-y-[-2px] transition-all dark:border-brand dark:shadow-[3px_3px_0px_0px_#CFFF04] !text-zinc-950 dark:!text-zinc-950 bg-white",
-            formButtonPrimary: "bg-brand !text-zinc-950 font-extrabold border-2 border-zinc-950 shadow-[4px_4px_0px_0px_#09090b] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#09090b] transition-all py-3 dark:shadow-[4px_4px_0px_0px_#CFFF04]",
-            formFieldInput: "border-2 border-zinc-950 focus:ring-2 focus:ring-brand dark:bg-zinc-800 dark:!text-white dark:border-zinc-700",
-            otpCodeFieldInput: "!border-2 !border-solid !border-zinc-300 focus:!border-brand focus:!ring-2 focus:!ring-brand !text-zinc-950 dark:!text-zinc-950 !bg-white dark:!border-zinc-400 !rounded-md",
-            footerActionLink: "!text-alert font-bold hover:underline",
-            identityPreviewText: "!text-zinc-950 dark:!text-zinc-950",
-            formResendCodeLink: "!text-alert",
-            dividerLine: "bg-zinc-950 dark:bg-zinc-300",
-            dividerText: "!text-zinc-950 font-bold dark:!text-zinc-950",
-            formFieldLabel: "!text-zinc-950 font-bold dark:!text-zinc-950",
-            footerActionText: "!text-zinc-950 dark:!text-zinc-950",
-            formFieldErrorText: "!text-alert dark:!text-alert text-sm"
+            card: "border border-[rgba(220,38,38,0.25)] shadow-[0_0_30px_rgba(220,38,38,0.15)] bg-[rgba(10,10,10,0.85)] backdrop-blur-md",
+            headerTitle: "font-sci uppercase tracking-widest text-2xl text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]",
+            headerSubtitle: "font-sci text-[10px] tracking-[0.2em] text-[#9CA3AF] uppercase",
+            socialButtonsBlockButton: "rounded-full border border-[rgba(255,255,255,0.1)] bg-[rgba(20,20,20,0.6)] text-white hover:bg-[rgba(30,30,30,0.8)] hover:border-[rgba(255,255,255,0.2)] transition-all font-sci text-[10px]",
+            formButtonPrimary: "rounded-full border border-[rgba(220,38,38,0.4)] bg-[rgba(220,38,38,0.1)] text-primary font-sci text-xs uppercase tracking-widest shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:bg-[rgba(220,38,38,0.2)] hover:shadow-[0_0_25px_rgba(220,38,38,0.3)] transition-all py-3.5 backdrop-blur-sm",
+            formFieldInput: "rounded-full pl-5 border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] focus:ring-0 focus:border-[rgba(220,38,38,0.5)] focus:bg-[rgba(220,38,38,0.05)] focus:shadow-[0_0_15px_rgba(220,38,38,0.2)] text-white font-sci transition-all",
+            otpCodeFieldInput: "rounded-full border border-[rgba(255,255,255,0.1)] focus:border-[rgba(220,38,38,0.5)] focus:ring-0 text-white bg-[rgba(255,255,255,0.03)] font-sci",
+            footerActionLink: "text-primary font-sci tracking-wider hover:text-primary-hover drop-shadow-[0_0_5px_rgba(220,38,38,0.4)]",
+            identityPreviewText: "text-white font-sci text-xs",
+            formResendCodeLink: "text-primary font-sci text-[10px] tracking-wider",
+            dividerLine: "bg-[rgba(220,38,38,0.2)]",
+            dividerText: "text-[#9CA3AF] font-sci text-[10px] uppercase tracking-widest",
+            formFieldLabel: "text-[#9CA3AF] font-sci uppercase tracking-[0.2em] text-[10px] mb-1 ml-1",
+            footerActionText: "text-[#9CA3AF] font-sci text-[10px] uppercase tracking-widest",
+            formFieldErrorText: "text-primary text-[10px] font-sci uppercase tracking-widest mt-1"
           }
         }}
       />

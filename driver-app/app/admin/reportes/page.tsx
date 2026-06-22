@@ -1,12 +1,7 @@
 /**
  * app/admin/reportes/page.tsx
  * Server Component — Listado paginado y filtrable de viajes de toda la flota.
- * Aplica filtros y paginación a nivel de base de datos mediante searchParams.
- *
- * Parámetros de URL soportados:
- *   ?query=   Busca por nombre de conductor o de pasajero
- *   ?estado=  FINALIZADO | EN_CURSO | ACEPTADO | CANCELADO_POR_CONDUCTOR
- *   ?page=    Número de página (default: 1)
+ * Dark Sci-Fi aesthetic.
  */
 import { Suspense } from "react";
 import { Metadata } from "next";
@@ -15,7 +10,6 @@ import { Prisma, $Enums } from "@/app/generated/prisma/client";
 import prisma from "@/lib/prisma";
 import Sidebar from "@/app/components/Nav";
 import HeaderModulo from "@/app/components/HeaderModulo";
-import ThemeToggle from "@/app/components/ThemeToggle";
 import SignOutButton from "@/app/components/SignOutButton";
 import AdminMetricaCard from "@/app/components/admin/AdminMetricaCard";
 import ExportarPDF from "@/app/components/admin/ExportarPDF";
@@ -142,22 +136,22 @@ export default async function ReportesPage({
   // ── Tarjetas de métricas del día (sin filtros) ──────────────────────────────
   const metricasHoy = [
     {
-      label: "Viajes Hoy",
+      label: "Misiones de Hoy",
       valor: viajesHoy.toString(),
       icono: <Route className="w-8 h-8" strokeWidth={2.5} />,
-      acento: "brand" as const,
+      acento: "primary" as const,
     },
     {
-      label: "Recaudación Hoy",
+      label: "Recaudación de Hoy",
       valor: formatARS(recaudacionHoyTotal),
       icono: <BarChart3 className="w-8 h-8" strokeWidth={2.5} />,
-      acento: "alert" as const,
+      acento: "info" as const,
     },
     {
-      label: "Conductores Online",
+      label: "Operadores Activos",
       valor: conductoresActivos.toString(),
       icono: <Users className="w-8 h-8" strokeWidth={2.5} />,
-      acento: "info" as const,
+      acento: "success" as const,
     },
   ];
 
@@ -165,31 +159,30 @@ export default async function ReportesPage({
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="flex min-h-screen w-full overflow-x-hidden bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-white font-sans">
-      <Sidebar rol="ADMIN" />
+    <div className="flex min-h-screen w-full overflow-x-hidden font-sans">
+      <Sidebar rol="ADMIN" nombre={undefined} />
 
-      <main className="flex-1 min-w-0 pt-8 pb-28 md:pb-8 md:pl-72 px-4 md:px-10">
-        <div className="w-full max-w-6xl mx-auto space-y-6">
+      <main className="flex-1 min-w-0 pt-8 md:pt-28 pb-28 md:pb-8 px-4 md:px-10">
+        <div className="w-full max-w-6xl mx-auto space-y-8">
           {/* Encabezado */}
           <HeaderModulo
-            titulo="Reportes"
+            titulo="Reportes y Telemetría"
             icono={DollarSign}
             subtitulo={
               hayFiltros
-                ? `${totalFiltrado} viaje${totalFiltrado !== 1 ? "s" : ""} encontrado${totalFiltrado !== 1 ? "s" : ""}`
-                : `${totalFiltrado} viaje${totalFiltrado !== 1 ? "s" : ""} registrado${totalFiltrado !== 1 ? "s" : ""}`
+                ? `${totalFiltrado} registro${totalFiltrado !== 1 ? "s" : ""} encontrado${totalFiltrado !== 1 ? "s" : ""}`
+                : `${totalFiltrado} registro${totalFiltrado !== 1 ? "s" : ""} en base de datos`
             }
             acciones={
               <>
                 <ExportarPDF viajes={viajesParaPDF} timestamp={timestampReporte} />
-                <ThemeToggle />
                 <SignOutButton />
               </>
             }
           />
 
           {/* Métricas del día (siempre globales, sin filtros) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 overflow-hidden">
             {metricasHoy.map(({ label, valor, icono, acento }) => (
               <AdminMetricaCard
                 key={label}
@@ -202,10 +195,10 @@ export default async function ReportesPage({
           </div>
 
           {/* Tabla de viajes con búsqueda + filtros + paginación */}
-          <div className="rounded-2xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_#09090b] dark:shadow-none overflow-hidden">
-            <div className="px-5 py-4 border-b-2 border-zinc-950 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950">
-              <p className="text-xs font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                Historial de viajes
+          <div className="rounded-modal border border-[rgba(220,38,38,0.15)] bg-[rgba(20,20,20,0.8)] shadow-[0_0_30px_rgba(220,38,38,0.08)] backdrop-blur-sm overflow-hidden">
+            <div className="px-5 py-5 border-b border-[rgba(220,38,38,0.15)] bg-[#0A0A0A]">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#9CA3AF]">
+                Log de Misiones
               </p>
             </div>
 
@@ -230,7 +223,7 @@ function SkeletonTabla() {
   return (
     <div className="animate-pulse space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
+        <div key={i} className="h-12 rounded-sharp bg-[#1F1F1F]" />
       ))}
     </div>
   );

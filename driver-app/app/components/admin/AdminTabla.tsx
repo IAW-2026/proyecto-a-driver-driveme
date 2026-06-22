@@ -24,8 +24,7 @@ interface AdminTablaProps<T> {
 }
 
 /**
- * AdminTabla — Tabla neobrutalista, responsive y reutilizable.
- * En mobile cada fila se transforma en una "tarjeta" de columnas apiladas.
+ * AdminTabla — Tabla Dark Sci-Fi, responsive y reutilizable.
  */
 export default function AdminTabla<T>({
   columnas,
@@ -36,7 +35,7 @@ export default function AdminTabla<T>({
 }: AdminTablaProps<T>) {
   if (filas.length === 0) {
     return (
-      <div className="py-16 text-center text-zinc-500 dark:text-zinc-400 font-semibold">
+      <div className="py-16 text-center text-[#6B7280] font-bold uppercase tracking-[0.2em] text-xs">
         {mensajeVacio}
       </div>
     );
@@ -47,27 +46,27 @@ export default function AdminTabla<T>({
       {/* ── Desktop Table ─────────────────────────────────────── */}
       <table className="hidden md:table w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b-2 border-zinc-950 dark:border-zinc-700">
+          <tr className="border-b border-[rgba(220,38,38,0.15)] bg-[#0A0A0A]">
             {columnas.map((col) => (
               <th
                 key={col.cabecera}
-                className={`py-3 px-4 text-left font-extrabold uppercase tracking-widest text-[10px] text-zinc-600 dark:text-zinc-400 ${col.className ?? ""}`}
+                className={`py-4 px-4 text-left font-extrabold uppercase tracking-widest text-[10px] text-[#9CA3AF] ${col.className ?? ""}`}
               >
                 {col.cabecera}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-[rgba(255,255,255,0.06)]">
           {filas.map((fila) => (
             <tr
               key={keyExtractor(fila)}
-              className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors duration-150"
+              className="hover:bg-[#1F1F1F] transition-colors duration-150 group"
             >
               {columnas.map((col) => (
                 <td
                   key={col.cabecera}
-                  className={`py-3 px-4 font-medium text-zinc-950 dark:text-white ${col.className ?? ""}`}
+                  className={`py-4 px-4 font-medium text-white ${col.className ?? ""}`}
                 >
                   {col.render(fila)}
                 </td>
@@ -82,17 +81,17 @@ export default function AdminTabla<T>({
         {filas.map((fila) => (
           <div
             key={keyExtractor(fila)}
-            className="rounded-xl border-2 border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-[3px_3px_0px_0px_#09090b] dark:shadow-none p-4 space-y-2.5"
+            className="rounded-card border border-[rgba(220,38,38,0.15)] bg-[rgba(20,20,20,0.8)] shadow-[0_0_20px_rgba(220,38,38,0.05)] p-4 space-y-3"
           >
             {mobileRender ? (
               mobileRender(fila)
             ) : (
               columnas.map((col) => (
-                <div key={col.cabecera} className="flex items-start justify-between gap-3 flex-wrap">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 shrink-0 pt-0.5">
+                <div key={col.cabecera} className="flex items-start justify-between gap-3 flex-wrap border-b border-[rgba(255,255,255,0.03)] pb-2 last:border-0 last:pb-0">
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#6B7280] shrink-0 pt-0.5">
                     {col.cabecera}
                   </span>
-                  <span className="font-semibold text-sm text-zinc-950 dark:text-white text-right min-w-0 wrap-break-word">
+                  <span className="font-semibold text-sm text-white text-right min-w-0 break-words">
                     {col.render(fila)}
                   </span>
                 </div>

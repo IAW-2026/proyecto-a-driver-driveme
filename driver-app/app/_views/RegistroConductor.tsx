@@ -1,7 +1,7 @@
 /**
  * app/_views/RegistroConductor.tsx
  * Client Component — Formulario de onboarding para conductores nuevos.
- * Llama la Server Action explícitamente con useTransition.
+ * Dark Sci-Fi aesthetic — High-clearance registration gate.
  */
 "use client";
 
@@ -45,20 +45,22 @@ export default function RegistroConductor() {
     });
   }
 
+  const inputClass = "block w-full rounded-sharp border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] p-3 text-white font-medium placeholder:text-[#6B7280] focus:outline-none focus:border-primary focus:shadow-[0_0_0_1px_#DC2626,0_0_15px_rgba(220,38,38,0.2)] transition-all";
+
   if (reactivationLicencia) {
     return (
-      <section className="max-w-2xl w-full p-8 rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff]">
-        <div className="mb-6 pb-4 border-b" style={{ borderColor: "var(--border)" }}>
-          <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+      <section className="max-w-2xl w-full p-8 rounded-modal border border-[rgba(220,38,38,0.15)] bg-[rgba(20,20,20,0.8)] backdrop-blur-sm shadow-[0_0_40px_rgba(220,38,38,0.08)]">
+        <div className="mb-6 pb-4 border-b border-[rgba(220,38,38,0.15)]">
+          <h1 className="text-2xl font-bold text-white">
             Cuenta inactiva detectada
           </h1>
-          <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
+          <p className="mt-2 text-sm text-[#9CA3AF]">
             Vemos que ya tenías una cuenta registrada en DriveMe. ¿Deseas recuperar tu perfil y tu historial de viajes?
           </p>
         </div>
         
         {errorMsg && (
-          <div className="mb-6 p-4 rounded-xl border-2 border-alert bg-alert/10 text-alert font-bold shadow-[4px_4px_0px_0px_#ff007f] dark:shadow-[4px_4px_0px_0px_#ff007f]">
+          <div className="mb-6 p-4 rounded-sharp border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-[#EF4444] font-bold">
             {errorMsg}
           </div>
         )}
@@ -67,7 +69,7 @@ export default function RegistroConductor() {
           <button
             onClick={handleReactivate}
             disabled={isPending}
-            className="w-full p-4 rounded-2xl border-2 border-zinc-950 bg-brand text-zinc-950 font-bold text-base shadow-[6px_6px_0px_0px_#09090b] transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full p-4 rounded-sharp border border-primary-dark bg-gradient-to-b from-primary-hover to-primary text-white font-bold text-base uppercase tracking-wider shadow-[0_0_15px_rgba(220,38,38,0.15)] transition-all duration-150 hover:translate-y-[-1px] hover:shadow-[0_0_25px_rgba(220,38,38,0.25)] focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isPending ? "Reactivando..." : "Sí, recuperar mi cuenta"}
           </button>
@@ -77,7 +79,7 @@ export default function RegistroConductor() {
               setErrorMsg(null);
             }}
             disabled={isPending}
-            className="w-full p-4 rounded-2xl border-2 border-zinc-950 bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 font-bold text-base hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            className="w-full p-4 rounded-sharp border border-[rgba(255,255,255,0.1)] bg-[#1F1F1F] text-white font-bold text-base hover:bg-[#2A2A2A] transition-colors"
           >
             Cancelar y volver
           </button>
@@ -87,18 +89,18 @@ export default function RegistroConductor() {
   }
 
   return (
-    <section className="max-w-2xl w-full p-8 rounded-2xl border-2 border-zinc-950 bg-white dark:border-white dark:bg-zinc-900 shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#ffffff]">
-      <div className="mb-6 pb-4 border-b" style={{ borderColor: "var(--border)" }}>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+    <section className="max-w-2xl w-full p-8 rounded-modal border border-[rgba(220,38,38,0.15)] bg-[rgba(20,20,20,0.8)] backdrop-blur-sm shadow-[0_0_40px_rgba(220,38,38,0.08)]">
+      <div className="mb-6 pb-4 border-b border-[rgba(220,38,38,0.15)]">
+        <h1 className="text-2xl font-bold text-white">
           Completá tu perfil para empezar a manejar
         </h1>
-        <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
+        <p className="mt-2 text-sm text-[#9CA3AF]">
           Ingresá tus datos personales y los de tu vehículo para activar tu cuenta.
         </p>
       </div>
 
       {errorMsg && (
-        <div className="mb-6 p-4 rounded-xl border-2 border-alert bg-alert/10 text-alert font-bold shadow-[4px_4px_0px_0px_#ff007f] dark:shadow-[4px_4px_0px_0px_#ff007f]">
+        <div className="mb-6 p-4 rounded-sharp border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-[#EF4444] font-bold">
           {errorMsg}
         </div>
       )}
@@ -106,12 +108,12 @@ export default function RegistroConductor() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* ── Datos Personales ─────────────────────────────────── */}
         <fieldset className="space-y-4">
-          <legend className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
+          <legend className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-400">
             Datos personales
           </legend>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="nombre" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+              <label htmlFor="nombre" className="block text-sm font-bold mb-1 text-[#9CA3AF] uppercase tracking-wider">
                 Nombre
               </label>
               <input
@@ -120,12 +122,11 @@ export default function RegistroConductor() {
                 type="text"
                 name="nombre"
                 autoComplete="given-name"
-                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
-                style={{ color: "var(--foreground)" }}
+                className={inputClass}
               />
             </div>
             <div>
-              <label htmlFor="apellido" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+              <label htmlFor="apellido" className="block text-sm font-bold mb-1 text-[#9CA3AF] uppercase tracking-wider">
                 Apellido
               </label>
               <input
@@ -134,13 +135,12 @@ export default function RegistroConductor() {
                 type="text"
                 name="apellido"
                 autoComplete="family-name"
-                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
-                style={{ color: "var(--foreground)" }}
+                className={inputClass}
               />
             </div>
           </div>
           <div>
-            <label htmlFor="licencia" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+            <label htmlFor="licencia" className="block text-sm font-bold mb-1 text-[#9CA3AF] uppercase tracking-wider">
               Número de licencia de conducir
             </label>
             <input
@@ -150,21 +150,20 @@ export default function RegistroConductor() {
               name="licencia"
               pattern="^\d{7,8}$"
               title="Debe ingresar 7 u 8 dígitos numéricos (DNI)"
-              className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
-              style={{ color: "var(--foreground)" }}
+              className={inputClass}
             />
           </div>
         </fieldset>
 
         {/* ── Datos del Vehículo ───────────────────────────────── */}
-        <fieldset className="space-y-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-          <legend className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
+        <fieldset className="space-y-4 pt-4 border-t border-[rgba(220,38,38,0.15)]">
+          <legend className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-400">
             Datos del vehículo
           </legend>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid grid-cols-2 gap-4 col-span-2">
               <div>
-                <label htmlFor="patente" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+                <label htmlFor="patente" className="block text-sm font-bold mb-1 text-[#9CA3AF] uppercase tracking-wider">
                   Patente
                 </label>
                 <input
@@ -174,12 +173,11 @@ export default function RegistroConductor() {
                   name="patente"
                   pattern="^([a-zA-Z]{3}\d{3}|[a-zA-Z]{2}\d{3}[a-zA-Z]{2})$"
                   title="Debe tener formato argentino (ej: AAA123 o AA123AA)"
-                  className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 uppercase tracking-widest focus:outline-none focus:ring-0"
-                  style={{ color: "var(--foreground)" }}
+                  className={`${inputClass} uppercase tracking-widest`}
                 />
               </div>
               <div>
-                <label htmlFor="numero_poliza" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+                <label htmlFor="numero_poliza" className="block text-sm font-bold mb-1 text-[#9CA3AF] uppercase tracking-wider">
                   Número de Póliza
                 </label>
                 <input
@@ -189,13 +187,12 @@ export default function RegistroConductor() {
                   name="numero_poliza"
                   pattern="^[a-zA-Z0-9\-]{6,25}$"
                   title="Entre 6 y 25 caracteres alfanuméricos o guiones"
-                  className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 uppercase tracking-widest focus:outline-none focus:ring-0"
-                  style={{ color: "var(--foreground)" }}
+                  className={`${inputClass} uppercase tracking-widest`}
                 />
               </div>
             </div>
             <div>
-              <label htmlFor="anio" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+              <label htmlFor="anio" className="block text-sm font-bold mb-1 text-[#9CA3AF] uppercase tracking-wider">
                 Año
               </label>
               <input
@@ -205,12 +202,11 @@ export default function RegistroConductor() {
                 name="anio"
                 min="1990"
                 max={new Date().getFullYear() + 1}
-                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
-                style={{ color: "var(--foreground)" }}
+                className={inputClass}
               />
             </div>
             <div>
-              <label htmlFor="marca" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+              <label htmlFor="marca" className="block text-sm font-bold mb-1 text-[#9CA3AF] uppercase tracking-wider">
                 Marca
               </label>
               <input
@@ -218,12 +214,11 @@ export default function RegistroConductor() {
                 required
                 type="text"
                 name="marca"
-                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
-                style={{ color: "var(--foreground)" }}
+                className={inputClass}
               />
             </div>
             <div>
-              <label htmlFor="modelo" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+              <label htmlFor="modelo" className="block text-sm font-bold mb-1 text-[#9CA3AF] uppercase tracking-wider">
                 Modelo
               </label>
               <input
@@ -231,12 +226,11 @@ export default function RegistroConductor() {
                 required
                 type="text"
                 name="modelo"
-                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
-                style={{ color: "var(--foreground)" }}
+                className={inputClass}
               />
             </div>
             <div className="sm:col-span-2">
-              <label htmlFor="color" className="block text-sm font-medium mb-1" style={{ color: "var(--foreground)" }}>
+              <label htmlFor="color" className="block text-sm font-bold mb-1 text-[#9CA3AF] uppercase tracking-wider">
                 Color del vehículo
               </label>
               <input
@@ -244,8 +238,7 @@ export default function RegistroConductor() {
                 required
                 type="text"
                 name="color"
-                className="block w-full rounded-2xl border-2 border-zinc-950 bg-transparent p-3 focus:outline-none focus:ring-0"
-                style={{ color: "var(--foreground)" }}
+                className={inputClass}
               />
             </div>
           </div>
@@ -254,7 +247,7 @@ export default function RegistroConductor() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full p-4 rounded-2xl border-2 border-zinc-950 bg-zinc-950 text-white font-bold text-base shadow-[6px_6px_0px_0px_#09090b] transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          className="w-full p-4 rounded-sharp border border-primary-dark bg-gradient-to-b from-primary-hover to-primary text-white font-bold text-base uppercase tracking-wider shadow-[0_0_15px_rgba(220,38,38,0.15)] transition-all duration-150 hover:translate-y-[-1px] hover:shadow-[0_0_25px_rgba(220,38,38,0.25)] focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           aria-label="Guardar datos y activar cuenta de conductor"
         >
           {isPending ? "Activando cuenta…" : "Activar mi cuenta de conductor"}

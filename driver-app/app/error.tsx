@@ -2,11 +2,8 @@
 
 /**
  * app/error.tsx
- * Global error boundary — Client Component (required by Next.js).
- * Catches unexpected runtime errors thrown in any route segment.
- * Props injected automatically by Next.js:
- *   - error: the thrown Error object (may include a .digest for server errors)
- *   - reset: function that re-renders the failed segment to retry
+ * Global error boundary — Client Component.
+ * Dark Sci-Fi aesthetic — System Failure warning.
  */
 import { useEffect } from "react";
 import Link from "next/link";
@@ -18,84 +15,75 @@ interface ErrorPageProps {
 }
 
 export default function GlobalError({ error, reset }: ErrorPageProps) {
-  // Log to the console so the dev sees it (in production, send to your error tracker)
   useEffect(() => {
     console.error("[GlobalError boundary]", error);
   }, [error]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 bg-zinc-50 dark:bg-zinc-950 font-sans">
-
-      {/* ── Card principal ── */}
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 bg-[#050505] font-sans">
       <div className="w-full max-w-lg">
-
+        
         {/* Número decorativo */}
-        <div className="relative mb-6">
+        <div className="relative mb-8">
           <p
-            className="text-[10rem] md:text-[13rem] font-black leading-none tracking-tighter text-center
-              text-zinc-100 dark:text-zinc-900 select-none pointer-events-none"
+            className="text-[10rem] md:text-[13rem] font-black leading-none tracking-tighter text-center text-[#141414] select-none pointer-events-none drop-shadow-[0_0_15px_rgba(220,38,38,0.1)]"
             aria-hidden
           >
             500
           </p>
           {/* Icono superpuesto */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-alert border-4 border-zinc-950 dark:border-alert shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[6px_6px_0px_0px_#FF007F] p-4 rounded-2xl rotate-3">
-              <AlertTriangle className="w-12 h-12 text-white" strokeWidth={3} />
+            <div className="bg-[#141414] border border-[rgba(239,68,68,0.3)] shadow-[0_0_30px_rgba(239,68,68,0.2)] p-4 rounded-sharp">
+              <AlertTriangle className="w-12 h-12 text-[#EF4444]" strokeWidth={2.5} />
             </div>
           </div>
         </div>
 
         {/* Card de mensaje */}
-        <div className="rounded-2xl border-4 border-zinc-950 dark:border-white bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_#09090b] dark:shadow-[8px_8px_0px_0px_#ffffff] p-8 text-center space-y-4">
-
-          {/* Etiqueta de error */}
-          <span className="inline-block px-3 py-1 rounded-lg border-2 border-zinc-950 dark:border-zinc-600 bg-alert text-white text-[10px] font-extrabold uppercase tracking-[0.2em]">
-            Error inesperado
+        <div className="rounded-modal border border-[rgba(220,38,38,0.15)] bg-[rgba(20,20,20,0.8)] backdrop-blur-sm shadow-[0_0_40px_rgba(220,38,38,0.1)] p-8 text-center space-y-4">
+          
+          <span className="inline-block px-3 py-1 rounded-sharp border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-[#EF4444] text-[10px] font-extrabold uppercase tracking-[0.2em]">
+            Falla del Sistema
           </span>
 
-          <h1 className="text-3xl md:text-4xl font-extrabold uppercase tracking-tight text-zinc-950 dark:text-white">
+          <h1 className="text-3xl md:text-4xl font-extrabold uppercase tracking-tight text-white">
             Algo salió mal
           </h1>
 
-          <p className="text-zinc-500 dark:text-zinc-400 font-medium text-sm leading-relaxed">
-            Ocurrió un error inesperado en la aplicación.
+          <p className="text-[#9CA3AF] font-medium text-sm leading-relaxed">
+            Se ha detectado una anomalía inesperada en el enlace.
             <br />
-            Podés intentar de nuevo o volver al inicio.
+            Podés intentar reiniciar el proceso o volver al mando central.
           </p>
 
-          {/* Mensaje técnico (digest) — solo visible si existe */}
           {error.digest && (
-            <p className="text-[11px] font-mono text-zinc-400 dark:text-zinc-600 break-all">
-              Referencia: {error.digest}
+            <p className="text-[10px] font-mono text-[#6B7280] break-all border-t border-[rgba(255,255,255,0.06)] pt-4 mt-4">
+              REF: {error.digest}
             </p>
           )}
 
           {/* Botones de acción */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            {/* Primario: reintentar */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
             <button
               onClick={reset}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl border-2 border-zinc-950 bg-alert text-white font-extrabold text-sm uppercase tracking-wide shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:shadow-[4px_4px_0px_0px_#FF007F] dark:hover:shadow-[6px_6px_0px_0px_#FF007F] active:translate-y-0 active:shadow-[2px_2px_0px_0px_#09090b] transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-alert/40"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-sharp border border-[#991B1B] bg-gradient-to-b from-[#EF4444] to-[#DC2626] text-white font-extrabold text-xs uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:translate-y-[-1px] hover:shadow-[0_0_25px_rgba(239,68,68,0.3)] transition-all active:scale-[0.98] focus:outline-none"
             >
-              <RefreshCw className="w-4 h-4" strokeWidth={3} />
-              Intentar de nuevo
+              <RefreshCw className="w-4 h-4" strokeWidth={2.5} />
+              Reiniciar Enlace
             </button>
 
-            {/* Secundario: ir al inicio */}
             <Link
               href="/"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl border-2 border-zinc-950 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white font-extrabold text-sm uppercase tracking-wide shadow-[4px_4px_0px_0px_#09090b] dark:shadow-none hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] active:translate-y-0 transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-zinc-950/20"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-sharp border border-[rgba(255,255,255,0.1)] bg-[#1F1F1F] text-[#9CA3AF] font-bold text-xs uppercase tracking-widest hover:text-white hover:bg-[#2A2A2A] transition-all active:scale-[0.98] focus:outline-none"
             >
-              <Home className="w-4 h-4" strokeWidth={3} />
-              Volver al Inicio
+              <Home className="w-4 h-4" strokeWidth={2.5} />
+              Centro de Mando
             </Link>
           </div>
         </div>
 
-        {/* Pie */}
-        <p className="mt-6 text-center text-[11px] font-extrabold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600">
-          DriveMe · Sistema de Gestión de Flota
+        <p className="mt-6 text-center text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#4B5563]">
+          DriveMe · Mando Central v1.0
         </p>
       </div>
     </div>

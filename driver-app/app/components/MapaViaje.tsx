@@ -3,7 +3,7 @@
 /**
  * app/components/MapaViaje.tsx
  * -----------------------------------------------------------------------
- * Mapa Leaflet para la pantalla de Viaje en Curso con estética Neobrutalista.
+ * Mapa Leaflet para la pantalla de Viaje en Curso — Dark Sci-Fi aesthetic.
  * Importado dinámicamente (ssr: false) en su componente padre.
  * -----------------------------------------------------------------------
  */
@@ -24,27 +24,26 @@ interface OSRMResponse {
   }[];
 }
 
-// ── Generador de Íconos Neobrutalistas con Lucide y Tailwind ────────────
+// ── Generador de Íconos Dark Sci-Fi con Lucide ─────────────────────────
 
-const createNeobrutalistIcon = (bgClass: string, IconComponent: React.ElementType) => {
-  // Al no pasarle la prop 'color', Lucide utiliza 'currentColor' por defecto.
-  const iconHtml = renderToString(<IconComponent size={20} strokeWidth={2.5} />);
+const createSciFiIcon = (bgColor: string, borderColor: string, IconComponent: React.ElementType) => {
+  const iconHtml = renderToString(<IconComponent size={18} strokeWidth={2.5} />);
 
   return L.divIcon({
     className: "bg-transparent",
     html: `
-      <div class="${bgClass} w-[36px] h-[36px] border-[3px] border-[#09090B] shadow-[4px_4px_0px_0px_#09090B] flex items-center justify-center rounded-md text-[#09090B]">
+      <div style="background:${bgColor}; border: 2px solid ${borderColor}; box-shadow: 0 0 12px ${borderColor}40;" class="w-[34px] h-[34px] flex items-center justify-center rounded-[4px] text-white">
         ${iconHtml}
       </div>
     `,
-    iconAnchor: [18, 36], // Anclado en la base central del cuadrado
-    popupAnchor: [0, -36], // El popup aparece arriba del ícono
+    iconAnchor: [17, 34],
+    popupAnchor: [0, -34],
   });
 };
 
-const iconOrigen = createNeobrutalistIcon("bg-brand", UserRound);
-const iconDestino = createNeobrutalistIcon("bg-alert", MapPin);
-const iconConductor = createNeobrutalistIcon("bg-white", Navigation);
+const iconOrigen = createSciFiIcon("#DC2626", "#EF4444", UserRound);
+const iconDestino = createSciFiIcon("#991B1B", "#DC2626", MapPin);
+const iconConductor = createSciFiIcon("#141414", "#DC2626", Navigation);
 
 // ── Componentes y Helpers Auxiliares ────────────────────────────────────
 
@@ -56,7 +55,6 @@ function SeguirConductor({ lat, lng }: { lat: number; lng: number }) {
   return null;
 }
 
-// Lógica extraída para cumplir con DRY
 async function fetchRoute(start: [number, number], end: [number, number]): Promise<[number, number][] | null> {
   try {
     const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
@@ -64,7 +62,6 @@ async function fetchRoute(start: [number, number], end: [number, number]): Promi
     const data: OSRMResponse = await res.json();
 
     if (data.routes && data.routes[0]) {
-      // Convertir de [lng, lat] a [lat, lng]
       return data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]] as [number, number]);
     }
   } catch (error) {
@@ -97,9 +94,6 @@ export default function MapaViaje({
   const [rutaOrigen, setRutaOrigen] = useState<[number, number][]>([]);
   const [rutaViaje, setRutaViaje] = useState<[number, number][]>([]);
 
-  // Usamos íconos SVG personalizados, no necesitamos los fallbacks de Leaflet por defecto.
-
-  // Fetch de rutas consolidado
   useEffect(() => {
     let isMounted = true;
 
@@ -140,9 +134,9 @@ export default function MapaViaje({
       {estado === "ACEPTADO" && rutaOrigen.length > 0 && (
         <Polyline
           positions={rutaOrigen}
-          color="#09090B"
-          weight={6}
-          dashArray="12 12"
+          color="#DC2626"
+          weight={5}
+          dashArray="10 8"
           lineCap="square"
         />
       )}
@@ -150,8 +144,8 @@ export default function MapaViaje({
       {estado === "EN_CURSO" && rutaViaje.length > 0 && (
         <Polyline
           positions={rutaViaje}
-          color="#09090B"
-          weight={6}
+          color="#DC2626"
+          weight={5}
           lineCap="square"
         />
       )}

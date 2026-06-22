@@ -4,10 +4,6 @@
  * app/viaje/[id_viaje]/calificar/CalificarPasajeroClient.tsx
  * -----------------------------------------------------------------------
  * Pantalla de calificación del pasajero post-viaje.
- * - Selector de estrellas táctil (1-5), tamaño mínimo 52px por estrella
- * - Campo de comentario opcional
- * - Envío a Feedback App (POST /api/resenas)
- * - Al éxito → redirige a /historial
  * -----------------------------------------------------------------------
  */
 
@@ -15,6 +11,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import NeonTextarea from "@/app/components/NeonTextarea";
 import { enviarResenaAction } from "@/app/actions/conductor/enviarResena";
+import { Star, AlertTriangle, Send, FastForward } from "lucide-react";
 
 interface CalificarPasajeroClientProps {
   idViaje: string;
@@ -70,22 +67,19 @@ export default function CalificarPasajeroClient({
   const handleOmitir = () => router.push("/historial");
 
   const etiquetaEstrellas = ["", "Malo", "Regular", "Bueno", "Muy bueno", "Excelente"];
-  const colorActivo = puntaje >= 4 ? "#ECC94B" : puntaje >= 2 ? "#ED8936" : "#E53E3E";
+  const colorActivo = puntaje >= 4 ? "#FBBF24" : puntaje >= 2 ? "#F97316" : "#EF4444";
 
   return (
-    <main
-      className="min-h-screen flex flex-col items-center justify-center p-4 bg-zinc-50 dark:bg-zinc-950"
-    >
-      <div
-        className="w-full max-w-sm rounded-3xl border-4 border-zinc-950 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_0px_#09090b] overflow-hidden"
-      >
+    <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#050505]">
+      <div className="w-full max-w-sm rounded-modal border border-[rgba(220,38,38,0.15)] bg-[#141414] shadow-[0_0_40px_rgba(220,38,38,0.08)] overflow-hidden">
+        
         {/* ── Encabezado ──────────────────────────────────────── */}
-        <div
-          className="px-6 py-6 border-b-4 border-zinc-950 dark:border-zinc-800 text-center bg-zinc-950 dark:bg-info"
-        >
-          <p className="text-5xl mb-3" aria-hidden>⭐</p>
-          <h1 className="text-xl font-extrabold text-white dark:text-zinc-950">¡Viaje completado!</h1>
-          <p className="text-sm font-bold text-zinc-300 dark:text-zinc-950 mt-1">
+        <div className="px-6 py-6 border-b border-[rgba(220,38,38,0.15)] text-center bg-gradient-to-b from-[#1A1A05] to-[#141414]">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center border-2 border-yellow-700 shadow-[0_0_20px_rgba(234,179,8,0.3)] mb-4">
+            <Star size={32} className="text-[#050505] fill-[#050505]" strokeWidth={1} />
+          </div>
+          <h1 className="text-xl font-extrabold text-white uppercase tracking-wide">¡Misión Cumplida!</h1>
+          <p className="text-xs font-bold text-[#9CA3AF] mt-1 uppercase tracking-widest">
             ¿Cómo estuvo {nombrePasajero}?
           </p>
         </div>
@@ -106,34 +100,41 @@ export default function CalificarPasajeroClient({
                   onMouseLeave={() => setHover(0)}
                   aria-label={`${n} estrella${n > 1 ? "s" : ""} — ${etiquetaEstrellas[n]}`}
                   aria-pressed={puntaje === n}
-                  className="min-w-13 min-h-13 text-4xl transition-transform active:scale-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] rounded-xl"
-                  style={{
-                    color: n <= (hover || puntaje) ? colorActivo : "#a1a1aa",
-                    filter: n <= (hover || puntaje) ? "drop-shadow(0 0 6px rgba(236,201,75,0.6))" : "none",
-                  }}
+                  className="w-12 h-12 flex items-center justify-center transition-transform active:scale-90 focus:outline-none rounded-sharp"
                 >
-                  ★
+                  <Star
+                    size={40}
+                    className="transition-all"
+                    style={{
+                      fill: n <= (hover || puntaje) ? colorActivo : "transparent",
+                      color: n <= (hover || puntaje) ? colorActivo : "#6B7280",
+                      filter: n <= (hover || puntaje) ? `drop-shadow(0 0 8px ${colorActivo}80)` : "none",
+                    }}
+                    strokeWidth={n <= (hover || puntaje) ? 1 : 2}
+                  />
                 </button>
               ))}
             </div>
-            {puntaje > 0 && (
-              <p
-                className="text-lg font-extrabold transition-all"
-                style={{ color: colorActivo }}
-                aria-live="polite"
-              >
-                {etiquetaEstrellas[puntaje]}
-              </p>
-            )}
+            <div className="h-6">
+              {puntaje > 0 && (
+                <p
+                  className="text-lg font-black uppercase tracking-widest transition-all"
+                  style={{ color: colorActivo, textShadow: `0 0 10px ${colorActivo}40` }}
+                  aria-live="polite"
+                >
+                  {etiquetaEstrellas[puntaje]}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* ── Comentario opcional ───────────────────────────── */}
           <div>
             <label
               htmlFor="comentario"
-              className="block text-sm font-bold text-zinc-950 dark:text-white mb-2"
+              className="block text-xs font-extrabold text-[#9CA3AF] uppercase tracking-widest mb-2"
             >
-              Comentario <span className="text-zinc-500 dark:text-zinc-400 font-normal">(opcional)</span>
+              Comentario <span className="text-[#9CA3AF] font-medium">(opcional)</span>
             </label>
             <NeonTextarea
               id="comentario"
@@ -144,14 +145,17 @@ export default function CalificarPasajeroClient({
               placeholder="¿Querés agregar algo sobre este pasajero?"
               className="resize-none"
             />
-            <p className="text-xs text-right mt-1 text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] font-bold text-right mt-1 text-[#9CA3AF]">
               {comentario.length}/280
             </p>
           </div>
 
           {/* Error */}
           {error && (
-            <p className="text-sm text-red-500 font-medium text-center" role="alert">{error}</p>
+            <div className="rounded-sharp p-3 flex items-start gap-2 border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-[#EF4444] font-bold text-sm">
+              <AlertTriangle size={18} className="shrink-0" strokeWidth={2.5} />
+              <p>{error}</p>
+            </div>
           )}
 
           {/* ── Botones ───────────────────────────────────────── */}
@@ -160,24 +164,28 @@ export default function CalificarPasajeroClient({
               onClick={handleEnviar}
               disabled={enviando || puntaje === 0}
               aria-label="Enviar calificación del pasajero"
-              className="w-full min-h-15 rounded-2xl border-2 border-zinc-950 bg-brand text-zinc-950 font-extrabold text-lg transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-50"
+              className="w-full min-h-[60px] rounded-sharp border border-primary-dark bg-gradient-to-b from-primary-hover to-primary text-white font-extrabold text-sm uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(220,38,38,0.2)] hover:translate-y-[-1px] hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {enviando ? (
-                <span className="flex items-center justify-center gap-2">
+                <>
                   <span className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin border-white" />
-                  Enviando...
-                </span>
+                  Transmitiendo...
+                </>
               ) : (
-                "Enviar calificación"
+                <>
+                  <Send size={18} strokeWidth={2.5} />
+                  Enviar Reporte
+                </>
               )}
             </button>
 
             <button
               onClick={handleOmitir}
               disabled={enviando}
-              className="w-full min-h-15 rounded-2xl border-2 border-zinc-950 bg-[rgba(207,255,4,0.08)] text-[var(--foreground)] font-bold transition-transform duration-200 shadow-[4px_4px_0px_0px_#09090b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#09090b] dark:border-2 dark:border-brand dark:bg-zinc-950 dark:shadow-[4px_4px_0px_0px_#CFFF04] dark:hover:-translate-y-1 dark:hover:shadow-[6px_6px_0px_0px_#CFFF04] focus:outline-none focus:ring-4 focus:ring-brand/30 disabled:opacity-50"
+              className="w-full min-h-[50px] rounded-sharp border border-[rgba(255,255,255,0.1)] bg-[#1F1F1F] text-[#9CA3AF] font-bold text-xs uppercase tracking-widest hover:bg-[#2A2A2A] hover:text-white transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
               aria-label="Omitir calificación e ir al historial"
             >
+              <FastForward size={16} strokeWidth={2.5} />
               Omitir por ahora
             </button>
           </div>

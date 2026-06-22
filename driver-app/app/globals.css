@@ -1,62 +1,205 @@
 @import "tailwindcss";
 
-/* 1. Habilitar el Dark Mode por clase en Tailwind v4 */
-@custom-variant dark (&:where(.dark, .dark *));
+/* ══════════════════════════════════════════════════════════════════════
+   DRIVEME — STAR WARS SPACE DESIGN SYSTEM
+   "Galactic Cockpit UI" aesthetic
+   Strictly Dark Mode Only — No light mode, no theme toggling
+   ══════════════════════════════════════════════════════════════════════ */
 
-/* 2. Colores Neobrutalistas inyectados nativamente en Tailwind v4 */
+/* ── Tailwind v4 Theme Tokens ─────────────────────────────────────── */
 @theme {
-  --color-brand: #CFFF04;
-  --color-brand-hover: #B5E600;
-  --color-alert: #FF007F;
-  --color-info: #8B5CF6;
-  --font-sans: var(--font-space-grotesk);
+  --color-primary: #DC2626;
+  --color-primary-hover: #EF4444;
+  --color-primary-dark: #991B1B;
+  --color-secondary: #4B5563;
+  --color-secondary-hover: #6B7280;
+  --color-accent: #FF0000;
+  --color-success: #059669;
+  --color-warning: #D97706;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+  --color-surface: rgba(10, 10, 10, 0.7);
+  --color-surface-elevated: rgba(20, 20, 20, 0.85);
+  --color-surface-hover: rgba(30, 30, 30, 0.9);
+  
+  --font-sans: var(--font-michroma), "Orbitron", sans-serif;
+  --font-sci: var(--font-michroma), "Orbitron", sans-serif;
 }
 
-/* 3. Variables de la App (Modo Claro) - Neobrutalismo */
+/* ── CSS Custom Properties (Design Tokens) ────────────────────────── */
 :root {
-  --primary: #CFFF04;
-  --secondary: #FF007F;
-  --info: #8B5CF6;
-  --background: #FAFAFA;
-  --foreground: #09090B;
-  --surface: #FFFFFF;
-  --surface-muted: #F4F4F5;
-  --surface-strong: #E4E4E7;
-  --border: #09090B;
-  /* Bordes negros cómic */
-  --accent: #8B5CF6;
-  /* Usamos el violeta para resaltar detalles sin competir con el verde */
-  --muted: #71717A;
-  --text-inverted: #FFFFFF;
+  /* Backgrounds */
+  --background: #000000;
+  --surface: rgba(10, 10, 10, 0.7);
+  --surface-elevated: rgba(20, 20, 20, 0.85);
+  --surface-hover: rgba(30, 30, 30, 0.9);
 
-  /* Detalles específicos */
-  --gradient-primary: #09090B;
-  --offer-bg: #8B5CF6;
-  /* Un banner de "novedad" en violeta resalta excelente */
-  --offer-text: #FFFFFF;
+  /* Primary (Sith Red) */
+  --primary: #DC2626;
+  --primary-hover: #EF4444;
+  --primary-dark: #991B1B;
+
+  /* Secondary */
+  --secondary: #4B5563;
+  --secondary-hover: #6B7280;
+  --secondary-dark: #374151;
+
+  /* Typography */
+  --foreground: #FFFFFF;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+
+  /* Borders */
+  --border: rgba(220, 38, 38, 0.25);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+
+  /* Shadows & Glows */
+  --glow-primary: 0 0 25px rgba(220, 38, 38, 0.2), 0 0 50px rgba(220, 38, 38, 0.1);
+  --glow-active: 0 0 20px rgba(239, 68, 68, 0.4);
+  --glow-card-hover: 0 0 20px rgba(220, 38, 38, 0.15);
+
+  /* Atmospheric Background */
+  --bg-atmospheric: radial-gradient(circle at top left, rgba(220, 38, 38, 0.08), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(153, 27, 27, 0.05), transparent 40%),
+    #000000;
 }
 
-/* 4. Variables de la App (Modo Oscuro) - Dark Neobrutalismo */
-html.dark {
-  --primary: #CFFF04;
-  --secondary: #FF007F;
-  --info: #8B5CF6;
-  /* El violeta en modo oscuro se ve hiper futurista */
-  --background: #09090B;
-  --foreground: #FFFFFF;
-  --surface: #18181B;
-  --surface-muted: #27272A;
-  --surface-strong: #3F3F46;
-  --border: #CFFF04;
-  /* Bordes de las tarjetas principales en verde */
-  --accent: #8B5CF6;
-  /* Detalles secundarios en violeta */
-  --muted: #A1A1AA;
-  --text-inverted: #09090B;
+/* ── Global Base Styles ───────────────────────────────────────────── */
+html {
+  color-scheme: dark;
+}
 
-  /* Detalles específicos */
-  --gradient-primary: #8B5CF6;
-  /* Un fondo secundario violeta le da el toque "Dopamine" */
-  --offer-bg: #8B5CF6;
-  --offer-text: #09090B;
+body {
+  background: var(--background);
+  color: var(--foreground);
+  position: relative;
+}
+
+/* ── Starry Space Background ──────────────────────────────────────── */
+.stars-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background-color: #000;
+  /* Very subtle star pattern using multiple radial gradients */
+  background-image: 
+    radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 50px 160px, #ddd, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 130px 80px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 160px 120px, #ddd, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 200px 180px, #eee, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 240px 50px, rgba(255,255,255,0.8), rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 280px 150px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 300px 90px, #ddd, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 340px 200px, rgba(255,255,255,0.7), rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 400px 400px;
+}
+
+/* Subtle twinkling animation */
+.stars-bg::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(1px 1px at 10px 10px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 150px 150px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 250px 80px, #fff, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 300px 300px;
+  animation: twinkle 5s infinite alternate;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.2; }
+  100% { opacity: 0.8; }
+}
+
+/* ── Radiuses overriding the brutalist setup ──────────────────────── */
+.rounded-sharp {
+  border-radius: 8px; /* Used to be 4px */
+}
+
+.rounded-card {
+  border-radius: 16px; /* Used to be 8px */
+}
+
+.rounded-modal {
+  border-radius: 24px; /* Used to be 12px */
+}
+
+/* ── Global Transition ────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 150ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Exclude transitions that cause layout issues */
+*:where([class*="animate-"]),
+*:where([class*="transition-none"]) {
+  transition-property: none;
+}
+
+/* ── Custom Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(10, 10, 10, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--secondary);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* ── Selection ────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(220, 38, 38, 0.4);
+  color: #FFFFFF;
+}
+
+/* ── Focus Visible (Accessibility) ────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ── Leaflet Map Dark Filter ──────────────────────────────────────── */
+.leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(1.0) contrast(1.6) saturate(0.7);
+}
+
+.leaflet-marker-pane,
+.leaflet-shadow-pane,
+.leaflet-overlay-pane,
+.leaflet-popup-pane {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(20, 20, 20, 0.95) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--glow-primary) !important;
+}
+.leaflet-popup-tip {
+  background: rgba(20, 20, 20, 0.95) !important;
 }

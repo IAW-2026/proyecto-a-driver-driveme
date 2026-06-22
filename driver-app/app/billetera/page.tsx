@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { getSessionData } from "@/lib/getSessionData";
+import { checkActiveRideRedirect } from "@/lib/checkActiveRide";
 import BilleteraClient from "./BilleteraClient";
 
 export const metadata = {
@@ -14,7 +15,8 @@ export default async function BilleteraPage({
 }: {
   searchParams: Promise<{ page?: string; filtro?: string }>;
 }) {
-  const { userId, rol } = await getSessionData();
+  const { userId, rol, conductorData } = await getSessionData();
+  await checkActiveRideRedirect(conductorData);
   const authResult = await auth();
   const token = await authResult.getToken();
 
