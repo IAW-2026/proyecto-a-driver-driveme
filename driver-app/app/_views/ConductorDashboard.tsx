@@ -31,7 +31,7 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
 
   const {
     solicitudActual, timerSegundos, aceptando,
-    handleAceptar, handleRechazar, limpiarSolicitud, simularViaje
+    handleAceptar, handleRechazar, limpiarSolicitud
   } = useRadarViajes({
     isOnline: conductorData.estado === "ONLINE",
     conductorId: conductorData.id_conductor,
@@ -202,14 +202,6 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
           {isPending ? "Actualizando..." : isOnline ? "CONECTADO — Tocá para desconectarte" : vehiculosActivos.length === 0 ? "NO TIENES VEHÍCULOS ACTIVOS" : "CONECTARME AHORA"}
         </button>
 
-        {isOnline && !solicitudActual && (
-          <button
-            onClick={simularViaje}
-            className="mt-4 w-full py-2 border border-dashed border-[#3B82F6]/50 rounded-full text-xs font-sci text-[#3B82F6] hover:bg-[#3B82F6]/10 transition-colors"
-          >
-            [DEV] SIMULAR VIAJE MOCK
-          </button>
-        )}
       </div>
 
       {/* MÉTRICAS HOY */}

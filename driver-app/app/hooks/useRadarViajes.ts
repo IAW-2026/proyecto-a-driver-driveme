@@ -148,33 +148,6 @@ export function useRadarViajes({
     setTimerSegundos(TIMER_DURACION);
   };
 
-  const simularViaje = () => {
-    setColaSolicitudes((prev) => [
-      ...prev,
-      {
-        id_solicitud: "mock-solicitud-" + Math.random().toString(36).substring(7),
-        precio_estimado: Math.floor(Math.random() * 5000) + 1500,
-        distancia_metros: Math.floor(Math.random() * 3000) + 500,
-        origen: {
-          latitud: latitud + 0.01,
-          longitud: longitud + 0.01,
-          direccion: "Av. Alem 1253, Bahía Blanca",
-        },
-        destino: {
-          latitud: latitud - 0.01,
-          longitud: longitud - 0.01,
-          direccion: "Plaza Rivadavia, Centro",
-        },
-        pasajero: {
-          id_pasajero: "pasajero-mock-abc",
-          nombre: "Juan Pérez (Simulación)",
-          calificacion: 4.8,
-        },
-        estado: "PENDIENTE",
-        fecha_creacion: new Date().toISOString(),
-      }
-    ]);
-  };
 
   return {
     solicitudActual,
@@ -183,6 +156,5 @@ export function useRadarViajes({
     handleAceptar,
     handleRechazar,
     limpiarSolicitud,
-    simularViaje,
   };
 }
