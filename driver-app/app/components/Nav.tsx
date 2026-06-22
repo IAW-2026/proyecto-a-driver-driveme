@@ -44,6 +44,8 @@ export default function Sidebar({ rol, nombre }: SidebarProps) {
       : 'text-[#9CA3AF] hover:text-white'
     }`;
 
+  const controlPlaneUrl = process.env.NEXT_PUBLIC_CONTROL_PLANE_APP_URL || "https://etapa-3-control-plane-driveme.vercel.app/";
+
   return (
     <>
       {/* DESKTOP: Top Navigation — Galactic Command */}
@@ -76,6 +78,10 @@ export default function Sidebar({ rol, nombre }: SidebarProps) {
                 <DollarSign className="h-4 w-4" strokeWidth={2} />
                 <span>REPORTES</span>
               </Link>
+              <a href={controlPlaneUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 font-sci text-xs text-[#9CA3AF] hover:text-white hover:bg-[rgba(255,255,255,0.05)]">
+                <Shield className="h-4 w-4" strokeWidth={2} />
+                <span>CONTROL PLANE</span>
+              </a>
             </>
           )}
 
@@ -121,6 +127,10 @@ export default function Sidebar({ rol, nombre }: SidebarProps) {
                 <DollarSign className="h-5 w-5" strokeWidth={2} />
                 <span className="text-[9px] uppercase tracking-wider mt-0.5">REPORTES</span>
               </Link>
+              <a href={controlPlaneUrl} target="_blank" rel="noopener noreferrer" className="flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-card transition-all duration-150 font-sci text-[#9CA3AF] hover:text-white">
+                <Shield className="h-5 w-5" strokeWidth={2} />
+                <span className="text-[9px] uppercase tracking-wider mt-0.5">CONTROL</span>
+              </a>
             </>
           )}
 
