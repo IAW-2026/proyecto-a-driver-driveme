@@ -16,8 +16,9 @@ export async function enviarResenaAction(data: z.infer<typeof resenaSchema>) {
   try {
     const authResult = await auth();
     const userId = authResult.userId;
+    const token = await authResult.getToken();
 
-    if (!userId) {
+    if (!userId || !token) {
       return { success: false, error: "No autorizado. Inicia sesión." };
     }
 
@@ -28,7 +29,10 @@ export async function enviarResenaAction(data: z.infer<typeof resenaSchema>) {
     if (feedbackUrl) {
       const res = await fetch(`${feedbackUrl}/api/resenas`, {
         method: "POST",
-        headers: m2mHeaders('feedback'),
+        headers: {
+          "Content-Type": "application/json",
+          ...m2mHeaders("feedback")
+        },
         body: JSON.stringify(parsed),
       });
 

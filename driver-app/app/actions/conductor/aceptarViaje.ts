@@ -70,6 +70,21 @@ export async function aceptarViaje(
 
   const estadoOriginalConductor = conductorExiste.estado;
 
+  // 4.5. Prevenir error de Unique constraint (doble clic)
+  const viajeExistente = await prisma.viaje.findUnique({
+    where: { id_solicitud: data.id_solicitud }
+  });
+
+  if (viajeExistente) {
+    if (viajeExistente.id_conductor === data.id_conductor) {
+      // Si el conductor hizo doble clic, simplemente lo redirigimos al viaje que ya creó
+      redirect(`/viaje/${viajeExistente.id_viaje}`);
+    } else {
+      // Si otro conductor se le adelantó un milisegundo antes
+      return { error: "CONFLICTO" };
+    }
+  }
+
   // 5. Transacción local — idéntica al route.ts
   const viaje = await prisma.$transaction(async (tx: TransactionClient) => {
     const v = await tx.viaje.create({

@@ -136,16 +136,13 @@ export default function ViajeEnCursoClient({
     setProcesando(true);
     setError(null);
     try {
-      const res = await fetch(`/api/viajes/${viaje.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ estado: "CANCELADO_POR_CONDUCTOR" }),
-      });
-      if (res.ok) {
+      const { cancelarViajeAction } = await import("@/app/actions/conductor/cancelarViaje");
+      const success = await cancelarViajeAction(viaje.id);
+      
+      if (success) {
         router.push("/historial");
       } else {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Error al cancelar el viaje.");
+        setError("Error al cancelar el viaje. No tienes permiso o el viaje ya no está activo.");
         setProcesando(false);
       }
     } catch {
