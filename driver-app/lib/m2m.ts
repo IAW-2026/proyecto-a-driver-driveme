@@ -24,18 +24,42 @@ export function m2mHeaders(targetApp?: 'rider' | 'payments' | 'feedback'): Heade
 export function validateM2M(request: Request): boolean {
   const apiKey = request.headers.get('x-api-key');
   const authHeader = request.headers.get('authorization');
-  const expectedKey = process.env.DRIVER_SERVICE_SECRET;
-  const feedbackToken = process.env.FEEDBACK_SERVICE_SECRET;
 
-  if (!expectedKey && !feedbackToken) {
-    console.error('[ERROR] No hay tokens definidos en .env para validar M2M.');
+  // Todos los secrets de servicios conocidos que podrían llamar a esta app
+  const knownSecrets: { name: string; value: string | undefined }[] = [
+    { name: 'DRIVER_SERVICE_SECRET',  value: process.env.DRIVER_SERVICE_SECRET },
+    { name: 'RIDER_SERVICE_SECRET',   value: process.env.RIDER_SERVICE_SECRET },
+    { name: 'PAYMENTS_SERVICE_SECRET', value: process.env.PAYMENTS_SERVICE_SECRET },
+    { name: 'FEEDBACK_SERVICE_SECRET', value: process.env.FEEDBACK_SERVICE_SECRET },
+  ];
+
+  const definedSecrets = knownSecrets.filter((s) => !!s.value);
+
+  if (definedSecrets.length === 0) {
+    console.error('[M2M] No hay ningún service secret definido en .env. Rechazando request.');
     return false;
   }
 
-  return (
-    (!!apiKey && apiKey === expectedKey) ||
-    (!!authHeader && (authHeader === `Bearer ${feedbackToken}` || authHeader === `Bearer ${expectedKey}`))
+  // Validar x-api-key contra cualquier secret conocido
+  if (apiKey) {
+    const match = definedSecrets.find((s) => s.value === apiKey);
+    if (match) return true;
+  }
+
+  // Validar Authorization: Bearer <token> contra cualquier secret conocido
+  if (authHeader?.startsWith('Bearer ')) {
+    const bearerToken = authHeader.slice(7);
+    const match = definedSecrets.find((s) => s.value === bearerToken);
+    if (match) return true;
+  }
+
+  // Si llegamos acá, la validación falló
+  console.warn(
+    `[M2M] Validación fallida. ` +
+    `x-api-key presente: ${!!apiKey}, Authorization presente: ${!!authHeader}. ` +
+    `Secrets definidos: [${definedSecrets.map((s) => s.name).join(', ')}]`
   );
+  return false;
 }
 
 export function validateAdminM2M(request: Request, source: 'control-plane' | 'analytics'): boolean {
