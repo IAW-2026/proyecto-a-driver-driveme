@@ -1,16 +1,15 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { m2mHeaders } from "@/lib/m2m";
 
 export async function solicitarLiquidacionAction() {
   try {
-    const authResult = await auth();
-    const token = await authResult.getToken();
-    const userId = authResult.userId;
+    const { userId } = await auth();
 
-    if (!userId || !token) {
+    if (!userId) {
       return { success: false, error: "No autorizado. Inicia sesión." };
     }
 
@@ -50,11 +49,7 @@ export async function solicitarLiquidacionAction() {
 
     const response = await fetch(`${baseUrl}/api/pagos/liquidaciones`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      // El contrato no requiere body — el conductor se identifica por JWT
+      headers: m2mHeaders('payments'),
     });
 
     if (!response.ok) {

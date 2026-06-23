@@ -15,6 +15,7 @@ import BotonBaja from "@/app/components/BotonBaja";
 
 import BotonReportarCalificacion from "@/app/components/BotonReportarCalificacion";
 import GestorVehiculos from "@/app/components/GestorVehiculos";
+import { m2mHeaders } from "@/lib/m2m";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -28,11 +29,16 @@ async function fetchCalificaciones(idConductor: string): Promise<HistorialCalifi
   if (!url) return null;
   try {
     const res = await fetch(`${url}/api/usuarios/${idConductor}/calificaciones`, {
+      headers: m2mHeaders('feedback'),
       next: { revalidate: 60 },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`[fetchCalificaciones] Feedback App devolvió ${res.status} para conductor ${idConductor}`);
+      return null;
+    }
     return res.json();
-  } catch {
+  } catch (e) {
+    console.error('[fetchCalificaciones] Feedback App inalcanzable:', e);
     return null;
   }
 }

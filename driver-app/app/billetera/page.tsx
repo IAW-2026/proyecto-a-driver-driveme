@@ -1,6 +1,6 @@
 // app/billetera/page.tsx
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { m2mHeaders } from "@/lib/m2m";
 import { getSessionData } from "@/lib/getSessionData";
 import { checkActiveRideRedirect } from "@/lib/checkActiveRide";
 import BilleteraClient from "./BilleteraClient";
@@ -17,9 +17,6 @@ export default async function BilleteraPage({
 }) {
   const { userId, rol, conductorData } = await getSessionData();
   await checkActiveRideRedirect(conductorData);
-  const authResult = await auth();
-  const token = await authResult.getToken();
-
   if (rol === "CONDUCTOR_NUEVO" || rol === "ADMIN") {
     redirect("/");
   }
@@ -31,10 +28,7 @@ export default async function BilleteraPage({
   const skip = (currentPage - 1) * ITEMS_POR_PAGINA;
 
   const baseUrl = process.env.PAYMENTS_APP_URL;
-  const headers = {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
+  const headers = m2mHeaders('payments');
 
   let billetera = null;
   let transaccionesPaginadas: any[] = [];
