@@ -63,10 +63,10 @@ export default function ViajeEnCursoClient({
   const [confirmarCancelacion, setConfirmarCancelacion] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const origenLat = viaje.origen?.latitud ? Number(viaje.origen.latitud) : -38.7183;
-  const origenLng = viaje.origen?.longitud ? Number(viaje.origen.longitud) : -62.2664;
-  const destinoLat = viaje.destino?.latitud ? Number(viaje.destino.latitud) : -38.7021;
-  const destinoLng = viaje.destino?.longitud ? Number(viaje.destino.longitud) : -62.2801;
+  const origenLat = viaje.origen?.latitud ? Number(viaje.origen.latitud) : 0;
+  const origenLng = viaje.origen?.longitud ? Number(viaje.origen.longitud) : 0;
+  const destinoLat = viaje.destino?.latitud ? Number(viaje.destino.latitud) : 0;
+  const destinoLng = viaje.destino?.longitud ? Number(viaje.destino.longitud) : 0;
 
   // ── Polling de telemetría (cada 8s) ──────────────────────────────────
   const fetchTelemetria = useCallback(async () => {

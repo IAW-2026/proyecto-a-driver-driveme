@@ -36,13 +36,13 @@ export default async function ViajeEnCursoPage({ params }: PageProps) {
         pasajero: { nombre: viaje.pasajero_nombre ?? "Pasajero" },
         origen: {
           direccion: viaje.origen_direccion ?? "Origen",
-          latitud: viaje.origen_latitud ?? -38.7183,
-          longitud: viaje.origen_longitud ?? -62.2664
+          latitud: viaje.origen_latitud ?? 0,
+          longitud: viaje.origen_longitud ?? 0
         },
         destino: {
           direccion: viaje.destino_direccion ?? "Destino",
-          latitud: viaje.destino_latitud ?? -38.7021,
-          longitud: viaje.destino_longitud ?? -62.2801
+          latitud: viaje.destino_latitud ?? 0,
+          longitud: viaje.destino_longitud ?? 0
         }
       }}
       conductorId={userId}
