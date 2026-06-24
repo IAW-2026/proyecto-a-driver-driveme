@@ -62,12 +62,24 @@ export async function aceptarViaje(
   // 4. Verificar que existe como conductor activo
   const conductorExiste = await prisma.conductor.findUnique({
     where:  { id_conductor: userId },
-    select: { id_conductor: true, isActive: true, estado: true },
+    select: { 
+      id_conductor: true, 
+      isActive: true, 
+      estado: true,
+      calificacion_promedio: true,
+      comentario_promedio: true
+    },
   });
 
   if (!conductorExiste || !conductorExiste.isActive) {
     return { error: "CONDUCTOR_INACTIVO" };
   }
+
+  // Cargar patente del vehículo
+  const vehiculo = await prisma.vehiculo.findUnique({
+    where: { id_vehiculo: data.id_vehiculo },
+    select: { patente: true }
+  });
 
   const estadoOriginalConductor = conductorExiste.estado;
 
@@ -130,8 +142,11 @@ export async function aceptarViaje(
         id_solicitud:    viaje.id_solicitud,
         id_conductor:    viaje.id_conductor,
         id_vehiculo:     viaje.id_vehiculo,
+        patente:         vehiculo?.patente || "",
         latitud_actual:  data.latitud_actual,
         longitud_actual: data.longitud_actual,
+        puntaje_promedio_conductor: conductorExiste.calificacion_promedio,
+        comentario_promedio_conductor: conductorExiste.comentario_promedio,
       }),
     });
 
