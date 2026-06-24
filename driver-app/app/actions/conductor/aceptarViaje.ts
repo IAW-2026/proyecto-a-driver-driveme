@@ -48,6 +48,7 @@ export async function aceptarViaje(
   // 2. Validación del payload con Zod
   const parsed = aceptarViajeSchema.safeParse(payload);
   if (!parsed.success) {
+    console.error("[aceptarViaje] Error de validación Zod:", parsed.error);
     return { error: "VALIDACION", detalle: parsed.error.message };
   }
 

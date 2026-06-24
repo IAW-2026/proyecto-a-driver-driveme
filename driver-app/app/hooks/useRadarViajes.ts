@@ -128,19 +128,19 @@ export function useRadarViajes({
     const result = await aceptarViaje({
       id_solicitud:      solicitudActual.id_solicitud,
       id_conductor:      conductorId,
-      id_pasajero:       solicitudActual.pasajero.id_pasajero,
+      id_pasajero:       (solicitudActual as any).id_pasajero || solicitudActual.pasajero?.id_pasajero || "sin-id",
       id_vehiculo:       vehiculoId,
       latitud_actual:    latitud,
       longitud_actual:   longitud,
       metodo_pago:       "EFECTIVO",
       precio_estimado:   solicitudActual.precio_estimado,
-      origen_latitud:    solicitudActual.origen.latitud,
-      origen_longitud:   solicitudActual.origen.longitud,
-      origen_direccion:  solicitudActual.origen.direccion,
-      destino_latitud:   solicitudActual.destino.latitud,
-      destino_longitud:  solicitudActual.destino.longitud,
-      destino_direccion: solicitudActual.destino.direccion,
-      pasajero_nombre:   solicitudActual.pasajero.nombre,
+      origen_latitud:    solicitudActual.origen?.latitud,
+      origen_longitud:   solicitudActual.origen?.longitud,
+      origen_direccion:  solicitudActual.origen?.direccion,
+      destino_latitud:   solicitudActual.destino?.latitud,
+      destino_longitud:  solicitudActual.destino?.longitud,
+      destino_direccion: solicitudActual.destino?.direccion,
+      pasajero_nombre:   (solicitudActual as any).pasajero_nombre || solicitudActual.pasajero?.nombre || "Pasajero Desconocido",
     });
 
     setAceptando(false);
@@ -165,7 +165,7 @@ export function useRadarViajes({
         break;
 
       case "VALIDACION":
-        mostrarToast("Error en los datos del viaje. Intentá de nuevo.", "error");
+        mostrarToast("Error: " + (result as any).detalle, "error");
         break;
 
       default:
