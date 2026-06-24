@@ -71,11 +71,11 @@ export default function FinalizarViajeClient({
         {/* ── Resumen financiero ───────────────────────────────── */}
         <div className="px-6 py-8 space-y-6">
           {/* Precio destacado */}
-          <div className="text-center bg-[#0A0A0A] p-6 rounded-card border border-[rgba(255,255,255,0.06)] shadow-inner">
-            <p className="text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+          <div className="flex flex-col items-center justify-center bg-[#0A0A0A] p-6 rounded-card border border-[rgba(255,255,255,0.06)] shadow-inner w-full overflow-hidden">
+            <p className="text-5xl sm:text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)] w-full text-center break-words">
               {formatARS(precioFinal)}
             </p>
-            <p className="text-xs mt-2 font-extrabold text-red-400 uppercase tracking-[0.3em]">
+            <p className="text-xs mt-2 font-extrabold text-red-400 uppercase tracking-[0.3em] text-center w-full">
               A cobrar
             </p>
           </div>

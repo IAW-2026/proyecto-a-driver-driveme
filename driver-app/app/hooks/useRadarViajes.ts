@@ -1,5 +1,5 @@
 // app/hooks/useRadarViajes.ts
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SolicitudViaje } from "@/app/types/viajes";
 import { aceptarViaje } from "@/app/actions/conductor/aceptarViaje";
 import { buscarSolicitudes } from "@/app/actions/conductor/buscarSolicitudes";
@@ -28,9 +28,18 @@ export function useRadarViajes({
   const [timerSegundos, setTimerSegundos]     = useState(TIMER_DURACION);
   const [aceptando, setAceptando]             = useState(false);
 
+  // Refs para leer el estado dentro del setInterval sin re-ejecutar el useEffect
+  const solicitudActualRef = useRef(solicitudActual);
+  const colaRef = useRef(colaSolicitudes);
+
+  useEffect(() => {
+    solicitudActualRef.current = solicitudActual;
+    colaRef.current = colaSolicitudes;
+  }, [solicitudActual, colaSolicitudes]);
+
   // ── Radar: polling cada 5s ────────────────────────────────────────────────
   useEffect(() => {
-    if (!isOnline || solicitudActual || colaSolicitudes.length > 0) return;
+    if (!isOnline) return;
 
     const intervalo = setInterval(async () => {
       const result = await buscarSolicitudes();
@@ -40,13 +49,40 @@ export function useRadarViajes({
         return;
       }
 
-      if (result.solicitudes.length > 0) {
-        setColaSolicitudes(result.solicitudes);
+      const activas = result.solicitudes;
+
+      // 1. Verificar si la solicitud actual sigue siendo válida
+      if (solicitudActualRef.current) {
+        const sigueActiva = activas.some(
+          (a) => a.id_solicitud === solicitudActualRef.current!.id_solicitud
+        );
+        if (!sigueActiva) {
+          setSolicitudActual(null);
+          mostrarToast("La solicitud expiró o fue tomada.", "error");
+        }
       }
+
+      // 2. Actualizar la cola de solicitudes
+      setColaSolicitudes((colaActual) => {
+        const idsActivos = new Set(activas.map((a) => a.id_solicitud));
+
+        // Filtrar las que ya no están activas de la cola
+        const nuevaCola = colaActual.filter((c) => idsActivos.has(c.id_solicitud));
+
+        // Añadir las nuevas (que no están ni en la cola ni es la actual)
+        const idsEnCola = new Set(nuevaCola.map((c) => c.id_solicitud));
+        const idActual = solicitudActualRef.current?.id_solicitud;
+
+        const nuevas = activas.filter(
+          (a) => !idsEnCola.has(a.id_solicitud) && a.id_solicitud !== idActual
+        );
+
+        return [...nuevaCola, ...nuevas];
+      });
     }, 5000);
 
     return () => clearInterval(intervalo);
-  }, [isOnline, solicitudActual, colaSolicitudes.length]);
+  }, [isOnline, mostrarToast]);
 
   // ── Desencolar siguiente solicitud ────────────────────────────────────────
   useEffect(() => {
