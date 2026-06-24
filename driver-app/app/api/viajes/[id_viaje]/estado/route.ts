@@ -101,7 +101,7 @@ export async function PATCH(
         try {
           const res = await fetch(`${paymentsAppUrl}/api/pagos/transacciones`, {
             method: 'PUT',
-            headers: m2mHeaders('payments'),
+            headers: m2mHeaders(),
             body: JSON.stringify({
               id_transaccion: id_viaje,
             }),

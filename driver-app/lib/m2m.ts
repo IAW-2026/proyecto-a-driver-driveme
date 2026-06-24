@@ -1,23 +1,39 @@
-export function m2mHeaders(targetApp?: 'rider' | 'payments' | 'feedback'): HeadersInit {
-  let token = process.env.DRIVER_SERVICE_SECRET;
+import { auth } from "@clerk/nextjs/server";
 
-  if (targetApp === 'rider' && process.env.RIDER_SERVICE_SECRET) {
-    token = process.env.RIDER_SERVICE_SECRET;
-  } else if (targetApp === 'payments' && process.env.PAYMENTS_SERVICE_SECRET) {
-    token = process.env.PAYMENTS_SERVICE_SECRET;
-  } else if (targetApp === 'feedback' && process.env.FEEDBACK_SERVICE_SECRET) {
-    token = process.env.FEEDBACK_SERVICE_SECRET;
-  }
+/**
+ * Headers M2M: siempre envía DRIVER_SERVICE_SECRET (el secret propio de la Driver App).
+ * Según la spec: "Cada app que realiza una llamada manda SU PROPIO secret."
+ */
+export function m2mHeaders(): HeadersInit {
+  const token = process.env.DRIVER_SERVICE_SECRET;
 
   if (!token) {
     console.error(
-      `[ERROR] Token M2M no definido para ${targetApp || 'interno'}. Las llamadas M2M podrían ser rechazadas.`
+      '[ERROR] DRIVER_SERVICE_SECRET no definido. Las llamadas M2M serán rechazadas.'
     );
   }
 
   return {
     "Content-Type": "application/json",
     ...(token ? { "x-api-key": token } : {}),
+  };
+}
+
+/**
+ * Headers con Clerk JWT del usuario autenticado.
+ * Para endpoints de Payments que requieren identificación del usuario (spec C, D, E).
+ */
+export async function clerkAuthHeaders(): Promise<HeadersInit> {
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  if (!token) {
+    console.error('[ERROR] No se pudo obtener el Clerk JWT. El usuario podría no estar autenticado.');
+  }
+
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { "Authorization": `Bearer ${token}` } : {}),
   };
 }
 

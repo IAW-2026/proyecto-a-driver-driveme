@@ -31,7 +31,7 @@ export async function enviarResenaAction(data: z.infer<typeof resenaSchema>) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...m2mHeaders("feedback")
+          ...m2mHeaders()
         },
         body: JSON.stringify(parsed),
       });

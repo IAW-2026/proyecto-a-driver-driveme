@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { m2mHeaders } from "@/lib/m2m";
+import { clerkAuthHeaders } from "@/lib/m2m";
 
 export async function solicitarLiquidacionAction() {
   try {
@@ -38,18 +38,17 @@ export async function solicitarLiquidacionAction() {
       }
     }
 
-    // 3. Llamar al endpoint de Payments App con JWT del conductor (Bearer token)
-    // Documentación: POST /api/pagos/liquidaciones — Autenticación: Bearer JWT (Clerk, rol DRIVER)
-    // El conductor se identifica por su JWT, no hace falta enviar body.
+    // 3. Llamar al endpoint de Payments App con JWT del conductor (spec D)
     const baseUrl = process.env.PAYMENTS_APP_URL;
     if (!baseUrl) {
       console.warn("⚠️ PAYMENTS_APP_URL no configurada.");
       return { success: false, error: "Error de configuración de entorno." };
     }
 
+    const headers = await clerkAuthHeaders();
     const response = await fetch(`${baseUrl}/api/pagos/liquidaciones`, {
       method: "POST",
-      headers: m2mHeaders('payments'),
+      headers,
     });
 
     if (!response.ok) {

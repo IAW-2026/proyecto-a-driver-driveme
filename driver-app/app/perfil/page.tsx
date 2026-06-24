@@ -29,7 +29,7 @@ async function fetchCalificaciones(idConductor: string): Promise<HistorialCalifi
   if (!url) return null;
   try {
     const res = await fetch(`${url}/api/usuarios/${idConductor}/calificaciones`, {
-      headers: m2mHeaders('feedback'),
+      headers: m2mHeaders(),
       next: { revalidate: 60 },
     });
     if (!res.ok) {

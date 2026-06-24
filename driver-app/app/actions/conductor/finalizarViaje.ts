@@ -39,29 +39,72 @@ export async function finalizarViaje(id_viaje: string) {
       },
     });
 
-    // 4. Procesar cobro via Payments App — M2M requerido por el contrato
+    // 4. Procesar cobro via Payments App — M2M (spec B)
+    const paymentsUrl = process.env.PAYMENTS_APP_URL;
     let idTransaccion: string | null = null;
-    try {
-      const pagoRes = await fetch(`${process.env.PAYMENTS_APP_URL}/api/pagos/transacciones`, {
-        method: "PUT",
-        headers: m2mHeaders("payments"),
-        body: JSON.stringify({
-          id_transaccion: id_viaje,
-        }),
-      });
-      const pagoData = await pagoRes.json();
-      idTransaccion = pagoData.id_transaccion ?? null;
-    } catch {
-      console.warn("[WARNING] Payments App inalcanzable.");
+
+    if (paymentsUrl) {
+      const isMockTrip = viaje.id_solicitud?.startsWith("mock-");
+
+      try {
+        if (isMockTrip) {
+          // Para viajes mock: la Rider App nunca creó la transacción, así que
+          // la creamos nosotros (POST, spec A) antes de confirmarla (PUT, spec B).
+          // POST requiere DRIVER_SERVICE_SECRET (la Payments App acepta tokens de servicios conocidos).
+          const createRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
+            method: "POST",
+            headers: m2mHeaders(),
+            body: JSON.stringify({
+              id_viaje,
+              id_pasajero: viaje.id_pasajero,
+              id_conductor: userId,
+              metodo_pago: viaje.metodo_pago || "EFECTIVO",
+              monto: Number(viaje.precio_final ?? viaje.precio ?? 0),
+            }),
+          });
+
+          if (createRes.ok) {
+            const createData = await createRes.json();
+            idTransaccion = createData.id_transaccion ?? null;
+            console.log(`[MOCK] Transacción creada en Payments: ${idTransaccion}`);
+          } else {
+            const errorText = await createRes.text().catch(() => "");
+            console.warn(`[WARNING] Payments App POST devolvió ${createRes.status}: ${errorText}`);
+          }
+        }
+
+        // PUT para confirmar la transacción (spec B: DRIVER_SERVICE_SECRET)
+        // Para viajes reales: la Rider App ya creó la transacción con id = id_viaje
+        // Para viajes mock: usamos el id_transaccion devuelto por el POST anterior
+        const txnId = idTransaccion ?? id_viaje;
+        const confirmRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
+          method: "PUT",
+          headers: m2mHeaders(),
+          body: JSON.stringify({
+            id_transaccion: txnId,
+          }),
+        });
+
+        if (confirmRes.ok) {
+          const confirmData = await confirmRes.json();
+          idTransaccion = confirmData.id_transaccion ?? txnId;
+          console.log(`[OK] Transacción ${idTransaccion} confirmada en Payments.`);
+        } else {
+          const errorText = await confirmRes.text().catch(() => "");
+          console.warn(`[WARNING] Payments App PUT devolvió ${confirmRes.status}: ${errorText}`);
+        }
+      } catch (e) {
+        console.warn("[WARNING] Payments App inalcanzable.", e);
+      }
     }
 
-    // 5. Notificar a Rider App — M2M requerido por el contrato
+    // 5. Notificar a Rider App — M2M (DRIVER_SERVICE_SECRET)
     try {
       await fetch(
         `${process.env.RIDER_APP_URL}/api/notificaciones/viajes/${id_viaje}/estado`,
         {
           method: "POST",
-          headers: m2mHeaders("rider"),
+          headers: m2mHeaders(),
           body: JSON.stringify({
             id_viaje,
             id_pasajero: viaje.id_pasajero,

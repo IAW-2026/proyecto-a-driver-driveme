@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     try {
       const riderResponse = await fetch(`${process.env.RIDER_APP_URL}/api/viajes`, {
         method: 'POST',
-        headers: m2mHeaders('rider'),
+        headers: m2mHeaders(),
         body: JSON.stringify({
           id_solicitud: viaje.id_solicitud,
           id_conductor: viaje.id_conductor,

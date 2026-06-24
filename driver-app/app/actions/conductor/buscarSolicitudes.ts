@@ -76,7 +76,7 @@ export async function buscarSolicitudes(): Promise<BuscarSolicitudesResult> {
     const res = await fetch(
       `${baseUrl}/api/solicitudes?estado=BUSCANDO_CONDUCTOR`,
       {
-        headers: m2mHeaders("rider"),
+        headers: m2mHeaders(),
         cache: "no-store",
       }
     );

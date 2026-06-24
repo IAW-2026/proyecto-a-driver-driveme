@@ -1,6 +1,5 @@
-// app/billetera/page.tsx
 import { redirect } from "next/navigation";
-import { m2mHeaders } from "@/lib/m2m";
+import { clerkAuthHeaders } from "@/lib/m2m";
 import { getSessionData } from "@/lib/getSessionData";
 import { checkActiveRideRedirect } from "@/lib/checkActiveRide";
 import BilleteraClient from "./BilleteraClient";
@@ -28,7 +27,7 @@ export default async function BilleteraPage({
   const skip = (currentPage - 1) * ITEMS_POR_PAGINA;
 
   const baseUrl = process.env.PAYMENTS_APP_URL;
-  const headers = m2mHeaders('payments');
+  const headers = await clerkAuthHeaders();
 
   let billetera = null;
   let transaccionesPaginadas: any[] = [];

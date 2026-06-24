@@ -30,7 +30,7 @@ export async function reportarCalificacionAction(data: z.infer<typeof reporteSch
     if (feedbackUrl) {
       const res = await fetch(`${feedbackUrl}/api/reportes`, {
         method: "POST",
-        headers: m2mHeaders('feedback'),
+        headers: m2mHeaders(),
         body: JSON.stringify(payload),
       });
 
