@@ -15,7 +15,10 @@ export function m2mHeaders(): HeadersInit {
 
   return {
     "Content-Type": "application/json",
-    ...(token ? { "x-api-key": token } : {}),
+    ...(token ? { 
+      "x-api-key": token,
+      "Authorization": `Bearer ${token}` 
+    } : {}),
   };
 }
 

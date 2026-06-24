@@ -48,50 +48,27 @@ export async function finalizarViaje(id_viaje: string) {
 
       try {
         if (isMockTrip) {
-          // Para viajes mock: la Rider App nunca creó la transacción, así que
-          // la creamos nosotros (POST, spec A) antes de confirmarla (PUT, spec B).
-          // POST requiere DRIVER_SERVICE_SECRET (la Payments App acepta tokens de servicios conocidos).
-          const createRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
-            method: "POST",
+          console.log(`[MOCK] Omitiendo cobro en Payments App (Driver App respeta política estricta y no crea transacciones M2M).`);
+        } else {
+          // PUT para confirmar la transacción (spec B: DRIVER_SERVICE_SECRET)
+          // Para viajes reales: la Rider App ya creó la transacción con id = id_viaje
+          const txnId = id_viaje;
+          const confirmRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
+            method: "PUT",
             headers: m2mHeaders(),
             body: JSON.stringify({
-              id_viaje,
-              id_pasajero: viaje.id_pasajero,
-              id_conductor: userId,
-              metodo_pago: viaje.metodo_pago || "EFECTIVO",
-              monto: Number(viaje.precio_final ?? viaje.precio ?? 0),
+              id_transaccion: txnId,
             }),
           });
 
-          if (createRes.ok) {
-            const createData = await createRes.json();
-            idTransaccion = createData.id_transaccion ?? null;
-            console.log(`[MOCK] Transacción creada en Payments: ${idTransaccion}`);
+          if (confirmRes.ok) {
+            const confirmData = await confirmRes.json();
+            idTransaccion = confirmData.id_transaccion ?? txnId;
+            console.log(`[OK] Transacción ${idTransaccion} confirmada en Payments.`);
           } else {
-            const errorText = await createRes.text().catch(() => "");
-            console.warn(`[WARNING] Payments App POST devolvió ${createRes.status}: ${errorText}`);
+            const errorText = await confirmRes.text().catch(() => "");
+            console.warn(`[WARNING] Payments App PUT devolvió ${confirmRes.status}: ${errorText}`);
           }
-        }
-
-        // PUT para confirmar la transacción (spec B: DRIVER_SERVICE_SECRET)
-        // Para viajes reales: la Rider App ya creó la transacción con id = id_viaje
-        // Para viajes mock: usamos el id_transaccion devuelto por el POST anterior
-        const txnId = idTransaccion ?? id_viaje;
-        const confirmRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
-          method: "PUT",
-          headers: m2mHeaders(),
-          body: JSON.stringify({
-            id_transaccion: txnId,
-          }),
-        });
-
-        if (confirmRes.ok) {
-          const confirmData = await confirmRes.json();
-          idTransaccion = confirmData.id_transaccion ?? txnId;
-          console.log(`[OK] Transacción ${idTransaccion} confirmada en Payments.`);
-        } else {
-          const errorText = await confirmRes.text().catch(() => "");
-          console.warn(`[WARNING] Payments App PUT devolvió ${confirmRes.status}: ${errorText}`);
         }
       } catch (e) {
         console.warn("[WARNING] Payments App inalcanzable.", e);
