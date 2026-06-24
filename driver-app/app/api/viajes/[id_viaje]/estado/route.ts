@@ -17,8 +17,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized M2M access' }, { status: 403 });
     }
 
-    const viaje = await prisma.viaje.findUnique({
-      where: { id_viaje },
+    const viaje = await prisma.viaje.findFirst({
+      where: {
+        OR: [
+          { id_viaje },
+          { id_solicitud: id_viaje }
+        ]
+      },
       select: {
         id_viaje: true,
         estado_actual: true,
