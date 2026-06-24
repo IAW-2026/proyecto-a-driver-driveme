@@ -120,9 +120,6 @@ export async function aceptarViaje(
   });
 
   // 6. Sincronización M2M → Rider App (idéntica al route.ts)
-  if (data.id_solicitud.startsWith("mock-")) {
-    redirect(`/viaje/${viaje.id_viaje}`);
-  }
 
   try {
     const riderResponse = await fetch(`${process.env.RIDER_APP_URL}/api/viajes`, {

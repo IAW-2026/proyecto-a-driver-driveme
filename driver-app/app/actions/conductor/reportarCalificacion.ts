@@ -27,37 +27,24 @@ export async function reportarCalificacionAction(data: z.infer<typeof reporteSch
     };
 
     const feedbackUrl = process.env.FEEDBACK_APP_URL;
-    if (feedbackUrl) {
-      const res = await fetch(`${feedbackUrl}/api/reportes`, {
-        method: "POST",
-        headers: m2mHeaders(),
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        console.warn("[WARNING] Feedback App devolvió error:", res.status, errorData);
-        return { success: false, error: "Error al enviar el reporte a la Feedback App" };
-      }
-      
-      const responseData = await res.json().catch(() => ({}));
-      return { success: true, data: responseData };
+    if (!feedbackUrl) {
+      return { success: false, error: "Servicio de feedback no configurado" };
     }
 
-    // Mock local: registrar en consola y responder OK
-    console.log(`[REPORTE MOCK] Usuario ${userId} reportó la calificación ${parsed.id_calificacion} por ${parsed.motivo}`);
-    if (parsed.descripcion) {
-      console.log(`  Descripción: "${parsed.descripcion}"`);
-    }
+    const res = await fetch(`${feedbackUrl}/api/reportes`, {
+      method: "POST",
+      headers: m2mHeaders(),
+      body: JSON.stringify(payload),
+    });
 
-    return {
-      success: true,
-      data: {
-        id_reporte: `rep_mock_${Date.now()}`,
-        estado: "PENDIENTE",
-        timestamp: new Date().toISOString(),
-      },
-    };
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      console.warn("[WARNING] Feedback App devolvió error:", res.status, errorData);
+      return { success: false, error: "Error al enviar el reporte a la Feedback App" };
+    }
+    
+    const responseData = await res.json().catch(() => ({}));
+    return { success: true, data: responseData };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { success: false, error: "Datos inválidos", detalles: error.issues };

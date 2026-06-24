@@ -24,42 +24,28 @@ export async function enviarResenaAction(data: z.infer<typeof resenaSchema>) {
 
     const parsed = resenaSchema.parse(data);
 
-    // Si hay una Feedback App configurada, reenviar allá
     const feedbackUrl = process.env.FEEDBACK_APP_URL;
-    if (feedbackUrl) {
-      const res = await fetch(`${feedbackUrl}/api/resenas`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...m2mHeaders()
-        },
-        body: JSON.stringify(parsed),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        console.warn("[WARNING] Feedback App devolvió error:", res.status, errorData);
-        return { success: false, error: "Error al enviar reseña a la Feedback App" };
-      }
-      
-      const responseData = await res.json().catch(() => ({}));
-      return { success: true, data: responseData };
+    if (!feedbackUrl) {
+      return { success: false, error: "Servicio de feedback no configurado" };
     }
 
-    // Mock local: registrar en consola y responder OK
-    console.log(`[RESEÑA MOCK] Conductor ${parsed.id_emisor} calificó pasajero ${parsed.id_receptor} con ${parsed.puntaje}★ en viaje ${parsed.id_viaje}`);
-    if (parsed.comentario && parsed.comentario !== "Sin comentario.") {
-      console.log(`  Comentario: "${parsed.comentario}"`);
-    }
-
-    return {
-      success: true,
-      data: {
-        id_resena: `resena_mock_${Date.now()}`,
-        ...parsed,
-        creado_en: new Date().toISOString(),
+    const res = await fetch(`${feedbackUrl}/api/resenas`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...m2mHeaders()
       },
-    };
+      body: JSON.stringify(parsed),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      console.warn("[WARNING] Feedback App devolvió error:", res.status, errorData);
+      return { success: false, error: "Error al enviar reseña a la Feedback App" };
+    }
+    
+    const responseData = await res.json().catch(() => ({}));
+    return { success: true, data: responseData };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { success: false, error: "Datos inválidos", detalles: error.issues };

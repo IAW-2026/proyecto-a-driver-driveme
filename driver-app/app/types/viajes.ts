@@ -2,8 +2,8 @@
  * app/types/viajes.ts
  * -----------------------------------------------------------------------
  * Tipos del dominio de viajes usados en Client Components.
- * SolicitudViaje: estructura que llega del polling al mock endpoint
- * (y eventualmente del endpoint real de solicitudes de la Rider App).
+ * SolicitudViaje: estructura que llega del endpoint de solicitudes
+ * de la Rider App.
  * -----------------------------------------------------------------------
  */
 

@@ -44,48 +44,42 @@ export async function finalizarViaje(id_viaje: string) {
     let idTransaccion: string | null = null;
 
     if (paymentsUrl) {
-      const isMockTrip = viaje.id_solicitud?.startsWith("mock-");
-
       try {
-        if (isMockTrip) {
-          console.log(`[MOCK] Omitiendo cobro en Payments App (Driver App respeta política estricta y no crea transacciones M2M).`);
+        let confirmRes;
+        
+        if (viaje.metodo_pago === "EFECTIVO") {
+          confirmRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
+            method: "POST",
+            headers: m2mHeaders(),
+            body: JSON.stringify({
+              id_viaje: viaje.id_viaje,
+              id_solicitud: viaje.id_solicitud,
+              id_pasajero: viaje.id_pasajero,
+              id_conductor: viaje.id_conductor,
+              metodo_pago: "EFECTIVO",
+              monto: viaje.precio_final
+            }),
+          });
         } else {
-          let confirmRes;
-          
-          if (viaje.metodo_pago === "EFECTIVO") {
-            confirmRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
-              method: "POST",
-              headers: m2mHeaders(),
-              body: JSON.stringify({
-                id_viaje: viaje.id_viaje,
-                id_solicitud: viaje.id_solicitud,
-                id_pasajero: viaje.id_pasajero,
-                id_conductor: viaje.id_conductor,
-                metodo_pago: "EFECTIVO",
-                monto: viaje.precio_final
-              }),
-            });
-          } else {
-            // MERCADO_PAGO
-            confirmRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
-              method: "PATCH",
-              headers: m2mHeaders(),
-              body: JSON.stringify({
-                id_solicitud: viaje.id_solicitud,
-                id_viaje: viaje.id_viaje,
-                id_conductor: viaje.id_conductor
-              }),
-            });
-          }
+          // MERCADO_PAGO
+          confirmRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
+            method: "PATCH",
+            headers: m2mHeaders(),
+            body: JSON.stringify({
+              id_solicitud: viaje.id_solicitud,
+              id_viaje: viaje.id_viaje,
+              id_conductor: viaje.id_conductor
+            }),
+          });
+        }
 
-          if (confirmRes.ok) {
-            const confirmData = await confirmRes.json();
-            idTransaccion = confirmData.id_transaccion ?? id_viaje;
-            console.log(`[OK] Transacción ${idTransaccion} confirmada/actualizada en Payments.`);
-          } else {
-            const errorText = await confirmRes.text().catch(() => "");
-            console.warn(`[WARNING] Payments App devolvió ${confirmRes.status}: ${errorText}`);
-          }
+        if (confirmRes.ok) {
+          const confirmData = await confirmRes.json();
+          idTransaccion = confirmData.id_transaccion ?? id_viaje;
+          console.log(`[OK] Transacción ${idTransaccion} confirmada/actualizada en Payments.`);
+        } else {
+          const errorText = await confirmRes.text().catch(() => "");
+          console.warn(`[WARNING] Payments App devolvió ${confirmRes.status}: ${errorText}`);
         }
       } catch (e) {
         console.warn("[WARNING] Payments App inalcanzable.", e);
