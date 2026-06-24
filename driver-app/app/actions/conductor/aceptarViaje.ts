@@ -139,6 +139,7 @@ export async function aceptarViaje(
       method:  "POST",
       headers: m2mHeaders(),
       body: JSON.stringify({
+        id_viaje:        viaje.id_viaje,
         id_solicitud:    viaje.id_solicitud,
         id_conductor:    viaje.id_conductor,
         id_vehiculo:     viaje.id_vehiculo,
