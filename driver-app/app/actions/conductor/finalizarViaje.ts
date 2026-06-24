@@ -50,24 +50,41 @@ export async function finalizarViaje(id_viaje: string) {
         if (isMockTrip) {
           console.log(`[MOCK] Omitiendo cobro en Payments App (Driver App respeta política estricta y no crea transacciones M2M).`);
         } else {
-          // PUT para confirmar la transacción (spec B: DRIVER_SERVICE_SECRET)
-          // Para viajes reales: la Rider App ya creó la transacción con id = id_viaje
-          const txnId = id_viaje;
-          const confirmRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
-            method: "PUT",
-            headers: m2mHeaders(),
-            body: JSON.stringify({
-              id_transaccion: txnId,
-            }),
-          });
+          let confirmRes;
+          
+          if (viaje.metodo_pago === "EFECTIVO") {
+            confirmRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
+              method: "POST",
+              headers: m2mHeaders(),
+              body: JSON.stringify({
+                id_viaje: viaje.id_viaje,
+                id_solicitud: viaje.id_solicitud,
+                id_pasajero: viaje.id_pasajero,
+                id_conductor: viaje.id_conductor,
+                metodo_pago: "EFECTIVO",
+                monto: viaje.precio_final
+              }),
+            });
+          } else {
+            // MERCADO_PAGO
+            confirmRes = await fetch(`${paymentsUrl}/api/pagos/transacciones`, {
+              method: "PATCH",
+              headers: m2mHeaders(),
+              body: JSON.stringify({
+                id_solicitud: viaje.id_solicitud,
+                id_viaje: viaje.id_viaje,
+                id_conductor: viaje.id_conductor
+              }),
+            });
+          }
 
           if (confirmRes.ok) {
             const confirmData = await confirmRes.json();
-            idTransaccion = confirmData.id_transaccion ?? txnId;
-            console.log(`[OK] Transacción ${idTransaccion} confirmada en Payments.`);
+            idTransaccion = confirmData.id_transaccion ?? id_viaje;
+            console.log(`[OK] Transacción ${idTransaccion} confirmada/actualizada en Payments.`);
           } else {
             const errorText = await confirmRes.text().catch(() => "");
-            console.warn(`[WARNING] Payments App PUT devolvió ${confirmRes.status}: ${errorText}`);
+            console.warn(`[WARNING] Payments App devolvió ${confirmRes.status}: ${errorText}`);
           }
         }
       } catch (e) {

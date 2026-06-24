@@ -7,10 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-// ── Enums ────────────────────────────────────────────────────────────────────
-// Nota: la BD actual usa TEXT para "estado" en Viaje (no un enum de Postgres).
-// Se definen aquí para validación en el cliente de Prisma.
-
 enum EstadoConductor {
   OFFLINE
   ONLINE
