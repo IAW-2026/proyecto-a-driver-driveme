@@ -41,49 +41,38 @@ export async function clerkAuthHeaders(): Promise<HeadersInit> {
 }
 
 export function validateM2M(request: Request): boolean {
-  const apiKey = request.headers.get('x-api-key');
-  const authHeader = request.headers.get('authorization');
+  // Extraemos el token tal cual lo indica la especificación (reemplazo de Bearer case-insensitive)
+  const token =
+    request.headers.get("x-api-key") ??
+    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
-  // Todos los secrets de servicios conocidos que podrían llamar a esta app
-  const knownSecrets: { name: string; value: string | undefined }[] = [
-    { name: 'DRIVER_SERVICE_SECRET',  value: process.env.DRIVER_SERVICE_SECRET },
-    { name: 'RIDER_SERVICE_SECRET',   value: process.env.RIDER_SERVICE_SECRET },
-    { name: 'PAYMENTS_SERVICE_SECRET', value: process.env.PAYMENTS_SERVICE_SECRET },
-    { name: 'FEEDBACK_SERVICE_SECRET', value: process.env.FEEDBACK_SERVICE_SECRET },
-  ];
+  // Lista de los secretos de las apps/servicios que tienen permiso
+  const validTokens = [
+    process.env.INTERNAL_API_KEY,
+    process.env.DRIVER_SERVICE_SECRET,
+    process.env.RIDER_SERVICE_SECRET,
+    process.env.PAYMENTS_SERVICE_SECRET,
+    process.env.FEEDBACK_SERVICE_SECRET,
+  ].filter(Boolean);
 
-  const definedSecrets = knownSecrets.filter((s) => !!s.value);
-
-  if (definedSecrets.length === 0) {
+  if (validTokens.length === 0) {
     console.error('[M2M] No hay ningún service secret definido en .env. Rechazando request.');
     return false;
   }
 
-  // Validar x-api-key contra cualquier secret conocido
-  if (apiKey) {
-    const match = definedSecrets.find((s) => s.value === apiKey);
-    if (match) return true;
-  }
-
-  // Validar Authorization: Bearer <token> contra cualquier secret conocido
-  if (authHeader?.startsWith('Bearer ')) {
-    const bearerToken = authHeader.slice(7);
-    const match = definedSecrets.find((s) => s.value === bearerToken);
-    if (match) return true;
+  if (token && validTokens.includes(token)) {
+    return true;
   }
 
   // Si llegamos acá, la validación falló
-  console.warn(
-    `[M2M] Validación fallida. ` +
-    `x-api-key presente: ${!!apiKey}, Authorization presente: ${!!authHeader}. ` +
-    `Secrets definidos: [${definedSecrets.map((s) => s.name).join(', ')}]`
-  );
+  console.warn(`[M2M] Validación fallida. Token recibido: ${!!token}`);
   return false;
 }
 
 export function validateAdminM2M(request: Request, source: 'control-plane' | 'analytics'): boolean {
-  const apiKey = request.headers.get('x-api-key');
-  const authHeader = request.headers.get('authorization');
+  const token =
+    request.headers.get("x-api-key") ??
+    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   
   let expectedKey = '';
   if (source === 'control-plane') expectedKey = process.env.CONTROL_PLANE_SECRET || '';
@@ -94,8 +83,5 @@ export function validateAdminM2M(request: Request, source: 'control-plane' | 'an
     return false;
   }
 
-  return (
-    (!!apiKey && apiKey === expectedKey) ||
-    (!!authHeader && authHeader === `Bearer ${expectedKey}`)
-  );
+  return !!token && token === expectedKey;
 }
