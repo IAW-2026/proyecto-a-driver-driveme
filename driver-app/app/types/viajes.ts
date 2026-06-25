@@ -27,4 +27,5 @@ export interface SolicitudViaje {
     latitud: number;
     longitud: number;
   };
+  metodo_pago?: string;
 }

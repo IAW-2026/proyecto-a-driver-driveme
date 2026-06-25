@@ -132,7 +132,9 @@ export function useRadarViajes({
       id_vehiculo:       vehiculoId,
       latitud_actual:    latitud,
       longitud_actual:   longitud,
-      metodo_pago:       "EFECTIVO",
+      metodo_pago:       (solicitudActual as any).metodo_pago === "TARJETA" || (solicitudActual as any).metodo_pago === "MERCADO_PAGO" 
+                           ? "MERCADO_PAGO" 
+                           : "EFECTIVO",
       precio_estimado:   solicitudActual.precio_estimado,
       origen_latitud:    solicitudActual.origen?.latitud,
       origen_longitud:   solicitudActual.origen?.longitud,
