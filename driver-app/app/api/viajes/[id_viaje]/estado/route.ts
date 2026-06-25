@@ -98,29 +98,45 @@ export async function PATCH(
       return v;
     });
 
-    if (parsed.estado_actual === 'FINALIZADO' && viajeActual.metodo_pago === 'EFECTIVO') {
+    if (parsed.estado_actual === 'FINALIZADO') {
       const paymentsAppUrl = process.env.PAYMENTS_APP_URL;
       if (!paymentsAppUrl) {
-        console.error('[ERROR] PAYMENTS_APP_URL no definida. No se pudo notificar el pago en efectivo.');
+        console.error('[ERROR] PAYMENTS_APP_URL no definida. No se pudo notificar a Payments App.');
       } else {
         try {
-          const res = await fetch(`${paymentsAppUrl}/api/pagos/transacciones`, {
-            method: 'PUT',
-            headers: m2mHeaders(),
-            body: JSON.stringify({
-              id_transaccion: id_viaje,
-            }),
-          });
+          let res;
+          if (viajeActual.metodo_pago === 'EFECTIVO') {
+            res = await fetch(`${paymentsAppUrl}/api/pagos/transacciones`, {
+              method: 'POST',
+              headers: m2mHeaders(),
+              body: JSON.stringify({
+                id_viaje: viajeActual.id_viaje,
+                id_solicitud: viajeActual.id_solicitud,
+                id_pasajero: viajeActual.id_pasajero,
+                id_conductor: viajeActual.id_conductor,
+                metodo_pago: 'EFECTIVO',
+                monto: viajeActual.precio_final,
+              }),
+            });
+          } else {
+            res = await fetch(`${paymentsAppUrl}/api/pagos/transacciones`, {
+              method: 'PATCH',
+              headers: m2mHeaders(),
+              body: JSON.stringify({
+                id_solicitud: viajeActual.id_solicitud,
+                id_viaje: viajeActual.id_viaje,
+                id_conductor: viajeActual.id_conductor,
+              }),
+            });
+          }
 
           let idTransaccion = id_viaje;
           if (res.ok) {
             const pagoData = await res.json().catch(() => ({}));
             if (pagoData.id_transaccion) idTransaccion = pagoData.id_transaccion;
           } else {
-            console.warn(`[WARNING] Payments App respondió ${res.status} al notificar pago en efectivo del viaje ${id_viaje}.`);
+            console.warn(`[WARNING] Payments App respondió ${res.status} al notificar fin de viaje ${id_viaje}.`);
           }
-
-
         } catch (e) {
           console.warn('[WARNING] Payments App inalcanzable. El viaje se finalizó pero el pago no fue notificado.', e);
         }
