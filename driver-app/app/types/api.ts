@@ -105,6 +105,8 @@ export interface SolicitudViaje {
     id_pasajero: string;
     nombre: string;
   };
+  puntaje_promedio_pasajero?: number | null;
+  comentario_promedio_pasajero?: string | null;
 }
 
 // GET /api/solicitudes (Endpoint F)

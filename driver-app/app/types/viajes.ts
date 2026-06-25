@@ -28,4 +28,6 @@ export interface SolicitudViaje {
     longitud: number;
   };
   metodo_pago?: string;
+  puntaje_promedio_pasajero?: number | null;
+  comentario_promedio_pasajero?: string | null;
 }

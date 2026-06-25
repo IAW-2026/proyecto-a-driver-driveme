@@ -263,7 +263,20 @@ export default function ConductorDashboard({ conductorData, metricasHoy }: Condu
               <div className="rounded-card border border-[rgba(255,255,255,0.06)] bg-[#0A0A0A] p-4 space-y-3 text-sm">
                 <div>
                   <p className="font-bold text-lg text-white">Pasajero</p>
-                  <p className="mt-1 font-medium text-[#9CA3AF]">{solicitudActual.pasajero.nombre}</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <p className="font-medium text-[#9CA3AF] text-base">{solicitudActual.pasajero.nombre}</p>
+                    <div className="flex items-center gap-1 bg-[#1A1A1A] px-2 py-0.5 rounded-full border border-[rgba(255,255,255,0.1)]">
+                      <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                      <span className="font-bold text-xs text-white">
+                        {solicitudActual.puntaje_promedio_pasajero ? solicitudActual.puntaje_promedio_pasajero.toFixed(1) : "Nuevo"}
+                      </span>
+                    </div>
+                  </div>
+                  {solicitudActual.comentario_promedio_pasajero && (
+                    <p className="mt-2 text-xs text-[#9CA3AF] italic bg-[rgba(255,255,255,0.03)] p-2 rounded-md border border-[rgba(255,255,255,0.05)]">
+                      "{solicitudActual.comentario_promedio_pasajero}"
+                    </p>
+                  )}
                 </div>
                 <div className="border-t border-[rgba(255,255,255,0.06)] pt-3">
                   <p className="font-bold text-lg text-white">Origen</p>
