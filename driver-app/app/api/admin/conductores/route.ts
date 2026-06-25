@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateAdminM2M } from "@/lib/m2m";
 import { handleError } from "@/lib/api-utils";
-import { Prisma } from "@prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -17,7 +16,7 @@ export async function GET(request: Request) {
     const estado = searchParams.get("estado") || "";
     const skip = (page - 1) * limit;
 
-    const where: Prisma.ConductorWhereInput = {};
+    const where: any = {};
 
     if (search) {
       where.OR = [
