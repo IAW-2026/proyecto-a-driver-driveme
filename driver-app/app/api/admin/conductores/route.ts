@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateAdminM2M } from "@/lib/m2m";
 import { handleError } from "@/lib/api-utils";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -12,16 +13,37 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 10;
+    const search = searchParams.get("search") || "";
+    const estado = searchParams.get("estado") || "";
     const skip = (page - 1) * limit;
+
+    const where: Prisma.ConductorWhereInput = {};
+
+    if (search) {
+      where.OR = [
+        { nombre: { contains: search, mode: 'insensitive' } },
+        { apellido: { contains: search, mode: 'insensitive' } },
+        { id_conductor: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    if (estado) {
+      if (estado === 'activo' || estado === 'inactivo') {
+        where.isActive = estado === 'activo';
+      } else {
+        where.estado = estado;
+      }
+    }
 
     const [conductores, total] = await Promise.all([
       prisma.conductor.findMany({
+        where,
         skip,
         take: limit,
         include: { vehiculos: true },
         orderBy: { fecha_alta: "desc" }
       }),
-      prisma.conductor.count()
+      prisma.conductor.count({ where })
     ]);
 
     return NextResponse.json(
